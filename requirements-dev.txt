@@ -1,0 +1,8 @@
+# Development dependencies. NOT part of the vended payload.
+#
+# The sidecar's control plane is standard-library only; requirements.txt carries
+# just what shipped tools need. The test suite, however, needs a runner, and it
+# was previously undeclared - a fresh developer could not run tests/ without
+# already knowing to install pytest.
+-r requirements.txt
+pytest

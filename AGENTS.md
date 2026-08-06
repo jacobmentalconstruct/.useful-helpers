@@ -86,14 +86,34 @@ Test: *delete this folder. Does the target notice?* The answer must be no.
 ## The three roots
 
 The seam runs every tool with `cwd` = the **work target**, so relative inputs default to the
-target. The toolkit's own home is `SUITE_HOME`. Generated output defaults to the toolkit home.
+target. The sidecar's own home is `SUITE_HOME`. Generated output defaults to the sidecar home.
 
 - **inputs** read from the work target
-- **state + generated output** write to the toolkit home
+- **state + generated output** write to the sidecar home
 - an explicit path argument always overrides
 
-You normally pass no `root` at all  -  the default is already the target. Pass one only to narrow
-scope. Each `tool.json` declares `operates_on: project | toolkit`.
+Each `tool.json` declares `operates_on: project | toolkit`.
+
+### How the work target is decided
+
+By evidence only. There are four cases and **no fallthrough** - the sidecar never
+guesses which project it is pointed at:
+
+| Situation | Evidence | Target |
+|---|---|---|
+| Installed into a project | a `.suite_sidecar` marker beside this file | the parent directory |
+| An explicit root, valid | `SUITE_PROJECT_ROOT` names a real directory | that directory |
+| An explicit root, invalid | `SUITE_PROJECT_ROOT` names nothing | **hard error** |
+| Not installed anywhere | neither of the above | **no target - every call refuses** |
+
+If you are working in the sidecar's own source repository rather than in an
+installed copy, there is no target and tool calls will refuse with
+`no work target bound`. That is correct behaviour, not a fault. Supply an
+explicit `SUITE_PROJECT_ROOT`, or work in an installed sidecar.
+
+An invalid explicit root is never quietly replaced with a guess. That mattered:
+it used to resolve to the parent and report success, so a typo in a target path
+was indistinguishable from a correct run.
 
 ## Running anything else
 

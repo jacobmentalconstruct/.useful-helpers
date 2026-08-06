@@ -165,3 +165,8 @@ Thumbs.db
 # --- Deliberately tracked ---
 # .bcc/   builder control: contract, plan, state, provenance, testing, matrix
 # _docs/  builder documentation and the active journal
+config/registry.json
+
+
+# --- Test residue written into config/ by smoke runs ---
+config/domain-boundary/smoke-*.json

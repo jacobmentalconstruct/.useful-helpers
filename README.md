@@ -1,10 +1,20 @@
-# Useful Helpers  -  a governed toolkit for your project
+# Useful Helpers  -  a governed sidecar for your project
 
-A local toolkit of headless tools for understanding, changing, packaging, and remembering
-work on the project this folder lives in - run `run.bat list` (or `python -m src.app cli
-tool-list`) for the live catalog. Every tool is reachable by an **agent** (MCP) and a
-**human** (GUI/CLI), and every call flows through one **governed** `invoke()` seam  - 
-authority-checked and audit-logged.
+A local sidecar you **install into a project folder**. That folder becomes its target: the
+sidecar maps it, works on it through a toolkit of headless tools, and keeps its own record
+of both. Run `run.bat list` (or `python -m src.app cli tool-list`) for the live catalog.
+
+Every tool is reachable by an **agent** (MCP) and a **human** (GUI/CLI), and every call flows
+through one **governed** `invoke()` seam  -  authority-checked, containment-checked and
+audit-logged. Whichever way a call arrives, it takes the same path and lands in the same record.
+
+**The target never learns the sidecar exists.** Nothing is written into it, no pointer file, no
+`.gitignore` line. Delete the sidecar folder and the project is exactly as it was  -  which is
+what makes it safe to remove before shipping the project to its own users.
+
+The sidecar has no target until it is installed into one, or given an explicit
+`SUITE_PROJECT_ROOT`. It never infers a target from its surroundings; see
+[AGENTS.md](AGENTS.md) for the rules.
 
 ## Start here
 - **Agents:** read `AGENTS.md`  -  the product-neutral front door.
