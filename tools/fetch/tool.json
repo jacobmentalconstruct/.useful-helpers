@@ -1,0 +1,40 @@
+{
+  "id": "fetch",
+  "summary": "Dry-run-first governed download: HEAD plan (host/size/type), then apply:true streams URL to a file (default under the toolkit's _artifacts/fetch/), size-capped, sha256-reported.",
+  "category": "operations",
+  "authority": "Apply",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/fetch/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "url": { "type": "string", "description": "URL to download (scheme defaults to http://)" },
+      "dest": { "type": "string", "description": "output file path (default: <toolkit>/_artifacts/fetch/<name>)" },
+      "max_bytes": { "type": "integer", "default": 52428800, "description": "abort beyond this size (cap 500MB)" },
+      "timeout_s": { "type": "integer", "default": 30, "description": "max seconds (cap 300)" },
+      "allow_remote": { "type": "boolean", "description": "permit non-localhost hosts" },
+      "dry_run": { "type": "boolean", "default": true },
+      "apply": { "type": "boolean", "description": "download for real (universal confirm)" }
+    },
+    "required": ["url"]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "dest": { "type": "string" },
+      "bytes": { "type": "integer" },
+      "sha256": { "type": "string" },
+      "content_type": { "type": "string" },
+      "status": { "type": "integer" }
+    }
+  },
+  "provenance": {
+    "donor": "none",
+    "treatment": "NEW",
+    "note": "Field report B5: vendoring libraries required curl outside the seam. Downloads are exactly the class of action governance should see; dry-run-first + size cap + local-first."
+  }
+}

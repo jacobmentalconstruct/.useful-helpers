@@ -1,0 +1,44 @@
+{
+  "id": "pdf_compress",
+  "summary": "Rewrite a PDF with compressed content streams; dry-run-first and confirm-gated.",
+  "category": "pdf",
+  "authority": "Apply",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/pdf_compress/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string"
+      },
+      "out": {
+        "type": "string"
+      },
+      "dry_run": {
+        "type": "boolean",
+        "default": true
+      },
+      "confirm": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "required": [
+      "path"
+    ]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

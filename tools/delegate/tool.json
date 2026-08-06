@@ -1,0 +1,83 @@
+{
+  "id": "delegate",
+  "summary": "Hand a bounded task to a local model that drives the sidecar's own Observe verbs through the governed seam, returning a distilled answer plus the full trail. Offloads grunt work from the calling agent.",
+  "category": "model",
+  "authority": "Apply",
+  "operates_on": "project",
+  "writes": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/delegate/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "task": {
+        "type": "string",
+        "description": "what the local model should find out"
+      },
+      "model": {
+        "type": "string",
+        "description": "local model (default: SUITE_DELEGATE_MODEL or qwen2.5:7b)"
+      },
+      "allow": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "tool allowlist (default: Observe-only repo_search/glob/read_file/file_tree/diff; `delegate` is never allowed)"
+      },
+      "max_steps": {
+        "type": "integer",
+        "default": 6,
+        "description": "tool-call budget (cap 12)"
+      },
+      "evidence": {
+        "type": "boolean",
+        "description": "attach the answer + trail to the Bag of Evidence"
+      },
+      "apply": {
+        "type": "boolean",
+        "description": "run it (else preview the task, model, allowlist and budget)"
+      },
+      "allow_apply": {
+        "type": "boolean",
+        "default": false,
+        "description": "deliberately permit non-Observe (write/exec) tools in the allowlist; refused otherwise"
+      }
+    },
+    "required": [
+      "task"
+    ]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "dry_run": {
+        "type": "boolean"
+      },
+      "ran": {
+        "type": "boolean"
+      },
+      "complete": {
+        "type": "boolean"
+      },
+      "answer": {
+        "type": "string"
+      },
+      "used_steps": {
+        "type": "integer"
+      },
+      "steps": {
+        "type": "array",
+        "description": "the trail: each tool call, args, ok, and a capped observation"
+      },
+      "evidence_id": {
+        "type": "string"
+      }
+    }
+  }
+}

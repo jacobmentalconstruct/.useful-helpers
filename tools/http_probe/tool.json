@@ -1,0 +1,37 @@
+{
+  "id": "http_probe",
+  "summary": "GET/HEAD a URL (localhost by default): status, headers, capped body snippet, elapsed ms  -  server verification through the governed seam, without a browser.",
+  "category": "operations",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/http_probe/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "url": { "type": "string", "description": "URL to probe (scheme defaults to http://)" },
+      "method": { "type": "string", "enum": ["GET", "HEAD"], "default": "GET" },
+      "timeout_s": { "type": "integer", "default": 10, "description": "max seconds (cap 60)" },
+      "allow_remote": { "type": "boolean", "description": "permit non-localhost hosts" }
+    },
+    "required": ["url"]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "status": { "type": "integer" },
+      "elapsed_ms": { "type": "integer" },
+      "headers": { "type": "object" },
+      "body_snippet": { "type": "string" },
+      "body_truncated": { "type": "boolean" }
+    }
+  },
+  "provenance": {
+    "donor": "none",
+    "treatment": "NEW",
+    "note": "Field report B2/B3: local-server verification needed a browser MCP for what is mostly 'is it up, what did it return'. Deliberately a probe, not a browser."
+  }
+}

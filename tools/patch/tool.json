@@ -1,0 +1,74 @@
+{
+  "id": "patch",
+  "summary": "Surgical indentation-aware patching via JSON hunks (search/replace blocks); dry-run validate; preview by default.",
+  "category": "text",
+  "authority": "Apply",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/patch/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": [
+          "apply",
+          "validate"
+        ],
+        "default": "apply"
+      },
+      "patch": {
+        "type": "object",
+        "description": "{ hunks: [ { search_block, replace_block, use_patch_indent? } ] }"
+      },
+      "patch_json": {
+        "type": "string",
+        "description": "patch as a JSON string (if not passing 'patch')"
+      },
+      "text": {
+        "type": "string",
+        "description": "inline text to patch"
+      },
+      "path": {
+        "type": "string",
+        "description": "file to patch (used if 'text' absent)"
+      },
+      "write": {
+        "type": "boolean",
+        "description": "write back to path (else preview)"
+      },
+      "force_indent": {
+        "type": "boolean",
+        "description": "use the patch's literal indentation (strict)"
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "changed": {
+        "type": "boolean"
+      },
+      "hunks": {
+        "type": "integer"
+      },
+      "valid": {
+        "type": "boolean"
+      },
+      "written": {
+        "type": "boolean"
+      },
+      "result": {
+        "type": "string"
+      },
+      "preview": {
+        "type": "string"
+      }
+    }
+  }
+}

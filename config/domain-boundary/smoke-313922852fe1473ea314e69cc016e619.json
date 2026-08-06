@@ -1,0 +1,1 @@
+{"name": "Smoke layered architecture", "layers": {"cli": "adapter", "web": "adapter", "services": "application", "domain": "domain"}, "allowed_edges": ["adapter->application", "application->domain"]}

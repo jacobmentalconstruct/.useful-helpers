@@ -1,0 +1,62 @@
+{
+  "id": "smoke_runner",
+  "summary": "Discover or run smoke_test.py files and aggregate pass/fail results.",
+  "category": "testing",
+  "authority": "Sandbox",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/smoke_runner/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "description": "workspace-relative root"
+      },
+      "targets": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "specific smoke files relative to root"
+      },
+      "timeout_seconds": {
+        "type": "integer",
+        "default": 30
+      },
+      "stop_on_failure": {
+        "type": "boolean",
+        "default": false
+      },
+      "discovery_limit": {
+        "type": "integer",
+        "default": 25
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "tests_run": {
+        "type": "integer"
+      },
+      "passed": {
+        "type": "integer"
+      },
+      "failed": {
+        "type": "integer"
+      },
+      "summary": {
+        "type": "object"
+      },
+      "results": {
+        "type": "array"
+      }
+    }
+  }
+}

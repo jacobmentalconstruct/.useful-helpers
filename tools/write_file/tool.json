@@ -1,0 +1,34 @@
+{
+  "id": "write_file",
+  "summary": "Create or overwrite a file (preview-first). The sanctioned, audited way to write into the work target.",
+  "category": "text",
+  "authority": "Apply",
+  "operates_on": "project",
+  "writes": "target",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/write_file/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "path": { "type": "string", "description": "file path (relative to the work target, or absolute within the roots)" },
+      "content": { "type": "string", "description": "the full file contents to write" },
+      "overwrite": { "type": "boolean", "default": true, "description": "false = create-only; refuse if the file exists" },
+      "write": { "type": "boolean", "default": false },
+      "apply": { "type": "boolean", "description": "execute for real (equivalent to write:true)" }
+    },
+    "required": ["path", "content"]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "path": { "type": "string" },
+      "bytes": { "type": "integer" },
+      "exists": { "type": "boolean" },
+      "dry_run": { "type": "boolean" },
+      "written": { "type": "boolean" }
+    }
+  }
+}

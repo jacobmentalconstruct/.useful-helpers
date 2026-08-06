@@ -1,0 +1,5 @@
+Parts-bin reference app: _GitPUSHER
+Source in this bundle:   ../../_PARTS-FOR-PLANS/_GitPUSHER/
+Contract:                GIT_PUSHER_TOOL_CONTRACT.md
+Review journal:          0006-git-pusher-tool-contract-review.md
+Adapter:                 adapter-git_pusher.py

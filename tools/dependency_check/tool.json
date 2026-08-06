@@ -1,0 +1,34 @@
+{
+  "id": "dependency_check",
+  "summary": "Check dependency declaration and runtime readiness without installing anything.",
+  "category": "introspection",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/dependency_check/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "description": "workspace-relative project root"
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "declarations": {
+        "type": "object"
+      },
+      "host": {
+        "type": "object"
+      }
+    }
+  }
+}

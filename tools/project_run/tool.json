@@ -1,0 +1,44 @@
+{
+  "id": "project_run",
+  "summary": "THE governed executor: run any command (explicit string, or a command_profile id) with cwd confined to the roots, bounded timeout, capped output, and a failure classification. The audited replacement for ad-hoc shell.",
+  "category": "operations",
+  "authority": "Apply",
+  "operates_on": "project",
+  "writes": "target",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/project_run/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "command": { "type": "string", "description": "explicit command line to run (shell)" },
+      "profile": { "type": "string", "description": "a command id or kind detected by command_profile (e.g. 'smoke', 'test')" },
+      "cwd": { "type": "string", "description": "working directory (default: the project root)" },
+      "timeout_s": { "type": "integer", "default": 120, "description": "max seconds (cap 600)" },
+      "dry_run": { "type": "boolean", "default": true },
+      "apply": { "type": "boolean", "description": "execute for real (universal confirm)" },
+      "evidence": { "type": "boolean", "description": "attach the outcome to the Bag of Evidence" }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "would_run": { "type": "string" },
+      "command": { "type": "string" },
+      "cwd": { "type": "string" },
+      "exit_code": { "type": "integer" },
+      "classification": { "type": "string", "description": "ok | nonzero_exit | command_not_found | not_executable | timeout" },
+      "duration_ms": { "type": "integer" },
+      "stdout_tail": { "type": "string" },
+      "stderr_tail": { "type": "string" },
+      "evidence_id": { "type": "string" }
+    }
+  },
+  "provenance": {
+    "donor": "none",
+    "treatment": "NEW",
+    "note": "Field report B1: the highest-impact agent actions (running the project's toolchain) happened outside the governed seam, un-audited. This closes that blind spot."
+  }
+}

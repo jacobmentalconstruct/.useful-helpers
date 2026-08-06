@@ -1,0 +1,67 @@
+{
+  "id": "file_tree",
+  "summary": "Snapshot the project file tree (dirs/files) with kind/ext filters and ignore pruning.",
+  "category": "introspection",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/file_tree/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "description": "root to walk (default: cwd = project root)"
+      },
+      "kind": {
+        "type": "string",
+        "enum": [
+          "file",
+          "directory"
+        ],
+        "description": "optional kind filter"
+      },
+      "ext": {
+        "type": "string",
+        "description": "optional file extension filter, e.g. '.py' or 'py'"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 1000,
+        "description": "max rows returned"
+      },
+      "ignore": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "extra dir names to prune"
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "root": {
+        "type": "string"
+      },
+      "total_returned": {
+        "type": "integer"
+      },
+      "truncated": {
+        "type": "boolean"
+      },
+      "by_kind": {
+        "type": "object"
+      },
+      "rows": {
+        "type": "array"
+      }
+    }
+  }
+}

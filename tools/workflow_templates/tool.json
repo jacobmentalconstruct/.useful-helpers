@@ -1,0 +1,43 @@
+{
+  "id": "workflow_templates",
+  "summary": "List, show, or render deterministic workflow templates.",
+  "category": "memory-workflow",
+  "authority": "Observe",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/workflow_templates/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "default": "list"
+      },
+      "id": {
+        "type": "string"
+      },
+      "path": {
+        "type": "string"
+      },
+      "variables": {
+        "type": "object"
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "templates": {
+        "type": "array"
+      },
+      "template": {
+        "type": "object"
+      }
+    }
+  }
+}

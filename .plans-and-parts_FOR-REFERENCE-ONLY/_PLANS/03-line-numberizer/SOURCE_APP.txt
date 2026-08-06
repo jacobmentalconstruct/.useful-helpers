@@ -1,0 +1,5 @@
+Parts-bin reference app: _LineNUMBERIZER
+Source in this bundle:   ../../_PARTS-FOR-PLANS/_LineNUMBERIZER/
+Contract:                LINE_NUMBERIZER_TOOL_CONTRACT.md
+Review journal:          0005-line-numberizer-tool-contract-review.md
+Adapter:                 adapter-line_numberizer.py

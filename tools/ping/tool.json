@@ -1,0 +1,40 @@
+{
+  "id": "ping",
+  "summary": "Echo a message and report the runtime the control plane invoked the tool under.",
+  "category": "introspection",
+  "authority": "Observe",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/ping/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "message": {
+        "type": "string",
+        "description": "text to echo back"
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "echo": {
+        "type": "string"
+      },
+      "python": {
+        "type": "string"
+      },
+      "platform": {
+        "type": "string"
+      },
+      "cwd": {
+        "type": "string"
+      }
+    }
+  }
+}

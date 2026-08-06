@@ -1,0 +1,57 @@
+{
+  "id": "repo_search",
+  "summary": "Structured repository text search with rg fast path and Python fallback.",
+  "category": "introspection",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/repo_search/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "description": "workspace-relative directory to search"
+      },
+      "query": {
+        "type": "string",
+        "description": "literal search text"
+      },
+      "glob": {
+        "type": "string",
+        "default": "*",
+        "description": "file glob, e.g. *.py"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 50
+      },
+      "case_sensitive": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "required": [
+      "query"
+    ]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "engine": {
+        "type": "string"
+      },
+      "count": {
+        "type": "integer"
+      },
+      "matches": {
+        "type": "array"
+      }
+    }
+  }
+}

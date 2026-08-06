@@ -1,0 +1,53 @@
+{
+  "id": "edit",
+  "summary": "Find/replace on text or a file  -  regex or literal  -  with an expected-count guard; preview by default, writes only with write:true (or apply:true).",
+  "category": "text",
+  "authority": "Apply",
+  "operates_on": "project",
+  "writes": "target",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/edit/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "pattern": { "type": "string", "description": "regex pattern, or exact string when literal:true (required)" },
+      "replacement": { "type": "string", "description": "replacement string (required)" },
+      "text": { "type": "string", "description": "inline text to edit" },
+      "path": { "type": "string", "description": "file to edit (used if 'text' absent); confined to the roots" },
+      "literal": { "type": "boolean", "default": false, "description": "match an exact string, not a regex" },
+      "expected_replacements": { "type": "integer", "description": "refuse unless exactly this many matches are found (the safety belt)" },
+      "write": { "type": "boolean", "description": "write back to path (else preview only)" },
+      "apply": { "type": "boolean", "description": "execute for real (equivalent to write:true)" },
+      "count": { "type": "integer", "default": 0, "description": "max replacements (0 = all)" },
+      "ignorecase": { "type": "boolean" },
+      "multiline": { "type": "boolean" },
+      "dotall": { "type": "boolean" }
+    },
+    "required": [
+      "pattern",
+      "replacement"
+    ]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "replacements": {
+        "type": "integer"
+      },
+      "changed": {
+        "type": "boolean"
+      },
+      "written": {
+        "type": "boolean"
+      },
+      "result": {
+        "type": "string"
+      }
+    }
+  }
+}

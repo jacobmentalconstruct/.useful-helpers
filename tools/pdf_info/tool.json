@@ -1,0 +1,46 @@
+{
+  "id": "pdf_info",
+  "summary": "Report PDF page count, metadata, page boxes, rotations, and file size.",
+  "category": "pdf",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/pdf_info/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 20
+      }
+    },
+    "required": [
+      "path"
+    ]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "page_count": {
+        "type": "integer"
+      },
+      "pages": {
+        "type": "array"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

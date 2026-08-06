@@ -1,0 +1,55 @@
+{
+  "id": "bd_scribe",
+  "summary": "Dry-run-first ingestion of emitted BD nodes into a workspace-local SQLite graph DB.",
+  "category": "bd-graph",
+  "authority": "Apply",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/bd_scribe/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": [
+          "ingest",
+          "status"
+        ],
+        "default": "ingest"
+      },
+      "db": {
+        "type": "string"
+      },
+      "nodes": {
+        "type": "array"
+      },
+      "nodes_path": {
+        "type": "string"
+      },
+      "dry_run": {
+        "type": "boolean",
+        "default": true
+      },
+      "confirm": {
+        "type": "boolean",
+        "default": false
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "status": {
+        "type": "object"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

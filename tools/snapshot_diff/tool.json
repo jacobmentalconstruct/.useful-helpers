@@ -1,0 +1,50 @@
+{
+  "id": "snapshot_diff",
+  "summary": "Compare two ProjectMapper snapshots by captured file paths and content hashes.",
+  "category": "packaging",
+  "authority": "Observe",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/snapshot_diff/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "left": {
+        "type": "string"
+      },
+      "right": {
+        "type": "string"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 200
+      }
+    },
+    "required": [
+      "left",
+      "right"
+    ]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "summary": {
+        "type": "object"
+      },
+      "added": {
+        "type": "array"
+      },
+      "removed": {
+        "type": "array"
+      },
+      "modified": {
+        "type": "array"
+      }
+    }
+  }
+}

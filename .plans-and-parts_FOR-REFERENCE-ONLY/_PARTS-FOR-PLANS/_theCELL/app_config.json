@@ -1,0 +1,7 @@
+{
+    "window_geometry": "1200x942",
+    "theme_preference": "Dark",
+    "last_model": "qwen3.5:4b",
+    "last_system_role": "You are an expert python coder.",
+    "last_system_prompt": "Please diagnose theis runtime error in the file below:\n  File \"C:\\Users\\jacob\\Documents\\_UsefulAgenticBuilderSANDBOX\\Claude-Code\\_ai\\_training\\trainer_ui.py\", line 272, in <module>\n    model_menu.grid(row=0, column=1, columnspan=7, sticky=W+X, padx=(0, 10))\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Python313\\Lib\\tkinter\\__init__.py\", line 2693, in grid_configure\n    self.tk.call(\n    ~~~~~~~~~~~~^\n          ('grid', 'configure', self._w)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n          + self._options(cnf, kw))\n          ^^^^^^^^^^^^^^^^^^^^^^^^^\n_tkinter.TclError: bad stickyness value \"wx\": must be a string containing n, e, s, and/or w"
+}

@@ -1,0 +1,61 @@
+{
+  "id": "constraint_query",
+  "summary": "Filter extracted constraints by query terms, tags, and severity.",
+  "category": "prompt-eval",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/constraint_query/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "constraints": {
+        "type": "array"
+      },
+      "text": {
+        "type": "string"
+      },
+      "path": {
+        "type": "string"
+      },
+      "paths": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "query": {
+        "type": "string"
+      },
+      "tags": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "severity": {
+        "type": "string"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 50
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "matches": {
+        "type": "array"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

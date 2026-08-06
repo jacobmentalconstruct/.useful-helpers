@@ -1,0 +1,65 @@
+{
+  "id": "artifact_cleaner",
+  "summary": "Dry-run-first cleanup of allowlisted generated runtime artifacts with tracked-file protection.",
+  "category": "cleanup",
+  "authority": "Apply",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/artifact_cleaner/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "description": "workspace-relative project root"
+      },
+      "dry_run": {
+        "type": "boolean",
+        "default": true
+      },
+      "confirm": {
+        "type": "boolean",
+        "default": false
+      },
+      "allow_tracked": {
+        "type": "boolean",
+        "default": false
+      },
+      "include_patterns": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "max_candidates": {
+        "type": "integer",
+        "default": 500
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "candidate_count": {
+        "type": "integer"
+      },
+      "removed_count": {
+        "type": "integer"
+      },
+      "blocked_count": {
+        "type": "integer"
+      },
+      "failed_count": {
+        "type": "integer"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

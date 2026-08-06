@@ -1,0 +1,79 @@
+{
+  "domain": "python-app",
+  "summary": "A Python application or library.",
+  "detect": {
+    "markers": {
+      "pyproject.toml": 10,
+      "setup.py": 8,
+      "setup.cfg": 5,
+      "requirements.txt": 5,
+      "Pipfile": 5,
+      "tox.ini": 3,
+      "manage.py": 8
+    },
+    "extensions": {
+      ".py": 1,
+      ".pyi": 1
+    }
+  },
+  "entry_hints": [
+    "main.py",
+    "app.py",
+    "cli.py",
+    "__main__.py",
+    "manage.py",
+    "wsgi.py",
+    "asgi.py"
+  ],
+  "mounted": [
+    "file_tree",
+    "repo_search",
+    "report",
+    "import_graph",
+    "complexity_score",
+    "module_decomp_plan",
+    "symbol_graph",
+    "dead_code",
+    "secret_audit",
+    "command_profile",
+    "dependency_check",
+    "dep_install",
+    "git_inspect",
+    "project_run",
+    "smoke_runner",
+    "journal",
+    "evidence",
+    "edit",
+    "patch"
+  ],
+  "policy": {
+    "dead_code": {
+      "confidence": "low",
+      "note": "Reachability over the resolved graph: high = unreachable under every modelled assumption (incl. dead clusters); medium = alive only if dynamic dispatch occurs. Verify before deleting - reflection and string registries are not modelled.",
+      "tool_args": {
+        "entrypoint_decorators": [
+          "task",
+          "job",
+          "step",
+          "handler",
+          "hookimpl",
+          "listener",
+          "subscribe",
+          "schedule"
+        ]
+      }
+    },
+    "blocking_call_scan": {
+      "confidence": "low",
+      "note": "Cannot distinguish async def from sync context. Not mounted by default for this reason."
+    },
+    "domain_boundary_audit": {
+      "confidence": "none-without-policy",
+      "note": "Requires a project-supplied layer map. Not mounted until one exists."
+    },
+    "symbol_graph": {
+      "confidence": "high",
+      "note": "Resolved edges, not name matches. Use refs before deleting or renaming anything - inbound is the real caller list. The honesty ledger bounds what 'no references' proves."
+    }
+  }
+}

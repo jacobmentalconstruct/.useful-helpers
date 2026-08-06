@@ -1,0 +1,75 @@
+{
+  "id": "tempserver",
+  "summary": "Build a self-contained static project viewer and return a ready-to-run serve command.",
+  "category": "packaging",
+  "authority": "Apply",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/tempserver/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "out_dir": {
+        "type": "string"
+      },
+      "port": {
+        "type": "integer",
+        "default": 8765
+      },
+      "include": {
+        "type": "array"
+      },
+      "exclude": {
+        "type": "array"
+      },
+      "max_bytes": {
+        "type": "integer",
+        "default": 12000
+      },
+      "limit": {
+        "type": "integer",
+        "default": 300
+      },
+      "dry_run": {
+        "type": "boolean",
+        "default": true
+      },
+      "confirm": {
+        "type": "boolean",
+        "default": false
+      },
+      "overwrite": {
+        "type": "boolean",
+        "default": false
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "url": {
+        "type": "string"
+      },
+      "serve_command": {
+        "type": "string"
+      },
+      "written": {
+        "type": "array"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

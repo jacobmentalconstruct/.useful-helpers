@@ -1,0 +1,74 @@
+{
+  "id": "linenumber",
+  "summary": "Annotate text with parseable line numbers, strip them, or emit a line->hash integrity map.",
+  "category": "text",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/linenumber/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": [
+          "annotate",
+          "strip",
+          "map"
+        ],
+        "default": "annotate"
+      },
+      "text": {
+        "type": "string",
+        "description": "inline text to process"
+      },
+      "path": {
+        "type": "string",
+        "description": "file to process (used if 'text' absent)"
+      },
+      "style": {
+        "type": "string",
+        "enum": [
+          "pipe",
+          "colon",
+          "bracket"
+        ],
+        "default": "pipe"
+      },
+      "start": {
+        "type": "integer",
+        "default": 1
+      },
+      "width": {
+        "type": "integer",
+        "default": 0,
+        "description": "min number width (auto if 0)"
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "action": {
+        "type": "string"
+      },
+      "total_lines": {
+        "type": "integer"
+      },
+      "numbered": {
+        "type": "string"
+      },
+      "stripped": {
+        "type": "string"
+      },
+      "lines": {
+        "type": "array"
+      }
+    }
+  }
+}

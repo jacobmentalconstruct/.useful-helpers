@@ -1,0 +1,29 @@
+{
+  "domain": "records-research",
+  "summary": "A body of documents -- case files, records, reports, correspondence.",
+  "detect": {
+    "markers": {},
+    "extensions": {
+      ".pdf": 3, ".docx": 2, ".doc": 2, ".rtf": 1, ".txt": 0.5,
+      ".eml": 2, ".msg": 2, ".odt": 1
+    }
+  },
+  "entry_hints": [],
+  "mounted": [
+    "file_tree", "repo_search",
+    "pdf_info", "pdf_extract", "pdf_split", "pdf_merge", "pdf_thumbnails",
+    "semantic_chunk", "rag_retrieve", "report",
+    "secret_audit", "snapshot_verify",
+    "journal", "evidence"
+  ],
+  "policy": {
+    "evidence": {
+      "confidence": "high",
+      "note": "Content-addressed. In case/forensic work every claim should be anchored to a stored, re-hashable body -- this is the tool that does it."
+    },
+    "secret_audit": {
+      "confidence": "high",
+      "note": "Record bodies routinely carry PII. Screen before export."
+    }
+  }
+}

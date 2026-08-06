@@ -1,0 +1,43 @@
+{
+  "id": "git_inspect",
+  "summary": "Read-only git inspection: status, branches, log, ls-files, diff (stat/unified), grep, check-ignore  -  the verbs for reasoning about a repo through the governed seam.",
+  "category": "git",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/git_inspect/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": { "type": "string", "enum": ["status", "branches", "log", "ls-files", "diff", "grep", "check-ignore"], "default": "status" },
+      "repo": { "type": "string", "description": "repo path (default: the project root)" },
+      "n": { "type": "integer", "default": 20, "description": "log: max entries (cap 200)" },
+      "path": { "type": "string", "description": "scope log/ls-files/diff/grep to a path" },
+      "paths": { "type": "array", "items": { "type": "string" }, "description": "check-ignore: paths to test" },
+      "pattern": { "type": "string", "description": "grep: the search pattern" },
+      "ref": { "type": "string", "description": "diff: compare against this ref" },
+      "cached": { "type": "boolean", "description": "diff/grep: staged content" },
+      "format": { "type": "string", "enum": ["stat", "unified"], "default": "stat", "description": "diff output format" }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "branch": { "type": "string" },
+      "clean": { "type": "boolean" },
+      "lines": { "type": "array" },
+      "entries": { "type": "array" },
+      "diff": { "type": "string" },
+      "ignored": { "type": "object" },
+      "truncated": { "type": "boolean" }
+    }
+  },
+  "provenance": {
+    "donor": "none",
+    "treatment": "NEW",
+    "note": "Field report B4: the quick-push `git` tool (Apply) exposes no inspection verbs, forcing agents to native git outside the seam. Observe authority so a clamped ceiling still permits reads."
+  }
+}

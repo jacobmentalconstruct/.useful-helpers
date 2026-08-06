@@ -1,0 +1,47 @@
+# Line-ending policy.
+#
+# Without this file, the repository has no normalization policy: Windows and
+# Linux each write their own convention and the other platform sees every line
+# of every file as changed. That produced 631 phantom "modified" files with zero
+# actual content difference - noise that makes `git status` useless and hides
+# real changes.
+#
+# `text=auto` lets git detect text files and store them with LF in the object
+# database, checking them out in the platform's native convention.
+
+* text=auto
+
+# --- files that MUST keep CRLF (Windows refuses to run them otherwise) ---
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+
+# --- files that MUST keep LF ---
+*.sh    text eol=lf
+
+# --- binary: never normalize, never diff as text ---
+*.png   binary
+*.ico   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.pdf   binary
+*.zip   binary
+*.gz    binary
+*.tar   binary
+*.7z    binary
+*.exe   binary
+*.dll   binary
+*.pyd   binary
+*.so    binary
+*.pfx   binary
+*.p12   binary
+*.sqlite3 binary
+*.db    binary
+*.npy   binary
+*.npz   binary
+*.gguf  binary
+*.safetensors binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary

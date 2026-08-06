@@ -1,0 +1,31 @@
+{
+  "id": "workspace_audit",
+  "summary": "Audit workspace boundaries, donor/runtime folders, and control-plane surfaces.",
+  "category": "introspection",
+  "authority": "Observe",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/workspace_audit/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "description": "workspace-relative directory to audit"
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "surfaces": {
+        "type": "array"
+      }
+    }
+  }
+}

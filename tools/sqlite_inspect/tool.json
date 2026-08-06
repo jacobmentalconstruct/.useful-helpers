@@ -1,0 +1,42 @@
+{
+  "id": "sqlite_inspect",
+  "summary": "Inspect SQLite schema, tables, indexes, counts, and optional sample rows.",
+  "category": "introspection",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/sqlite_inspect/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "db": {
+        "type": "string",
+        "description": "workspace-local SQLite database path"
+      },
+      "include_samples": {
+        "type": "boolean",
+        "default": false
+      },
+      "sample_limit": {
+        "type": "integer",
+        "default": 3
+      }
+    },
+    "required": [
+      "db"
+    ]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "tables": {
+        "type": "array"
+      }
+    }
+  }
+}

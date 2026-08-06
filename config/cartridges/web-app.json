@@ -1,0 +1,33 @@
+{
+  "domain": "web-app",
+  "summary": "A JavaScript/TypeScript web application or front-end.",
+  "detect": {
+    "markers": {
+      "package.json": 10,
+      "tsconfig.json": 6,
+      "vite.config.ts": 5,
+      "vite.config.js": 5,
+      "next.config.js": 6,
+      "webpack.config.js": 4,
+      "index.html": 3
+    },
+    "extensions": { ".ts": 1, ".tsx": 1, ".js": 1, ".jsx": 1, ".vue": 1, ".svelte": 1, ".css": 0.5 }
+  },
+  "entry_hints": ["index.html", "src/main.ts", "src/main.js", "src/index.tsx", "app/page.tsx"],
+  "mounted": [
+    "file_tree", "repo_search", "report", "secret_audit", "command_profile",
+    "dependency_check", "git_inspect", "project_run", "dev_server_manager",
+    "http_probe", "tempserver", "fetch",
+    "journal", "evidence", "edit", "patch"
+  ],
+  "policy": {
+    "report": {
+      "confidence": "medium",
+      "note": "Structural extraction is Python-AST based; JS/TS files yield shallow results. Use file_tree + repo_search for shape until a JS parser exists."
+    },
+    "import_graph": {
+      "confidence": "none",
+      "note": "Python-only. Not mounted; it would silently report an empty graph."
+    }
+  }
+}

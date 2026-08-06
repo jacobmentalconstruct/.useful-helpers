@@ -1,0 +1,48 @@
+{
+  "id": "complexity_score",
+  "summary": "Rank Python functions/classes/modules by simple AST complexity and size hotspots.",
+  "category": "code-intel",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/complexity_score/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "description": "workspace-relative root"
+      },
+      "max_files": {
+        "type": "integer",
+        "default": 500
+      },
+      "limit": {
+        "type": "integer",
+        "default": 25
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "summary": {
+        "type": "object"
+      },
+      "hotspots": {
+        "type": "array"
+      },
+      "module_hotspots": {
+        "type": "array"
+      },
+      "parse_errors": {
+        "type": "array"
+      }
+    }
+  }
+}

@@ -1,0 +1,263 @@
+"""
+FILE:       packaging/installer/install.py
+ROLE:       Friendly sidecar installer - pick a project folder, confirm, drop in .useful-helpers/.
+DOMAIN:     packaging (ships NEXT TO the product zip, not inside it)
+DOES:       GUI path: a folder picker chooses the target project; an HITL dialog confirms; if a
+            sidecar already exists it offers Reinstall (wipe) / Update (keep memory) / Cancel.
+            Then it installs a clean copy of the toolkit into <target>/.useful-helpers/ and nothing
+            else. Headless path (--target/--mode): the same install LOGIC with no GUI, so it is
+            testable and scriptable.
+DEPENDS ON: (stdlib only) argparse, os, shutil, sys, tempfile, zipfile, pathlib; tkinter for GUI.
+WIRES TO:   assembled by the installer package (installer.bat / installer.sh call this); the
+            payload is a sibling `useful-helpers-toolkit/` folder or `useful-helpers-toolkit.zip`.
+NOTES:      Self-contained BY DESIGN: it runs on a fresh machine with only stdlib Python, and it
+            copies rather than depending on the toolkit being runnable yet. It upholds the precept
+            mechanically - it writes exactly ONE directory (<target>/.useful-helpers) and refuses
+            any overlap between the payload and the target. GUI and logic are split so the health
+            path can be proven without a display (the same pattern as the toolkit's ui-probe).
+"""
+from __future__ import annotations
+
+import argparse
+import shutil
+import sys
+import tempfile
+import zipfile
+from pathlib import Path
+
+SIDECAR_DIR = ".useful-helpers"
+PAYLOAD_FOLDER = "useful-helpers-toolkit"
+PAYLOAD_ZIP = "useful-helpers-toolkit.zip"
+# Defensive: the vended zip is already clean, but never carry these into a target regardless.
+EXCLUDES = ("__pycache__", ".venv", "venv", ".pytest_cache", ".ruff_cache",
+            "_artifacts", "_state", ".git", "*.pyc", "*.pyo")
+_STATE = "_state"
+
+
+# ---------------------------------------------------------------- payload resolution
+def resolve_payload(here: Path) -> "tuple[Path | None, Path | None, str]":
+    """Find the toolkit to install. Returns (payload_dir, temp_to_cleanup, error).
+
+    Prefers a sibling `useful-helpers-toolkit/` folder; falls back to unzipping
+    `useful-helpers-toolkit.zip` into a temp dir. The zip may wrap the tree in a top folder, so
+    we descend to the directory that actually contains `src/`.
+    """
+    folder = here / PAYLOAD_FOLDER
+    if folder.is_dir() and (folder / "src").is_dir():
+        return folder, None, ""
+    zip_path = here / PAYLOAD_ZIP
+    if zip_path.is_file():
+        tmp = Path(tempfile.mkdtemp(prefix="uh-payload-"))
+        try:
+            with zipfile.ZipFile(zip_path) as zf:
+                zf.extractall(tmp)
+        except (OSError, zipfile.BadZipFile) as e:
+            shutil.rmtree(tmp, ignore_errors=True)
+            return None, None, f"could not unpack {PAYLOAD_ZIP}: {e}"
+        root = _find_toolkit_root(tmp)
+        if root is None:
+            shutil.rmtree(tmp, ignore_errors=True)
+            return None, None, f"{PAYLOAD_ZIP} does not contain a toolkit (no src/ found)"
+        return root, tmp, ""
+    return None, None, (f"no payload found next to the installer: expected a "
+                        f"'{PAYLOAD_FOLDER}/' folder or '{PAYLOAD_ZIP}'")
+
+
+def _find_toolkit_root(base: Path) -> "Path | None":
+    if (base / "src").is_dir():
+        return base
+    for child in sorted(base.iterdir()):
+        if child.is_dir() and (child / "src").is_dir():
+            return child
+    return None
+
+
+# ---------------------------------------------------------------- install logic (headless-safe)
+def sidecar_status(target: Path) -> str:
+    """'new' if no sidecar, 'exists' if one is already installed at <target>/.useful-helpers."""
+    return "exists" if (target / SIDECAR_DIR).is_dir() else "new"
+
+
+def validate(target: Path, payload: Path) -> str:
+    """Precept + safety guardrails. Returns '' if OK, else a reason to refuse."""
+    if not target.is_dir():
+        return f"target is not a directory: {target}"
+    dest = (target / SIDECAR_DIR).resolve()
+    pay = payload.resolve()
+    # The one directory we write must not overlap the source we read.
+    if pay == dest or _within(pay, dest) or _within(dest, pay):
+        return "refusing to install: the target overlaps the installer payload"
+    return ""
+
+
+def _within(inner: Path, outer: Path) -> bool:
+    try:
+        inner.relative_to(outer)
+        return True
+    except ValueError:
+        return False
+
+
+def _ignore(_dir, names):
+    out = set()
+    for n in names:
+        if n in EXCLUDES:
+            out.add(n)
+        elif n.endswith((".pyc", ".pyo")):
+            out.add(n)
+    return out
+
+
+def install(payload: Path, target: Path, mode: str) -> dict:
+    """Do the install. mode: install (new) | reinstall (wipe) | update (keep memory).
+    Writes exactly one directory: <target>/.useful-helpers."""
+    err = validate(target, payload)
+    if err:
+        return {"ok": False, "error": err}
+    dest = target / SIDECAR_DIR
+    exists = dest.is_dir()
+
+    if exists and mode == "install":
+        return {"ok": False, "error": "a sidecar already exists here; "
+                "choose reinstall (wipe) or update (keep memory)", "status": "exists"}
+    if not exists and mode in ("reinstall", "update"):
+        mode = "install"  # nothing to replace; treat as a fresh install
+
+    preserved = None
+    try:
+        if mode == "update" and (dest / _STATE).is_dir():
+            preserved = Path(tempfile.mkdtemp(prefix="uh-state-"))
+            shutil.move(str(dest / _STATE), str(preserved / _STATE))
+        if exists and mode in ("reinstall", "update"):
+            shutil.rmtree(dest, ignore_errors=True)
+
+        shutil.copytree(payload, dest, ignore=_ignore)
+
+        if preserved is not None:
+            if (dest / _STATE).exists():
+                shutil.rmtree(dest / _STATE, ignore_errors=True)
+            shutil.move(str(preserved / _STATE), str(dest / _STATE))
+    finally:
+        if preserved is not None:
+            shutil.rmtree(preserved, ignore_errors=True)
+
+    file_count = sum(1 for _ in dest.rglob("*") if _.is_file())
+    return {"ok": True, "mode": mode, "sidecar": dest.as_posix(),
+            "file_count": file_count,
+            "memory_preserved": mode == "update",
+            "next": f"cd {target}  ->  python .useful-helpers/src/app.py cli tool-list"}
+
+
+# ---------------------------------------------------------------- GUI (Tkinter)
+def _gui_flow(payload: Path) -> dict:
+    import tkinter as tk
+    from tkinter import filedialog, messagebox
+
+    root = tk.Tk()
+    root.withdraw()
+    try:
+        target_str = filedialog.askdirectory(title="Choose the project to install the sidecar into")
+        if not target_str:
+            return {"ok": False, "cancelled": True, "error": "no folder chosen"}
+        target = Path(target_str)
+
+        status = sidecar_status(target)
+        if status == "new":
+            if not messagebox.askokcancel(
+                    "Install sidecar",
+                    f"Install the Useful Helpers sidecar into:\n\n{target}\n\n"
+                    f"This creates one folder: {SIDECAR_DIR}\\ and changes nothing else."):
+                return {"ok": False, "cancelled": True, "error": "cancelled at confirm"}
+            mode = "install"
+        else:
+            mode = _existing_dialog(root, target)
+            if mode == "cancel":
+                return {"ok": False, "cancelled": True, "error": "cancelled at existing-sidecar"}
+
+        result = install(payload, target, mode)
+        if result["ok"]:
+            messagebox.showinfo("Done", f"Sidecar {result['mode']} complete.\n\n"
+                                f"{result['file_count']} files at:\n{result['sidecar']}"
+                                + ("\n\nExisting memory (journal/evidence) was kept."
+                                   if result.get("memory_preserved") else ""))
+        else:
+            messagebox.showerror("Install failed", result.get("error", "unknown error"))
+        return result
+    finally:
+        root.destroy()
+
+
+def _existing_dialog(root, target: Path) -> str:
+    """A 3-button HITL for an already-installed sidecar: Reinstall / Update / Cancel."""
+    import tkinter as tk
+
+    choice = {"v": "cancel"}
+    win = tk.Toplevel(root)
+    win.title("Sidecar already installed")
+    win.grab_set()
+    msg = (f"A sidecar already exists in:\n{target}\n\n"
+           "Reinstall  -  delete it and install a clean copy (its memory is lost).\n"
+           "Update     -  replace the code but KEEP its journal/evidence memory.\n"
+           "Cancel     -  do nothing.")
+    tk.Label(win, text=msg, justify="left", padx=16, pady=12).pack()
+    bar = tk.Frame(win)
+    bar.pack(pady=(0, 12))
+
+    def pick(v):
+        choice["v"] = v
+        win.destroy()
+
+    tk.Button(bar, text="Reinstall (wipe)", width=16,
+              command=lambda: pick("reinstall")).pack(side="left", padx=6)
+    tk.Button(bar, text="Update (keep memory)", width=18,
+              command=lambda: pick("update")).pack(side="left", padx=6)
+    tk.Button(bar, text="Cancel", width=10,
+              command=lambda: pick("cancel")).pack(side="left", padx=6)
+    win.wait_window()
+    return choice["v"]
+
+
+# ---------------------------------------------------------------- entry
+def main(argv: "list[str] | None" = None) -> int:
+    ap = argparse.ArgumentParser(description="Install the Useful Helpers sidecar into a project.")
+    ap.add_argument("--target", help="headless: the project directory to install into")
+    ap.add_argument("--mode", choices=["install", "reinstall", "update"], default="install",
+                    help="headless: install (new) | reinstall (wipe) | update (keep memory)")
+    ap.add_argument("--payload", help="headless: path to an unpacked toolkit (skips zip search)")
+    ns = ap.parse_args(argv)
+
+    here = Path(__file__).resolve().parent
+    if ns.payload:
+        payload, tmp, err = Path(ns.payload), None, ""
+        if not (payload / "src").is_dir():
+            err = f"--payload has no src/: {payload}"
+    else:
+        payload, tmp, err = resolve_payload(here)
+    if err:
+        print(f"ERROR: {err}", file=sys.stderr)
+        return 2
+
+    try:
+        if ns.target:  # headless
+            import json
+            result = install(payload, Path(ns.target), ns.mode)
+            print(json.dumps(result, indent=2))
+            return 0 if result["ok"] else 1
+        # GUI
+        try:
+            result = _gui_flow(payload)
+        except Exception as e:  # no display, tkinter missing, etc.
+            print(f"ERROR: GUI unavailable ({e}). Use --target <dir> for a headless install.",
+                  file=sys.stderr)
+            return 2
+        if result.get("cancelled"):
+            print("Cancelled.")
+            return 0
+        return 0 if result.get("ok") else 1
+    finally:
+        if tmp is not None:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

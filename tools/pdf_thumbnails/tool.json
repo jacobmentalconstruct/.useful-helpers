@@ -1,0 +1,59 @@
+{
+  "id": "pdf_thumbnails",
+  "summary": "Plan thumbnail pages and optionally render PNGs when PyMuPDF is installed.",
+  "category": "pdf",
+  "authority": "Apply",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/pdf_thumbnails/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string"
+      },
+      "pages": {
+        "type": "string",
+        "default": "all"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 12
+      },
+      "write": {
+        "type": "boolean",
+        "default": false
+      },
+      "confirm": {
+        "type": "boolean",
+        "default": false
+      },
+      "out_dir": {
+        "type": "string"
+      },
+      "zoom": {
+        "type": "number",
+        "default": 0.25
+      }
+    },
+    "required": [
+      "path"
+    ]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "thumbnails": {
+        "type": "array"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

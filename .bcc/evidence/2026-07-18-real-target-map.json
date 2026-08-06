@@ -1,0 +1,157 @@
+{
+  "target": "C:\\Jacob\\_AppDesign\\_SANDBOX\\.useful-helpers\\_harness\\targets\\_UsefulHelperSCRIPTS",
+  "generated_at": "2026-07-18T07:05:08-0500",
+  "domain": "python-app",
+  "domain_summary": "A Python application or library.",
+  "domain_scores": {
+    "data-curation": 0.138,
+    "generic": 0.0,
+    "python-app": 7.057,
+    "records-research": 0.288,
+    "web-app": 1.535
+  },
+  "composite": false,
+  "shape": {
+    "file_count": 869,
+    "dir_count": 266,
+    "top_extensions": [
+      {
+        "ext": ".py",
+        "count": 396
+      },
+      {
+        "ext": ".json",
+        "count": 166
+      },
+      {
+        "ext": ".md",
+        "count": 65
+      },
+      {
+        "ext": ".txt",
+        "count": 50
+      },
+      {
+        "ext": ".bat",
+        "count": 34
+      },
+      {
+        "ext": ".png",
+        "count": 29
+      },
+      {
+        "ext": ".sample",
+        "count": 14
+      },
+      {
+        "ext": ".exe",
+        "count": 13
+      }
+    ],
+    "truncated": false
+  },
+  "subsystems": [
+    {
+      "name": "_MicroserviceLIBRARY",
+      "file_count": 558,
+      "domain": "python-app",
+      "score": 10.448
+    },
+    {
+      "name": "_NoStringsPDF",
+      "file_count": 55,
+      "domain": "python-app",
+      "score": 7.909
+    },
+    {
+      "name": "_TextTOUCHER",
+      "file_count": 44,
+      "domain": "python-app",
+      "score": 5.455
+    },
+    {
+      "name": "_UsefulHelperScriptsMENU",
+      "file_count": 42,
+      "domain": "python-app",
+      "score": 6.19
+    },
+    {
+      "name": "_ProjectMAPPER",
+      "file_count": 41,
+      "domain": "python-app",
+      "score": 7.195
+    },
+    {
+      "name": "_UiMAPPER",
+      "file_count": 40,
+      "domain": "python-app",
+      "score": 13.75
+    },
+    {
+      "name": "_MonacoVIEWER",
+      "file_count": 17,
+      "domain": "python-app",
+      "score": 6.176
+    },
+    {
+      "name": "_TempServerMAKER",
+      "file_count": 16,
+      "domain": "python-app",
+      "score": 6.25
+    },
+    {
+      "name": "_GitPUSHER",
+      "file_count": 11,
+      "domain": "python-app",
+      "score": 6.818
+    },
+    {
+      "name": "sample",
+      "file_count": 11,
+      "domain": "python-app",
+      "score": 7.727
+    },
+    {
+      "name": "_LineNUMBERIZER",
+      "file_count": 10,
+      "domain": "python-app",
+      "score": 9.0
+    },
+    {
+      "name": "_TokenizingPATCHER",
+      "file_count": 9,
+      "domain": "python-app",
+      "score": 8.333
+    },
+    {
+      "name": "__dev-scripts__",
+      "file_count": 6,
+      "domain": "python-app",
+      "score": 10.0
+    },
+    {
+      "name": "_LoRA_TRAIN",
+      "file_count": 4,
+      "domain": null,
+      "score": null
+    }
+  ],
+  "subsystem_source": "top-level-dirs",
+  "subsystem_domains": {
+    "python-app": 13
+  },
+  "entry_points": [
+    "_GitPUSHER/src/app.py"
+  ],
+  "vcs": null,
+  "signature": {
+    "file_count": 869,
+    "newest_mtime": 1783513310.252
+  },
+  "limits": [
+    "Structural only: this map describes SHAPE, not MEANING.",
+    "No summaries, no embeddings, no semantic retrieval \u2014 nothing here was read by a model.",
+    "Subsystems are top-level directories, classified by the same cartridge scoring as the whole target. They are not semantically identified components.",
+    "Entry points are filename conventions from the cartridge, not verified entrypoints."
+  ]
+}

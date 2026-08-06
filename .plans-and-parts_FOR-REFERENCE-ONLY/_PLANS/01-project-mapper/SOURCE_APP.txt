@@ -1,0 +1,5 @@
+Parts-bin reference app: _ProjectMAPPER
+Source in this bundle:   ../../_PARTS-FOR-PLANS/_ProjectMAPPER/
+Contract:                PROJECT_MAPPER_TOOL_CONTRACT.md
+Review journal:          0003-project-mapper-tool-contract-review.md
+Adapter:                 adapter-project_mapper.py

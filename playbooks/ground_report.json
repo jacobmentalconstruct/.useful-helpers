@@ -1,0 +1,11 @@
+{
+  "steps": [
+    { "id": "report", "tool": "report", "args": { "path": "src/core" } },
+    { "id": "ground", "tool": "evidence", "args": {
+        "action": "attach", "kind": "scan_summary",
+        "summary": "structural report of src/core",
+        "body": "@report.markdown" } },
+    { "id": "verify", "tool": "evidence", "args": {
+        "action": "verify", "evidence_id": "@ground.evidence_id" } }
+  ]
+}

@@ -1,0 +1,5 @@
+Parts-bin reference app: _TokenizingPATCHER
+Source in this bundle:   ../../_PARTS-FOR-PLANS/_TokenizingPATCHER/
+Contract:                TOKENIZING_PATCHER_TOOL_CONTRACT.md
+Review journal:          0004-tokenizing-patcher-tool-contract-review.md
+Adapter:                 adapter-tokenizing_patcher.py

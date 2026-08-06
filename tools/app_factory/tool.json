@@ -1,0 +1,62 @@
+{
+  "id": "app_factory",
+  "summary": "List, preview, or stamp small starter app skeletons.",
+  "category": "packaging",
+  "authority": "Apply",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/app_factory/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "default": "list_templates"
+      },
+      "template": {
+        "type": "string",
+        "default": "headless_cli"
+      },
+      "name": {
+        "type": "string"
+      },
+      "destination": {
+        "type": "string"
+      },
+      "dry_run": {
+        "type": "boolean",
+        "default": true
+      },
+      "confirm": {
+        "type": "boolean",
+        "default": false
+      },
+      "overwrite": {
+        "type": "boolean",
+        "default": false
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "templates": {
+        "type": "array"
+      },
+      "planned_files": {
+        "type": "array"
+      },
+      "written": {
+        "type": "array"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "id": "blocking_call_scan",
+  "summary": "Blocking-call scanner: findings are calls whose nearest enclosing function is async def (can stall the event loop); sync-context calls are informational.",
+  "category": "code-intel",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/blocking_call_scan/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "description": "workspace-relative root"
+      },
+      "max_files": {
+        "type": "integer",
+        "default": 500
+      },
+      "limit": {
+        "type": "integer",
+        "default": 100
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "summary": {
+        "type": "object"
+      },
+      "findings": {
+        "type": "array"
+      },
+      "by_category": {
+        "type": "object"
+      },
+      "informational": {
+        "type": "array"
+      }
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "id": "scaffold_project",
+  "summary": "Materialize a NEW project from a contract map: create the directories, write the files (boilerplate or documented stubs with FILE/ROLE/DOES headers), and emit PROJECT_PLAN.md. Preview-first; one apply for the whole batch.",
+  "category": "packaging",
+  "authority": "Apply",
+  "operates_on": "project",
+  "writes": "target",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/scaffold_project/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": ["archetypes", "show_archetype", "plan", "create"],
+        "default": "plan",
+        "description": "archetypes: list built-in starting maps. show_archetype: return one map to tailor. plan: validate a map + preview every dir/file (writes nothing). create: materialize (needs apply:true)."
+      },
+      "archetype": {
+        "type": "string",
+        "description": "show_archetype action: which built-in map to return (python-cli | web-app | records-project)."
+      },
+      "map": {
+        "type": "object",
+        "description": "the project-map contract: {name, plan?, archetype?, tree:[{dir}|{file, content|template, role, does, depends_on, wires_to, plan}]}. tree overlays the archetype if both given."
+      },
+      "root": {
+        "type": "string",
+        "description": "destination directory (relative, confined to the work target / toolkit). Default: <output_root>/scaffold/<name-slug>."
+      },
+      "overwrite": {
+        "type": "boolean",
+        "default": false,
+        "description": "create action: replace files that already exist. Without it, any collision refuses the whole batch."
+      },
+      "apply": {
+        "type": "boolean",
+        "default": false,
+        "description": "create for real. Without it (or action=plan) you get a no-write preview."
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "action": { "type": "string" },
+      "base": { "type": "string", "description": "absolute root the project is created under" },
+      "planned_dirs": { "type": "array" },
+      "planned_files": { "type": "array", "description": "each: {rel, bytes, collision}" },
+      "collisions": { "type": "array", "description": "planned paths that already exist" },
+      "created": { "type": "boolean" },
+      "written": { "type": "array", "description": "relative paths actually written (create only)" },
+      "dry_run": { "type": "boolean" }
+    }
+  },
+  "provenance": {
+    "donor": "",
+    "treatment": "NEW",
+    "note": "E1. Map-driven new-project materializer. Deliberately dumb (honors a contract, plans nothing); writes only the project tree, escape-proof via resolve_within_roots, preview-first + batch-consent. The planning/orchestration layer is a separate future tool."
+  }
+}

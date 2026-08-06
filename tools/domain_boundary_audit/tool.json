@@ -1,0 +1,56 @@
+{
+  "id": "domain_boundary_audit",
+  "summary": "Report imports crossing top-level domain boundaries, from the resolved symbol graph (relative imports anchored to their real package). Policy comes from the project; without one, crossings are neutral facts.",
+  "category": "code-intel",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/domain_boundary_audit/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "description": "workspace-relative root"
+      },
+      "max_files": {
+        "type": "integer",
+        "default": 500
+      },
+      "allowed_edges": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "optional allowed domain edges, formatted from->to"
+      },
+      "policy": {
+        "type": "object",
+        "description": "layering policy {layers:{domain:layer}, allowed_edges:[\"A->B\"]}; absent -> no verdict, crossings are neutral facts. Also auto-read from <project_root>/.uh-policy.json"
+      },
+      "policy_profile": {
+        "type": "string",
+        "description": "sidecar-owned profile name from config/domain-boundary/<name>.json"
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "summary": {
+        "type": "object"
+      },
+      "crossings": {
+        "type": "array"
+      },
+      "hotspots": {
+        "type": "array"
+      }
+    }
+  }
+}

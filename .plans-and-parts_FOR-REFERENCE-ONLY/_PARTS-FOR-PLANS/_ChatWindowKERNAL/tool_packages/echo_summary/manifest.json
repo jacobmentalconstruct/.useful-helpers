@@ -1,0 +1,9 @@
+{
+  "id": "echo.summary",
+  "name": "Echo Summary",
+  "description": "Return a compact summary of provided text and arguments.",
+  "category": "utility",
+  "capability_class": "standard",
+  "entrypoint": "runner.py:run",
+  "status": "available"
+}

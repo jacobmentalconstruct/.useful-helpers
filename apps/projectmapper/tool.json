@@ -1,0 +1,100 @@
+{
+  "id": "projectmapper",
+  "summary": "Scan a project tree into a portable, self-describing SQLite snapshot (+ manifest, .sha256, optional Markdown).",
+  "category": "curation",
+  "authority": "Apply",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "apps/projectmapper/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": [
+          "compile"
+        ],
+        "default": "compile"
+      },
+      "root": {
+        "type": "string",
+        "description": "project directory to snapshot (read-only)"
+      },
+      "name": {
+        "type": "string",
+        "description": "snapshot name (default: root dir name)"
+      },
+      "out": {
+        "type": "string",
+        "description": "output .sqlite3 path (default: _artifacts/projectmapper/<name>_snapshot.sqlite3)"
+      },
+      "max_bytes": {
+        "type": "integer",
+        "default": 1000000,
+        "description": "max text file size captured"
+      },
+      "exclude": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "extra dir names to prune (dot-folders are always pruned)"
+      },
+      "exclude_paths": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "tree-picker deselection: root-relative posix paths to leave unselected (dir prunes subtree, file drops content; recorded is_selected=0 / unchecked_by_user)"
+      },
+      "respect_gitignore": {
+        "type": "boolean",
+        "description": "also prune simple folder names from the project's root .gitignore (default off)"
+      },
+      "markdown": {
+        "type": "boolean",
+        "description": "also emit tree + filedump Markdown"
+      },
+      "title": {
+        "type": "string"
+      },
+      "summary": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "root"
+    ]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "name": {
+        "type": "string"
+      },
+      "file_count": {
+        "type": "integer"
+      },
+      "text_file_count": {
+        "type": "integer"
+      },
+      "skipped_count": {
+        "type": "integer"
+      },
+      "content_checksum": {
+        "type": "string"
+      },
+      "artifact_sha256": {
+        "type": "string"
+      },
+      "outputs": {
+        "type": "object"
+      }
+    }
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "id": "codebase_bundle",
+  "summary": "Create AI-friendly codebase report, JSONL, and AST bundle artifacts.",
+  "category": "packaging",
+  "authority": "Apply",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/codebase_bundle/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string"
+      },
+      "out_dir": {
+        "type": "string"
+      },
+      "formats": {
+        "type": "array"
+      },
+      "include": {
+        "type": "array"
+      },
+      "exclude": {
+        "type": "array"
+      },
+      "max_bytes": {
+        "type": "integer",
+        "default": 20000
+      },
+      "include_binaries": {
+        "type": "boolean",
+        "default": false
+      },
+      "limit": {
+        "type": "integer",
+        "default": 500
+      },
+      "dry_run": {
+        "type": "boolean",
+        "default": true
+      },
+      "confirm": {
+        "type": "boolean",
+        "default": false
+      },
+      "overwrite": {
+        "type": "boolean",
+        "default": false
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "outputs": {
+        "type": "array"
+      },
+      "written": {
+        "type": "array"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

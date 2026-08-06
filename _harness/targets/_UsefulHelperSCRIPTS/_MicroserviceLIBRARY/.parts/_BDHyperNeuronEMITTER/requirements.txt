@@ -1,0 +1,4 @@
+# _BDHyperNeuronEMITTER v2 dependencies
+# numpy>=1.24                  # embedding math (training + inference)
+# scipy>=1.10                  # spectral decomposition
+# Standard library: sqlite3, tkinter, json, hashlib, argparse

@@ -1,0 +1,41 @@
+{
+  "name": "Forge application-service architecture",
+  "description": "CLI and web adapters call application orchestration; domain packages may use provider abstractions and infrastructure but must not depend back on application services.",
+  "layers": {
+    "(root)": "adapter",
+    "cli": "adapter",
+    "web": "adapter",
+    "commands": "application",
+    "services": "application",
+    "workflows": "application",
+    "artifacts": "domain",
+    "context": "domain",
+    "execution": "domain",
+    "evidence": "domain",
+    "git": "domain",
+    "memory": "domain",
+    "patches": "domain",
+    "planning": "domain",
+    "policies": "domain",
+    "project": "domain",
+    "repository": "domain",
+    "verification": "domain",
+    "worksets": "domain",
+    "models": "provider",
+    "config": "infrastructure",
+    "utils": "infrastructure",
+    "version": "infrastructure"
+  },
+  "allowed_edges": [
+    "adapter->application",
+    "adapter->domain",
+    "adapter->provider",
+    "adapter->infrastructure",
+    "application->domain",
+    "application->provider",
+    "application->infrastructure",
+    "domain->provider",
+    "domain->infrastructure",
+    "provider->infrastructure"
+  ]
+}

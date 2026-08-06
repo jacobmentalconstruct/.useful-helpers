@@ -1,0 +1,99 @@
+{
+  "id": "journal",
+  "summary": "Canonical append-only App Journal (SQLite): add/list/show/close entries, export a Markdown mirror.",
+  "category": "journal",
+  "authority": "Apply",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/journal/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": [
+          "add",
+          "list",
+          "show",
+          "close",
+          "export"
+        ],
+        "default": "list"
+      },
+      "title": {
+        "type": "string",
+        "description": "entry title (required for add)"
+      },
+      "phase": {
+        "type": "string"
+      },
+      "summary": {
+        "type": "string"
+      },
+      "files": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "files changed"
+      },
+      "decisions": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "backlog": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "status": {
+        "type": "string",
+        "description": "add: initial status; close: closed|parked"
+      },
+      "uid": {
+        "type": "string",
+        "description": "for show/close"
+      },
+      "entry_no": {
+        "type": "integer",
+        "description": "for show"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 20
+      },
+      "db": {
+        "type": "string",
+        "description": "override DB path (testing)"
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "action": {
+        "type": "string"
+      },
+      "uid": {
+        "type": "string"
+      },
+      "entry_no": {
+        "type": "integer"
+      },
+      "entries": {
+        "type": "array"
+      },
+      "entry": {
+        "type": "object"
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "steps": [
+    { "id": "host", "tool": "host_probe", "args": {} },
+    { "id": "tree", "tool": "file_tree", "args": { "kind": "file", "ext": ".py" } },
+    { "id": "report", "tool": "report", "args": { "path": "src" } }
+  ]
+}

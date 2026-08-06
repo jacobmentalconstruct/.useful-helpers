@@ -1,0 +1,44 @@
+{
+  "id": "ui_callback_graph",
+  "summary": "Extract Tkinter command/bind event handlers and conservative function call edges without launching UI.",
+  "category": "code-intel",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/ui_callback_graph/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "description": "workspace-relative root"
+      },
+      "max_files": {
+        "type": "integer",
+        "default": 500
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "summary": {
+        "type": "object"
+      },
+      "events": {
+        "type": "array"
+      },
+      "edges": {
+        "type": "array"
+      },
+      "unresolved_events": {
+        "type": "array"
+      }
+    }
+  }
+}

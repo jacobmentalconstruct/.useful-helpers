@@ -1,0 +1,33 @@
+{
+  "id": "glob",
+  "summary": "Match files by glob pattern (supports ** recursion), pruning noise and the toolkit home by default.",
+  "category": "introspection",
+  "authority": "Observe",
+  "operates_on": "project",
+  "writes": "none",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/glob/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "pattern": { "type": "string", "description": "glob pattern, e.g. **/*.py or src/**/*.ts" },
+      "root": { "type": "string", "default": ".", "description": "root to match under (default: work target)" },
+      "limit": { "type": "integer", "default": 1000 },
+      "include_all": { "type": "boolean", "default": false, "description": "keep noise/toolkit-home matches" }
+    },
+    "required": ["pattern"]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "root": { "type": "string" },
+      "pattern": { "type": "string" },
+      "count": { "type": "integer" },
+      "matches": { "type": "array" },
+      "truncated": { "type": "boolean" }
+    }
+  }
+}

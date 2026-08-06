@@ -1,0 +1,30 @@
+{
+  "id": "bd_status",
+  "summary": "Report table presence and counts for a workspace-local BD graph SQLite DB.",
+  "category": "bd-graph",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/bd_status/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "db": {
+        "type": "string"
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "status": {
+        "type": "object"
+      }
+    }
+  }
+}

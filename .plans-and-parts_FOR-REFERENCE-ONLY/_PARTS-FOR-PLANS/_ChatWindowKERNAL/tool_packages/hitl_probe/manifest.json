@@ -1,0 +1,9 @@
+{
+  "id": "hitl.probe",
+  "name": "HITL Probe",
+  "description": "Return a placeholder payload for workflows that need human review.",
+  "category": "ops",
+  "capability_class": "approval",
+  "entrypoint": "runner.py:run",
+  "status": "available"
+}

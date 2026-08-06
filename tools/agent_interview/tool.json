@@ -1,0 +1,49 @@
+{
+  "id": "agent_interview",
+  "summary": "Build a structured interview script for evaluating agent behavior and supplied answers.",
+  "category": "prompt-eval",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/agent_interview/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "goal": {
+        "type": "string"
+      },
+      "role": {
+        "type": "string"
+      },
+      "constraints": {
+        "type": "array"
+      },
+      "answers": {
+        "type": "object"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 8
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "questions": {
+        "type": "array"
+      },
+      "gaps": {
+        "type": "array"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "id": "process_port_inspector",
+  "summary": "Read-only inspection of relevant running processes and occupied/listening ports.",
+  "category": "introspection",
+  "authority": "Observe",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/process_port_inspector/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "ports": {
+        "type": "array",
+        "items": {
+          "type": "integer"
+        }
+      },
+      "process_name_contains": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "timeout_seconds": {
+        "type": "number",
+        "default": 5
+      },
+      "max_processes": {
+        "type": "integer",
+        "default": 80
+      },
+      "max_ports": {
+        "type": "integer",
+        "default": 200
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "processes": {
+        "type": "array"
+      },
+      "ports": {
+        "type": "array"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

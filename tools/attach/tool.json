@@ -1,0 +1,63 @@
+{
+  "id": "attach",
+  "summary": "THE front door. Re-engage an already-mapped target, or map a new one. Returns a PROJECT_MAP, the mounted workbench, and the next steps.",
+  "category": "orientation",
+  "authority": "Observe",
+  "operates_on": "project",
+  "writes": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/attach/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "target": {
+        "type": "string",
+        "description": "folder to attach to (default: the work target  -  the project this sidecar manages)"
+      },
+      "domain": {
+        "type": "string",
+        "description": "force a cartridge (python-app | web-app | data-curation | records-research | generic) instead of detecting one; implies refresh"
+      },
+      "refresh": {
+        "type": "boolean",
+        "default": false,
+        "description": "re-map even if a profile and map already exist"
+      },
+      "scope": {
+        "type": "string",
+        "description": "narrow to ONE subsystem by name (e.g. 'frontend' or 'packages/web'): returns only that subsystem's workbench, policy, and pre-bound next. Nearest-ancestor resolution for composite targets."
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "mode": { "type": "string", "enum": ["mapped", "reengaged"] },
+      "target": { "type": "string" },
+      "project_map": {
+        "type": "object",
+        "description": "domain + scores, shape, subsystems, entry points, vcs, signature, an optional model-written `synopsis` (purpose, when a summary backend is reachable), and an explicit `limits` list stating what the map does NOT know"
+      },
+      "workbench": {
+        "type": "object",
+        "description": "mounted tool ids for this domain + per-tool policy (confidence + note)"
+      },
+      "staleness": {
+        "type": "object",
+        "description": "reengage only: whether the target changed since it was mapped"
+      },
+      "next": {
+        "type": "array",
+        "description": "ordered suggested calls  -  the workflow this front door points at"
+      }
+    }
+  },
+  "provenance": {
+    "donor": "",
+    "treatment": "NEW",
+    "note": "Walking skeleton of the front door (CHARTER.md sec 3 Layer 4). Structural only: no model, no embeddings. Writes solely into SUITE_HOME/workbench/."
+  }
+}

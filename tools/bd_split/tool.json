@@ -1,0 +1,54 @@
+{
+  "id": "bd_split",
+  "summary": "Split workspace-local text/code into deterministic HyperHunk-like records.",
+  "category": "bd-graph",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/bd_split/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string"
+      },
+      "root": {
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      },
+      "origin_id": {
+        "type": "string"
+      },
+      "max_size": {
+        "type": "integer",
+        "default": 1000
+      },
+      "max_files": {
+        "type": "integer",
+        "default": 250
+      },
+      "limit": {
+        "type": "integer",
+        "default": 200
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "hunks": {
+        "type": "array"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

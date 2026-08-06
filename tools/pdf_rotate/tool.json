@@ -1,0 +1,55 @@
+{
+  "id": "pdf_rotate",
+  "summary": "Rotate selected PDF pages by 90-degree increments; dry-run-first and confirm-gated.",
+  "category": "pdf",
+  "authority": "Apply",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/pdf_rotate/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string"
+      },
+      "pages": {
+        "type": "string",
+        "default": "all"
+      },
+      "degrees": {
+        "type": "integer",
+        "default": 90
+      },
+      "out": {
+        "type": "string"
+      },
+      "dry_run": {
+        "type": "boolean",
+        "default": true
+      },
+      "confirm": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "required": [
+      "path"
+    ]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "rotations": {
+        "type": "array"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

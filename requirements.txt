@@ -1,0 +1,10 @@
+# Toolkit dependency union — one shared root .venv for the whole sidecar.
+#
+# The control-plane spine (src/) is Python-standard-library only; no third-party
+# packages are required to run cli/mcp. Tkinter (for the ui entrance) ships with
+# CPython on Windows.
+#
+# Dependencies for re-homed tools/apps are appended here as each is integrated,
+# one per tranche. A tool with heavy/conflicting deps (e.g. PyMuPDF, torch) may
+# instead get its own isolated env, decided at that tool's tranche.
+pypdf

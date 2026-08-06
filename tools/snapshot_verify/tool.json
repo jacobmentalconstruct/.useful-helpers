@@ -1,0 +1,47 @@
+{
+  "id": "snapshot_verify",
+  "summary": "Verify a ProjectMapper SQLite snapshot, sidecar sha256, manifest JSON, schema, and row-count metadata.",
+  "category": "packaging",
+  "authority": "Observe",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/snapshot_verify/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "snapshot": {
+        "type": "string",
+        "description": "workspace-relative snapshot SQLite DB"
+      },
+      "db": {
+        "type": "string",
+        "description": "compatibility alias for snapshot"
+      },
+      "sha256": {
+        "type": "string"
+      },
+      "manifest": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "snapshot"
+    ]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "summary": {
+        "type": "object"
+      },
+      "checks": {
+        "type": "array"
+      }
+    }
+  }
+}

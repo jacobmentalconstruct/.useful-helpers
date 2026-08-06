@@ -1,0 +1,13 @@
+# The toolkit lints ITSELF with this config (T-seal / field report C5): a code-review
+# instrument should model the bar it implies.
+line-length = 120
+target-version = "py311"
+extend-exclude = ["_artifacts", "_exports", "tests/fixtures", "__pycache__"]
+
+[lint]
+# Substantive correctness + import hygiene are enforced to ZERO: E4 (imports), E7 (statement
+# lint incl. ambiguous names), E9 (syntax), F (pyflakes: unused/undefined), W (warnings),
+# I (import order). E5 (line-length) is intentionally NOT hard-enforced — the header-map
+# docstring convention (fixed FILE/ROLE/DOES/NOTES prose) and a couple of embedded templates
+# run past 120 by design; reflowing that prose is churn without value.
+select = ["E4", "E7", "E9", "F", "W", "I"]

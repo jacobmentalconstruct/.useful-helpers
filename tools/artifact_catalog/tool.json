@@ -1,0 +1,46 @@
+{
+  "id": "artifact_catalog",
+  "summary": "Catalog generated workspace artifacts by path, kind, size, and optional hash.",
+  "category": "packaging",
+  "authority": "Observe",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/artifact_catalog/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "default": "_artifacts"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 500
+      },
+      "hash": {
+        "type": "boolean",
+        "default": false
+      },
+      "max_hash_bytes": {
+        "type": "integer",
+        "default": 2000000
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "summary": {
+        "type": "object"
+      },
+      "artifacts": {
+        "type": "array"
+      }
+    }
+  }
+}

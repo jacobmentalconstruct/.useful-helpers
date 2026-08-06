@@ -1,0 +1,61 @@
+{
+  "id": "pdf_interleave",
+  "summary": "Alternate pages from two PDFs; dry-run-first and confirm-gated.",
+  "category": "pdf",
+  "authority": "Apply",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/pdf_interleave/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "a": {
+        "type": "string"
+      },
+      "b": {
+        "type": "string"
+      },
+      "first": {
+        "type": "string"
+      },
+      "second": {
+        "type": "string"
+      },
+      "out": {
+        "type": "string"
+      },
+      "reverse_second": {
+        "type": "boolean",
+        "default": false
+      },
+      "dry_run": {
+        "type": "boolean",
+        "default": true
+      },
+      "confirm": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "required": [
+      "a",
+      "b"
+    ]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "order": {
+        "type": "array"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

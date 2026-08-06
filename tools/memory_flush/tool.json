@@ -1,0 +1,50 @@
+{
+  "id": "memory_flush",
+  "summary": "Summarize a session memory log and optionally write a flush artifact.",
+  "category": "memory-workflow",
+  "authority": "Apply",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/memory_flush/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "session": {
+        "type": "string"
+      },
+      "root": {
+        "type": "string"
+      },
+      "out": {
+        "type": "string"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 12
+      },
+      "write": {
+        "type": "boolean",
+        "default": false
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "summary": {
+        "type": "object"
+      },
+      "markdown": {
+        "type": "string"
+      },
+      "written": {
+        "type": "boolean"
+      }
+    }
+  }
+}

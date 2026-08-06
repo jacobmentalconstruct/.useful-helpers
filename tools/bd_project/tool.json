@@ -1,0 +1,50 @@
+{
+  "id": "bd_project",
+  "summary": "Project a neighborhood from a BD graph DB around one or more occurrence IDs.",
+  "category": "bd-graph",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/bd_project/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "db": {
+        "type": "string"
+      },
+      "occurrence_id": {
+        "type": "string"
+      },
+      "occurrence_ids": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "hops": {
+        "type": "integer",
+        "default": 2
+      },
+      "include_content": {
+        "type": "boolean",
+        "default": true
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "graph": {
+        "type": "object"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "structured_text_profile": {
+    "txt_promotion_sensitivity": 1.1,
+    "list_heavy_threshold": 3,
+    "indented_block_threshold": 5,
+    "heading_pair_threshold": 2
+  },
+  "reference_extraction_profile": {
+    "enabled": true,
+    "normalization_mode": "python_reference_v1",
+    "minimum_reference_quality": 0.3,
+    "keep_raw_refs": true
+  },
+  "list_representation_profile": {
+    "emit_list_items": false,
+    "max_list_item_length": 320,
+    "preserve_markers": true,
+    "inherit_heading_ancestry": true
+  },
+  "fragment_inheritance_profile": {
+    "inherit_full_reference_context": true,
+    "keep_parent_node_kind_family": true,
+    "context_window_retain_ratio": 1.0
+  }
+}

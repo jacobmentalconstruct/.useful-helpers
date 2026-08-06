@@ -1,0 +1,42 @@
+{
+  "id": "schema_diff",
+  "summary": "Compare two SQLite schemas: added/removed tables, columns, and indexes.",
+  "category": "introspection",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/schema_diff/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "left": {
+        "type": "string",
+        "description": "baseline workspace-local SQLite DB"
+      },
+      "right": {
+        "type": "string",
+        "description": "comparison workspace-local SQLite DB"
+      }
+    },
+    "required": [
+      "left",
+      "right"
+    ]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "changed": {
+        "type": "boolean"
+      },
+      "tables_changed": {
+        "type": "array"
+      }
+    }
+  }
+}

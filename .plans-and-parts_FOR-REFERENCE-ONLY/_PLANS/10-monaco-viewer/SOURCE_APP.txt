@@ -1,0 +1,5 @@
+Parts-bin reference app: _MonacoVIEWER
+Source in this bundle:   ../../_PARTS-FOR-PLANS/_MonacoVIEWER/
+Contract:                MONACO_VIEWER_TOOL_CONTRACT.md
+Review journal:          0023-monaco-viewer-tool-contract-review.md
+Adapter:                 adapter-monaco_viewer.py

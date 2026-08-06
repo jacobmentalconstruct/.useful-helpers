@@ -1,0 +1,9 @@
+{
+  "app_id": "chat_window_kernal",
+  "app_name": "ChatWindowKERNAL",
+  "theme": "harbor_mist",
+  "dark_theme": "cinder_tide",
+  "enable_inspector_panel": true,
+  "enable_debug_logging": true,
+  "queue_poll_interval_ms": 75
+}

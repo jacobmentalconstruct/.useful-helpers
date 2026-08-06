@@ -1,0 +1,44 @@
+{
+  "id": "bd_emit",
+  "summary": "Emit deterministic HyperNode-like records from HyperHunk-like input.",
+  "category": "bd-graph",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/bd_emit/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "hunks": {
+        "type": "array"
+      },
+      "hunks_path": {
+        "type": "string"
+      },
+      "dimensions": {
+        "type": "integer",
+        "default": 16
+      },
+      "limit": {
+        "type": "integer",
+        "default": 200
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "nodes": {
+        "type": "array"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "id": "session_record",
+  "summary": "Create workspace-local sessions and append JSONL memory events.",
+  "category": "memory-workflow",
+  "authority": "Apply",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/session_record/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "default": "append"
+      },
+      "session": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "role": {
+        "type": "string"
+      },
+      "kind": {
+        "type": "string"
+      },
+      "content": {
+        "type": "string"
+      },
+      "metadata": {
+        "type": "object"
+      },
+      "root": {
+        "type": "string"
+      },
+      "write": {
+        "type": "boolean",
+        "default": false
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "session": {
+        "type": "object"
+      },
+      "event": {
+        "type": "object"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

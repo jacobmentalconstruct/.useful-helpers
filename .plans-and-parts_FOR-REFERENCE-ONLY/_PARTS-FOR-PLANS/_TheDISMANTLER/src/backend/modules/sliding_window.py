@@ -1,0 +1,341 @@
+"""
+Sliding-window context module.
+Provides the AI with focused code context based on the user's active cursor
+position, backed by the SQLite chunk store.
+
+Extended with Surgeon-Agent capabilities:
+  - index_manifest / get_manifest  — per-file structural manifest storage
+  - get_context_for_query          — intent-driven chunk selection via ContextSelector
+"""
+import hashlib
+from backend.modules.db_schema import get_connection, init_db
+from backend.modules.context_selector import ContextSelector, DEFAULT_BUDGET as _QUERY_BUDGET
+
+
+class SlidingWindow:
+    """
+    Manages a cursor-aware context window over indexed source files.
+    The window expands outward from the cursor line, collecting
+    neighbouring chunks until a token budget is met.
+    """
+
+    DEFAULT_BUDGET = 2048  # max tokens to include in context
+
+    def __init__(self, db_path=None):
+        self.db_path = db_path
+        init_db(self.db_path)
+
+    # ── indexing ────────────────────────────────────────────
+
+    def index_file(self, path, content, language=None, chunks=None):
+        """
+        Register or update a source file and its chunks.
+        `chunks` is a list of dicts: {name, start_line, end_line, content, chunk_type, depth}
+        If chunks is None, the file is stored as a single chunk.
+        """
+        conn = get_connection(self.db_path)
+        cur = conn.cursor()
+
+        content_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()[:16]
+        name = path.rsplit("/", 1)[-1].rsplit("\\", 1)[-1]
+        lines = content.count("\n") + 1
+
+        cur.execute(
+            """
+            INSERT INTO source_files (path, name, language, content_hash, line_count, last_indexed)
+            VALUES (?, ?, ?, ?, ?, datetime('now'))
+            ON CONFLICT(path) DO UPDATE SET
+                content_hash=excluded.content_hash,
+                line_count=excluded.line_count,
+                last_indexed=excluded.last_indexed
+            """,
+            (path, name, language, content_hash, lines),
+        )
+        file_id = cur.execute(
+            "SELECT file_id FROM source_files WHERE path=?", (path,)
+        ).fetchone()["file_id"]
+
+        # Replace existing chunks
+        cur.execute("DELETE FROM chunks WHERE file_id=?", (file_id,))
+
+        if chunks:
+            for ch in chunks:
+                token_est = max(1, len(ch["content"]) // 4)
+                cur.execute(
+                    """
+                    INSERT INTO chunks (file_id, chunk_type, name, start_line, end_line, content, token_est, depth)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        file_id,
+                        ch.get("chunk_type", "code"),
+                        ch.get("name"),
+                        ch["start_line"],
+                        ch["end_line"],
+                        ch["content"],
+                        token_est,
+                        ch.get("depth", 0),
+                    ),
+                )
+        else:
+            # Store the whole file as one chunk
+            token_est = max(1, len(content) // 4)
+            cur.execute(
+                """
+                INSERT INTO chunks (file_id, chunk_type, name, start_line, end_line, content, token_est)
+                VALUES (?, 'file', ?, 1, ?, ?, ?)
+                """,
+                (file_id, name, lines, content, token_est),
+            )
+
+        conn.commit()
+        conn.close()
+
+    # ── context retrieval ───────────────────────────────────
+
+    def get_context(self, file_path, cursor_line, budget=None):
+        """
+        Build a context window around `cursor_line` for the given file.
+        Returns a list of chunk dicts sorted by proximity to the cursor,
+        staying within the token budget.
+        """
+        budget = budget or self.DEFAULT_BUDGET
+        conn = get_connection(self.db_path)
+        cur = conn.cursor()
+
+        row = cur.execute(
+            "SELECT file_id FROM source_files WHERE path=?", (file_path,)
+        ).fetchone()
+        if not row:
+            conn.close()
+            return []
+
+        file_id = row["file_id"]
+
+        # Fetch all chunks for this file, sorted by distance from cursor
+        chunks = cur.execute(
+            """
+            SELECT chunk_id, chunk_type, name, start_line, end_line, content, token_est, depth
+            FROM chunks
+            WHERE file_id=?
+            ORDER BY ABS(start_line - ?) + ABS(end_line - ?)
+            """,
+            (file_id, cursor_line, cursor_line),
+        ).fetchall()
+
+        # Log the query
+        if chunks:
+            first = chunks[0]
+            cur.execute(
+                """
+                INSERT INTO context_log (file_id, cursor_line, window_start, window_end)
+                VALUES (?, ?, ?, ?)
+                """,
+                (file_id, cursor_line, first["start_line"], first["end_line"]),
+            )
+            conn.commit()
+
+        # Collect chunks within budget.
+        # Always include the nearest chunk even if it exceeds budget,
+        # trimming it to fit if necessary.
+        result = []
+        spent = 0
+        for i, ch in enumerate(chunks):
+            est = ch["token_est"]
+            if spent + est > budget:
+                if i == 0:
+                    # Force-include nearest chunk; trim if very large
+                    entry = dict(ch)
+                    if est > budget:
+                        char_budget = budget * 4
+                        entry["content"] = entry["content"][:char_budget]
+                        entry["token_est"] = budget
+                        entry["trimmed"] = True
+                    result.append(entry)
+                    spent += entry["token_est"]
+                continue
+            spent += est
+            result.append(dict(ch))
+
+        # Return in file order
+        result.sort(key=lambda c: c["start_line"])
+
+        conn.close()
+        return result
+
+    # ── manifest storage ─────────────────────────────────────
+
+    def index_manifest(self, file_id: int, manifest_text: str):
+        """
+        Upsert the structural manifest for a file.
+        Called by CurateController immediately after index_file().
+        """
+        conn = get_connection(self.db_path)
+        conn.execute(
+            """
+            INSERT INTO file_manifest (file_id, manifest_text, built_at)
+            VALUES (?, ?, datetime('now'))
+            ON CONFLICT(file_id) DO UPDATE SET
+                manifest_text = excluded.manifest_text,
+                built_at      = excluded.built_at
+            """,
+            (file_id, manifest_text),
+        )
+        conn.commit()
+        conn.close()
+
+    def get_manifest(self, file_path: str) -> str | None:
+        """
+        Retrieve the stored manifest text for a file path.
+        Returns None if the file has not been curated yet.
+        """
+        conn = get_connection(self.db_path)
+        row = conn.execute(
+            """
+            SELECT fm.manifest_text
+            FROM file_manifest fm
+            JOIN source_files sf ON fm.file_id = sf.file_id
+            WHERE sf.path = ?
+            """,
+            (file_path,),
+        ).fetchone()
+        conn.close()
+        return row["manifest_text"] if row else None
+
+    # ── intent-driven context retrieval ─────────────────────
+
+    def get_context_for_query(
+        self,
+        file_path: str,
+        query: str,
+        cursor_line: int = 1,
+        budget: int = None,
+    ) -> list:
+        """
+        Select the best chunks for the user's query using ContextSelector.
+
+        Falls back gracefully to cursor-proximity if no chunks are indexed.
+        The budget defaults to 8 192 tokens (4× the old DEFAULT_BUDGET).
+
+        Args:
+            file_path:   Absolute path to the open file.
+            query:       The user's chat message (used for intent scoring).
+            cursor_line: Current cursor line (tiebreaker in scoring).
+            budget:      Max token_est to include.
+
+        Returns:
+            List of chunk dicts sorted by start_line (file order).
+        """
+        budget = budget or _QUERY_BUDGET
+        conn = get_connection(self.db_path)
+
+        row = conn.execute(
+            "SELECT file_id FROM source_files WHERE path=?", (file_path,)
+        ).fetchone()
+        if not row:
+            conn.close()
+            return []
+
+        file_id = row["file_id"]
+        chunks = conn.execute(
+            """
+            SELECT chunk_id, chunk_type, name, start_line, end_line,
+                   content, token_est, depth
+            FROM chunks
+            WHERE file_id=?
+            ORDER BY start_line
+            """,
+            (file_id,),
+        ).fetchall()
+        conn.close()
+
+        if not chunks:
+            return []
+
+        chunks_list = [dict(c) for c in chunks]
+        return ContextSelector.score_and_select(query, chunks_list, cursor_line, budget)
+
+    # ── chunk metadata storage ─────────────────────────────
+
+    def index_chunk_meta(self, file_path: str, meta_list: list):
+        """
+        Store enriched per-chunk metadata (decorators, signatures, calls,
+        raises, ref_count) alongside existing chunks.
+
+        Each entry in meta_list must have:
+            name, start_line, end_line  — for matching to chunk_id
+            decorators (list), signature (str), return_type (str),
+            calls (list), raises (list), ref_count (int)
+
+        Matched against chunks by (file_id, start_line, end_line).
+        """
+        import json as _json
+
+        conn = get_connection(self.db_path)
+        cur = conn.cursor()
+
+        row = cur.execute(
+            "SELECT file_id FROM source_files WHERE path=?", (file_path,)
+        ).fetchone()
+        if not row:
+            conn.close()
+            return
+
+        file_id = row["file_id"]
+
+        # Delete existing metadata for this file's chunks
+        cur.execute(
+            "DELETE FROM chunk_meta WHERE chunk_id IN "
+            "(SELECT chunk_id FROM chunks WHERE file_id=?)",
+            (file_id,),
+        )
+
+        for m in meta_list:
+            # Find matching chunk by position
+            chunk_row = cur.execute(
+                """
+                SELECT chunk_id FROM chunks
+                WHERE file_id=? AND start_line=? AND end_line=?
+                """,
+                (file_id, m["start_line"], m["end_line"]),
+            ).fetchone()
+
+            if chunk_row:
+                cur.execute(
+                    """
+                    INSERT OR REPLACE INTO chunk_meta
+                        (chunk_id, decorators, signature, return_type,
+                         calls, raises, ref_count)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        chunk_row["chunk_id"],
+                        _json.dumps(m.get("decorators", [])),
+                        m.get("signature", ""),
+                        m.get("return_type", ""),
+                        _json.dumps(m.get("calls", [])),
+                        _json.dumps(m.get("raises", [])),
+                        m.get("ref_count", 0),
+                    ),
+                )
+
+        conn.commit()
+        conn.close()
+
+    def search_chunks(self, query, limit=10):
+        """Simple LIKE-based chunk search across all files."""
+        conn = get_connection(self.db_path)
+        cur = conn.cursor()
+        rows = cur.execute(
+            """
+            SELECT c.*, sf.path, sf.name as file_name
+            FROM chunks c
+            JOIN source_files sf ON c.file_id = sf.file_id
+            WHERE c.content LIKE ?
+            ORDER BY c.token_est ASC
+            LIMIT ?
+            """,
+            (f"%{query}%", limit),
+        ).fetchall()
+        conn.close()
+        return [dict(r) for r in rows]

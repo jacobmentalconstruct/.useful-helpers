@@ -1,0 +1,38 @@
+{
+  "id": "secret_audit",
+  "summary": "Heuristic redacted scan for obvious committed secrets.",
+  "category": "security",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/secret_audit/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "description": "workspace-relative directory to scan"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 100
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "finding_count": {
+        "type": "integer"
+      },
+      "findings": {
+        "type": "array"
+      }
+    }
+  }
+}

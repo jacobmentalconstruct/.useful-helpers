@@ -1,0 +1,49 @@
+{
+  "id": "plan",
+  "summary": "The planner engine: turn an intention + a project map into a real, governed project. Runs genesis -> scaffold -> provenance -> journal as ONE resumable operation; preview-first, idempotent, and the built structure traces back to the intent.",
+  "category": "orientation",
+  "authority": "Apply",
+  "operates_on": "project",
+  "writes": "target",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/plan/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": ["propose", "preview", "build", "resume", "status"],
+        "default": "preview",
+        "description": "propose: draft a map from intent (local model, degrades to archetype). preview: validate + show the whole plan, no writes. build: execute as a resumable operation (needs apply:true). resume: continue an interrupted build. status: show a build's operation."
+      },
+      "intent": { "type": "string", "description": "one sentence: what this project is for" },
+      "name": { "type": "string", "description": "the project name" },
+      "map": { "type": "object", "description": "the project map to build (from propose, or agent-authored). Required for preview/build/resume." },
+      "archetype": { "type": "string", "description": "propose: bias toward a built-in archetype (python-cli | web-app | records-project)" },
+      "root": { "type": "string", "description": "destination directory for the new project (within the roots); default: <output_root>/scaffold/<name>" },
+      "op_id": { "type": "string", "description": "resume/status: the build's operation id" },
+      "overwrite": { "type": "boolean", "default": false, "description": "build: replace files that already exist" },
+      "apply": { "type": "boolean", "default": false, "description": "build/resume for real. Without it you get a no-write preview." }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "created": { "type": "boolean" },
+      "op_id": { "type": "string", "description": "the resumable operation for this build" },
+      "map": { "type": "object", "description": "propose action: the drafted map" },
+      "degraded": { "type": "boolean", "description": "propose: true when no local model was usable (archetype returned)" },
+      "trail": { "type": "array", "description": "build: per-stage outcome (genesis/scaffold/provenance/journal), with skipped=true on resume" },
+      "trace_hint": { "type": "object", "description": "build: the provenance trace call to see why the project exists" },
+      "dry_run": { "type": "boolean" }
+    }
+  },
+  "provenance": {
+    "donor": "",
+    "treatment": "NEW",
+    "note": "E6. The planner ENGINE (engine before cockpit). Pure orchestration over genesis+scaffold+provenance+journal via the seam - adds no substrate, cannot become a monolith. First real consumer of the E4 operation ledger (resumable/idempotent) and E5 provenance (built structure traces to intent). The Tk cockpit (E7) drives this engine."
+  }
+}

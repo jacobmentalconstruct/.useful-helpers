@@ -1,0 +1,48 @@
+{
+  "id": "prompt_rubric_judge",
+  "summary": "Score a supplied response against deterministic case checks, rubric checks, and constraints.",
+  "category": "prompt-eval",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/prompt_rubric_judge/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "response": {
+        "type": "string"
+      },
+      "case": {
+        "type": "object"
+      },
+      "rubric": {
+        "type": "array"
+      },
+      "constraints": {
+        "type": "array"
+      }
+    },
+    "required": [
+      "response"
+    ]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "score": {
+        "type": "number"
+      },
+      "passed": {
+        "type": "boolean"
+      },
+      "findings": {
+        "type": "array"
+      }
+    }
+  }
+}

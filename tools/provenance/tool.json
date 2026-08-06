@@ -1,0 +1,57 @@
+{
+  "id": "provenance",
+  "summary": "Formation provenance: record WHY an artifact exists (typed relations with an enforced origin - discovered | operational | interpretive), including multi-participant activities, and TRACE any artifact back to the chain that formed it.",
+  "category": "memory",
+  "authority": "Apply",
+  "operates_on": "project",
+  "writes": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/provenance/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": ["note", "activity", "trace", "list", "show"],
+        "default": "list",
+        "description": "note: one typed relation. activity: a multi-participant event. trace: walk backward from an artifact to its formation chain. list/show: inspect."
+      },
+      "subject": { "type": "object", "description": "note: the source entity {kind, ref, label}" },
+      "relation": { "type": "string", "description": "note: the relation (recommended: motivated, retrieved, supported, used, used_in, generated, derived_from, accepted_by, validated_by, superseded_by; any string allowed)" },
+      "object": { "type": "object", "description": "note: the target entity {kind, ref, label}" },
+      "origin": {
+        "type": "string",
+        "enum": ["discovered", "operational", "interpretive"],
+        "description": "REQUIRED on note/activity. discovered = found in the artifacts; operational = created by our work; interpretive = a model/heuristic guess, still provisional."
+      },
+      "verb": { "type": "string", "description": "activity: what the activity did (e.g. 'generate draft', 'move files')" },
+      "participants": {
+        "type": "array",
+        "description": "activity: [{role, kind, ref, label}] where role is e.g. requested_by | used | generated | approved_by | validated_by"
+      },
+      "op_id": { "type": "string", "description": "the operation (E4) this relation/activity belongs to" },
+      "kind": { "type": "string", "description": "trace/show: the entity kind" },
+      "ref": { "type": "string", "description": "trace/show: the entity ref (path, id, url, text)" },
+      "max_depth": { "type": "integer", "default": 6, "description": "trace: how far back to walk" },
+      "note": { "type": "string" },
+      "limit": { "type": "integer", "default": 50 }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "chain": { "type": "array", "description": "trace: the backward formation chain (subject -relation-> object, with origin)" },
+      "origins": { "type": "array", "description": "trace: which origin classes appear in the chain" },
+      "activity_id": { "type": "string" },
+      "edges": { "type": "array", "description": "list action" }
+    }
+  },
+  "provenance": {
+    "donor": "",
+    "treatment": "NEW",
+    "note": "E5. Records operationally-created relations (the gap for projects that BEGAN here) alongside discovered and interpretive ones, with the origin enforced. Higher-order activities keep multi-participant events coherent (review sec 23). trace answers 'why does this exist'. Separate truth class from journal/evidence/operations (review sec 9)."
+  }
+}

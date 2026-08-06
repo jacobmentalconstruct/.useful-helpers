@@ -1,0 +1,682 @@
+[
+ {
+  "file": "toolkit/apps/projectmapper/cli.py",
+  "status": "DONE",
+  "tranche": "T7"
+ },
+ {
+  "file": "toolkit/src/__init__.py",
+  "status": "SCAFFOLD",
+  "tranche": "T2"
+ },
+ {
+  "file": "toolkit/src/app.py",
+  "status": "DONE   (cli | mcp | ui live; ui-probe = bounded GUI verification)",
+  "tranche": "T3 (cli|mcp) + T-gov (governed seam) + T6 (ui)"
+ },
+ {
+  "file": "toolkit/src/core/__init__.py",
+  "status": "SCAFFOLD",
+  "tranche": "T2"
+ },
+ {
+  "file": "toolkit/src/core/config.py",
+  "status": "DONE",
+  "tranche": "T3"
+ },
+ {
+  "file": "toolkit/src/core/docs.py",
+  "status": "DONE",
+  "tranche": "T5 (REGENERATE)"
+ },
+ {
+  "file": "toolkit/src/core/event_log.py",
+  "status": "DONE",
+  "tranche": "T-gov (slice 1)"
+ },
+ {
+  "file": "toolkit/src/core/invoke.py",
+  "status": "DONE",
+  "tranche": "T3 (dispatch) + T-gov (event log)"
+ },
+ {
+  "file": "toolkit/src/core/playbook.py",
+  "status": "DONE",
+  "tranche": "T-compose"
+ },
+ {
+  "file": "toolkit/src/core/policy.py",
+  "status": "DONE",
+  "tranche": "T-gov (slice 2)"
+ },
+ {
+  "file": "toolkit/src/core/registry.py",
+  "status": "DONE",
+  "tranche": "T3"
+ },
+ {
+  "file": "toolkit/src/interfaces/__init__.py",
+  "status": "SCAFFOLD",
+  "tranche": "T2"
+ },
+ {
+  "file": "toolkit/src/interfaces/cli.py",
+  "status": "DONE",
+  "tranche": "T3"
+ },
+ {
+  "file": "toolkit/src/interfaces/mcp_server.py",
+  "status": "DONE",
+  "tranche": "T3"
+ },
+ {
+  "file": "toolkit/src/lib/__init__.py",
+  "status": "SCAFFOLD",
+  "tranche": "T2"
+ },
+ {
+  "file": "toolkit/src/lib/common.py",
+  "status": "DONE",
+  "tranche": "T3 (+ T-roots scrubber)"
+ },
+ {
+  "file": "toolkit/src/lib/logging_setup.py",
+  "status": "DONE",
+  "tranche": "T3 (+ T-roots scrubber)"
+ },
+ {
+  "file": "toolkit/src/lib/theme.py",
+  "status": "DONE",
+  "tranche": "T6"
+ },
+ {
+  "file": "toolkit/src/ui/__init__.py",
+  "status": "DONE",
+  "tranche": "T6"
+ },
+ {
+  "file": "toolkit/src/ui/app_ui.py",
+  "status": "DONE",
+  "tranche": "T6"
+ },
+ {
+  "file": "toolkit/src/ui/installer_view.py",
+  "status": "DONE",
+  "tranche": "T-vend"
+ },
+ {
+  "file": "toolkit/src/ui/mapper_view.py",
+  "status": "DONE",
+  "tranche": "T6-ops (human-experience: bespoke views over governed tools)"
+ },
+ {
+  "file": "toolkit/src/ui/planner_view.py",
+  "status": "DONE",
+  "tranche": "E7 (the cockpit)"
+ },
+ {
+  "file": "toolkit/src/ui/registry_view.py",
+  "status": "DONE",
+  "tranche": "T6"
+ },
+ {
+  "file": "toolkit/tests/__init__.py",
+  "status": "DONE",
+  "tranche": "T3.5 (smoke suite)"
+ },
+ {
+  "file": "toolkit/tests/test_smoke.py",
+  "status": "DONE",
+  "tranche": "T3.5"
+ },
+ {
+  "file": "toolkit/tools/__init__.py",
+  "status": "DONE",
+  "tranche": "T4.0"
+ },
+ {
+  "file": "toolkit/tools/_template/cli.py",
+  "status": "SCAFFOLD",
+  "tranche": "T4.0 (exemplar)"
+ },
+ {
+  "file": "toolkit/tools/_toolkit.py",
+  "status": "DONE",
+  "tranche": "T4.0"
+ },
+ {
+  "file": "toolkit/tools/agent_interview/cli.py",
+  "status": "DONE",
+  "tranche": "T-prompt-eval"
+ },
+ {
+  "file": "toolkit/tools/app_factory/cli.py",
+  "status": "DONE",
+  "tranche": "T-packaging-more"
+ },
+ {
+  "file": "toolkit/tools/artifact_catalog/cli.py",
+  "status": "DONE",
+  "tranche": "T-packaging-core"
+ },
+ {
+  "file": "toolkit/tools/artifact_cleaner/cli.py",
+  "status": "DONE",
+  "tranche": "T-ops-apply"
+ },
+ {
+  "file": "toolkit/tools/attach/cli.py",
+  "status": "SKELETON",
+  "tranche": "T-attach (walking skeleton)"
+ },
+ {
+  "file": "toolkit/tools/bd_emit/cli.py",
+  "status": "DONE",
+  "tranche": "T-bd-graph"
+ },
+ {
+  "file": "toolkit/tools/bd_graph_shared.py",
+  "status": "DONE",
+  "tranche": "T-bd-graph"
+ },
+ {
+  "file": "toolkit/tools/bd_index/cli.py",
+  "status": "DONE",
+  "tranche": "T-bd-graph"
+ },
+ {
+  "file": "toolkit/tools/bd_knowledge/cli.py",
+  "status": "DONE",
+  "tranche": "T6 / Ge (the \"why\" layer)"
+ },
+ {
+  "file": "toolkit/tools/bd_project/cli.py",
+  "status": "DONE",
+  "tranche": "T-bd-graph"
+ },
+ {
+  "file": "toolkit/tools/bd_query/cli.py",
+  "status": "DONE",
+  "tranche": "T-bd-graph"
+ },
+ {
+  "file": "toolkit/tools/bd_scribe/cli.py",
+  "status": "DONE",
+  "tranche": "T-bd-graph"
+ },
+ {
+  "file": "toolkit/tools/bd_split/cli.py",
+  "status": "DONE",
+  "tranche": "T-bd-graph"
+ },
+ {
+  "file": "toolkit/tools/bd_status/cli.py",
+  "status": "DONE",
+  "tranche": "T-bd-graph"
+ },
+ {
+  "file": "toolkit/tools/bd_why/cli.py",
+  "status": "DONE",
+  "tranche": "T6 / Ge (the \"why\" layer)"
+ },
+ {
+  "file": "toolkit/tools/blocking_call_scan/cli.py",
+  "status": "DONE",
+  "tranche": "T-code-intel"
+ },
+ {
+  "file": "toolkit/tools/code_intel_shared.py",
+  "status": "DONE",
+  "tranche": "T-code-intel"
+ },
+ {
+  "file": "toolkit/tools/codebase_bundle/cli.py",
+  "status": "DONE",
+  "tranche": "T-packaging-more"
+ },
+ {
+  "file": "toolkit/tools/command_profile/cli.py",
+  "status": "DONE",
+  "tranche": "T-operational-audit"
+ },
+ {
+  "file": "toolkit/tools/complexity_score/cli.py",
+  "status": "DONE",
+  "tranche": "T-code-intel"
+ },
+ {
+  "file": "toolkit/tools/constraint_build/cli.py",
+  "status": "DONE",
+  "tranche": "T-prompt-eval"
+ },
+ {
+  "file": "toolkit/tools/constraint_query/cli.py",
+  "status": "DONE",
+  "tranche": "T-prompt-eval"
+ },
+ {
+  "file": "toolkit/tools/dead_code/cli.py",
+  "status": "DONE",
+  "tranche": "D2 / G6 (was T-code-intel heuristic; rebuilt on the graph)"
+ },
+ {
+  "file": "toolkit/tools/delegate/cli.py",
+  "status": "DONE",
+  "tranche": "C7 (the compute payoff: a cheap local model does the grunt work  -  search, read,"
+ },
+ {
+  "file": "toolkit/tools/dep_install/cli.py",
+  "status": "DONE",
+  "tranche": "C5 (seam-completeness: reviving a real project used to require leaving the seam)"
+ },
+ {
+  "file": "toolkit/tools/dependency_check/cli.py",
+  "status": "DONE",
+  "tranche": "T-operational-audit"
+ },
+ {
+  "file": "toolkit/tools/dev_server_manager/cli.py",
+  "status": "DONE",
+  "tranche": "T-ops-server"
+ },
+ {
+  "file": "toolkit/tools/diff/cli.py",
+  "status": "DONE",
+  "tranche": "C4 (only schema_diff/snapshot_diff existed; this is the general text diff)"
+ },
+ {
+  "file": "toolkit/tools/domain_boundary_audit/cli.py",
+  "status": "DONE",
+  "tranche": "T-code-intel-more"
+ },
+ {
+  "file": "toolkit/tools/edit/cli.py",
+  "status": "DONE",
+  "tranche": "T-mine + C3 (field report New F1: literal + expected-count guards)"
+ },
+ {
+  "file": "toolkit/tools/embed_shared.py",
+  "status": "DONE",
+  "tranche": "T6 / Ga (real embeddings)"
+ },
+ {
+  "file": "toolkit/tools/event_log/cli.py",
+  "status": "DONE",
+  "tranche": "T-gov (slice 1)"
+ },
+ {
+  "file": "toolkit/tools/evidence/cli.py",
+  "status": "DONE",
+  "tranche": "T-evidence"
+ },
+ {
+  "file": "toolkit/tools/fetch/cli.py",
+  "status": "DONE",
+  "tranche": "T-operate (field report B5  -  vendoring a library needed curl outside the seam;"
+ },
+ {
+  "file": "toolkit/tools/file_tree/cli.py",
+  "status": "DONE",
+  "tranche": "T4 (stamped by tools/stamp, then implemented)"
+ },
+ {
+  "file": "toolkit/tools/fs_op/cli.py",
+  "status": "DONE",
+  "tranche": "C3 (mutation verbs)"
+ },
+ {
+  "file": "toolkit/tools/genesis/cli.py",
+  "status": "DONE",
+  "tranche": "E3 / genesis (Start-New first-class)"
+ },
+ {
+  "file": "toolkit/tools/git/cli.py",
+  "status": "DONE",
+  "tranche": "T5"
+ },
+ {
+  "file": "toolkit/tools/git_inspect/cli.py",
+  "status": "DONE",
+  "tranche": "T-operate (field report B4  -  a careful, privacy-gated commit needs ls-files/"
+ },
+ {
+  "file": "toolkit/tools/glob/cli.py",
+  "status": "DONE",
+  "tranche": "C1 (the hands)"
+ },
+ {
+  "file": "toolkit/tools/host_probe/cli.py",
+  "status": "DONE",
+  "tranche": "T4 (envelope via T4.0 tools._toolkit)"
+ },
+ {
+  "file": "toolkit/tools/http_probe/cli.py",
+  "status": "DONE",
+  "tranche": "T-operate (field report B2/B3  -  most local-server verification needs only an"
+ },
+ {
+  "file": "toolkit/tools/import_graph/cli.py",
+  "status": "DONE",
+  "tranche": "T-code-intel"
+ },
+ {
+  "file": "toolkit/tools/journal/cli.py",
+  "status": "DONE",
+  "tranche": "T-journal"
+ },
+ {
+  "file": "toolkit/tools/linenumber/cli.py",
+  "status": "DONE",
+  "tranche": "T-mine (batch)"
+ },
+ {
+  "file": "toolkit/tools/llm_shared.py",
+  "status": "DONE",
+  "tranche": "D1 / O1 (route local inference through one governed seam)"
+ },
+ {
+  "file": "toolkit/tools/memory_flush/cli.py",
+  "status": "DONE",
+  "tranche": "T-memory-workflow"
+ },
+ {
+  "file": "toolkit/tools/memory_workflow_shared.py",
+  "status": "DONE",
+  "tranche": "T-memory-workflow"
+ },
+ {
+  "file": "toolkit/tools/model_benchmark/cli.py",
+  "status": "DONE",
+  "tranche": "T-prompt-eval"
+ },
+ {
+  "file": "toolkit/tools/module_decomp_plan/cli.py",
+  "status": "DONE",
+  "tranche": "T-code-intel-more"
+ },
+ {
+  "file": "toolkit/tools/ollama_gov/cli.py",
+  "status": "DONE",
+  "tranche": "T-mine (batch)"
+ },
+ {
+  "file": "toolkit/tools/operation/cli.py",
+  "status": "DONE",
+  "tranche": "E4 / recovery"
+ },
+ {
+  "file": "toolkit/tools/operations_shared.py",
+  "status": "DONE",
+  "tranche": "E4 / recovery (recovery as normal operation)"
+ },
+ {
+  "file": "toolkit/tools/packaging_more_shared.py",
+  "status": "DONE",
+  "tranche": "T-packaging-more"
+ },
+ {
+  "file": "toolkit/tools/patch/cli.py",
+  "status": "DONE",
+  "tranche": "T8"
+ },
+ {
+  "file": "toolkit/tools/pdf_compress/cli.py",
+  "status": "DONE",
+  "tranche": "T-doc-pdf"
+ },
+ {
+  "file": "toolkit/tools/pdf_extract/cli.py",
+  "status": "DONE",
+  "tranche": "T-doc-pdf"
+ },
+ {
+  "file": "toolkit/tools/pdf_info/cli.py",
+  "status": "DONE",
+  "tranche": "T-doc-pdf"
+ },
+ {
+  "file": "toolkit/tools/pdf_interleave/cli.py",
+  "status": "DONE",
+  "tranche": "T-doc-pdf"
+ },
+ {
+  "file": "toolkit/tools/pdf_merge/cli.py",
+  "status": "DONE",
+  "tranche": "T-doc-pdf"
+ },
+ {
+  "file": "toolkit/tools/pdf_rotate/cli.py",
+  "status": "DONE",
+  "tranche": "T-doc-pdf"
+ },
+ {
+  "file": "toolkit/tools/pdf_shared.py",
+  "status": "DONE",
+  "tranche": "T-doc-pdf"
+ },
+ {
+  "file": "toolkit/tools/pdf_split/cli.py",
+  "status": "DONE",
+  "tranche": "T-doc-pdf"
+ },
+ {
+  "file": "toolkit/tools/pdf_thumbnails/cli.py",
+  "status": "DONE",
+  "tranche": "T-doc-pdf"
+ },
+ {
+  "file": "toolkit/tools/ping/cli.py",
+  "status": "DONE",
+  "tranche": "T3 (retrofit T4.0 onto tools._toolkit)"
+ },
+ {
+  "file": "toolkit/tools/plan/cli.py",
+  "status": "DONE",
+  "tranche": "E6 / planner engine (engine before cockpit)"
+ },
+ {
+  "file": "toolkit/tools/process_port_inspector/cli.py",
+  "status": "DONE",
+  "tranche": "T-ops-apply"
+ },
+ {
+  "file": "toolkit/tools/project_run/cli.py",
+  "status": "DONE",
+  "tranche": "T-operate + C2 (the keystone: arbitrary execution through the seam, so `Bash` never"
+ },
+ {
+  "file": "toolkit/tools/prompt_case_builder/cli.py",
+  "status": "DONE",
+  "tranche": "T-prompt-eval"
+ },
+ {
+  "file": "toolkit/tools/prompt_diff_report/cli.py",
+  "status": "DONE",
+  "tranche": "T-prompt-eval"
+ },
+ {
+  "file": "toolkit/tools/prompt_eval/cli.py",
+  "status": "DONE",
+  "tranche": "T-prompt-eval"
+ },
+ {
+  "file": "toolkit/tools/prompt_eval_shared.py",
+  "status": "DONE",
+  "tranche": "T-prompt-eval"
+ },
+ {
+  "file": "toolkit/tools/prompt_rubric_judge/cli.py",
+  "status": "DONE",
+  "tranche": "T-prompt-eval"
+ },
+ {
+  "file": "toolkit/tools/provenance/cli.py",
+  "status": "DONE",
+  "tranche": "E5 / formation provenance"
+ },
+ {
+  "file": "toolkit/tools/provenance_shared.py",
+  "status": "DONE",
+  "tranche": "E5 / formation provenance"
+ },
+ {
+  "file": "toolkit/tools/rag_retrieve/cli.py",
+  "status": "DONE",
+  "tranche": "T-memory-workflow"
+ },
+ {
+  "file": "toolkit/tools/read_file/cli.py",
+  "status": "DONE",
+  "tranche": "C1 (the hands)"
+ },
+ {
+  "file": "toolkit/tools/repo_search/cli.py",
+  "status": "DONE",
+  "tranche": "T-operational-audit"
+ },
+ {
+  "file": "toolkit/tools/report/cli.py",
+  "status": "DONE",
+  "tranche": "T-mine (batch)"
+ },
+ {
+  "file": "toolkit/tools/rules_eval/cli.py",
+  "status": "DONE",
+  "tranche": "T-memory-workflow"
+ },
+ {
+  "file": "toolkit/tools/scaffold_project/cli.py",
+  "status": "DONE",
+  "tranche": "E1 / scaffold (new-project materializer)"
+ },
+ {
+  "file": "toolkit/tools/scaffold_shared.py",
+  "status": "DONE",
+  "tranche": "E1 / scaffold (new-project materializer)"
+ },
+ {
+  "file": "toolkit/tools/schema_diff/cli.py",
+  "status": "DONE",
+  "tranche": "T-operational-audit"
+ },
+ {
+  "file": "toolkit/tools/secret_audit/cli.py",
+  "status": "DONE",
+  "tranche": "T-operational-audit"
+ },
+ {
+  "file": "toolkit/tools/semantic_chunk/cli.py",
+  "status": "DONE",
+  "tranche": "T-memory-workflow"
+ },
+ {
+  "file": "toolkit/tools/session_record/cli.py",
+  "status": "DONE",
+  "tranche": "T-memory-workflow"
+ },
+ {
+  "file": "toolkit/tools/session_replay/cli.py",
+  "status": "DONE",
+  "tranche": "T-memory-workflow"
+ },
+ {
+  "file": "toolkit/tools/sidecar_install/cli.py",
+  "status": "DONE",
+  "tranche": "T-vend (make the toolkit installable)"
+ },
+ {
+  "file": "toolkit/tools/smoke_runner/cli.py",
+  "status": "DONE",
+  "tranche": "T-ops-apply"
+ },
+ {
+  "file": "toolkit/tools/snapshot_diff/cli.py",
+  "status": "DONE",
+  "tranche": "T-packaging-core"
+ },
+ {
+  "file": "toolkit/tools/snapshot_verify/cli.py",
+  "status": "DONE",
+  "tranche": "T-packaging-core"
+ },
+ {
+  "file": "toolkit/tools/sqlite_exec/cli.py",
+  "status": "DONE",
+  "tranche": "C4 (field report B6: sqlite_inspect was read-only; data-curation and state scrubbing"
+ },
+ {
+  "file": "toolkit/tools/sqlite_inspect/cli.py",
+  "status": "DONE",
+  "tranche": "T-operational-audit"
+ },
+ {
+  "file": "toolkit/tools/stamp/cli.py",
+  "status": "DONE",
+  "tranche": "T4.0"
+ },
+ {
+  "file": "toolkit/tools/summarize_shared.py",
+  "status": "DONE",
+  "tranche": "T6 / Gf (attach returns purpose)"
+ },
+ {
+  "file": "toolkit/tools/symbol_graph/cli.py",
+  "status": "DONE",
+  "tranche": "D2 / G6+G5 (symbol graph + node summaries)"
+ },
+ {
+  "file": "toolkit/tools/symbol_graph_shared.py",
+  "status": "DONE",
+  "tranche": "D2 / G6 (symbol graph)"
+ },
+ {
+  "file": "toolkit/tools/tempserver/cli.py",
+  "status": "DONE",
+  "tranche": "T-packaging-more"
+ },
+ {
+  "file": "toolkit/tools/test_scaffold/cli.py",
+  "status": "DONE",
+  "tranche": "T-code-intel-more"
+ },
+ {
+  "file": "toolkit/tools/tkinter_widget_tree/cli.py",
+  "status": "DONE",
+  "tranche": "T-code-intel"
+ },
+ {
+  "file": "toolkit/tools/ui_callback_graph/cli.py",
+  "status": "DONE",
+  "tranche": "T-code-intel-more"
+ },
+ {
+  "file": "toolkit/tools/vendor_export/cli.py",
+  "status": "DONE",
+  "tranche": "T-packaging-core"
+ },
+ {
+  "file": "toolkit/tools/web_search/cli.py",
+  "status": "DONE",
+  "tranche": "C6 (seam-completeness: discovery was the last verb outside the seam)"
+ },
+ {
+  "file": "toolkit/tools/workflow_decompose/cli.py",
+  "status": "DONE",
+  "tranche": "T-memory-workflow"
+ },
+ {
+  "file": "toolkit/tools/workflow_templates/cli.py",
+  "status": "DONE",
+  "tranche": "T-memory-workflow"
+ },
+ {
+  "file": "toolkit/tools/workspace_audit/cli.py",
+  "status": "DONE",
+  "tranche": "T-operational-audit"
+ },
+ {
+  "file": "toolkit/tools/write_file/cli.py",
+  "status": "DONE",
+  "tranche": "C1 (the hands)"
+ }
+]

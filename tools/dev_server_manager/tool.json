@@ -1,0 +1,70 @@
+{
+  "id": "dev_server_manager",
+  "summary": "Guarded start/status/stop/tail/health management for registered project dev-server commands.",
+  "category": "operations",
+  "authority": "Apply",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/dev_server_manager/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": [
+          "status",
+          "start",
+          "stop",
+          "restart",
+          "tail",
+          "health"
+        ],
+        "default": "status"
+      },
+      "root": {
+        "type": "string",
+        "description": "workspace-relative project root"
+      },
+      "command_id": {
+        "type": "string"
+      },
+      "confirm": {
+        "type": "boolean",
+        "default": false
+      },
+      "health_url": {
+        "type": "string"
+      },
+      "port": {
+        "type": "integer"
+      },
+      "tail_lines": {
+        "type": "integer",
+        "default": 80
+      },
+      "timeout_seconds": {
+        "type": "number",
+        "default": 5
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "summary": {
+        "type": "object"
+      },
+      "servers": {
+        "type": "array"
+      },
+      "started": {
+        "type": "boolean"
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "id": "stamp",
+  "summary": "Generate a new tool/app skeleton (cli.py + tool.json) wired to tools._toolkit.",
+  "category": "scaffold",
+  "authority": "Apply",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/stamp/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "slug [a-z0-9_-]; the new tool/app id"
+      },
+      "kind": {
+        "type": "string",
+        "enum": [
+          "tool",
+          "app"
+        ],
+        "default": "tool"
+      },
+      "summary": {
+        "type": "string"
+      },
+      "category": {
+        "type": "string"
+      },
+      "authority": {
+        "type": "string",
+        "enum": [
+          "Observe",
+          "Sandbox",
+          "Apply"
+        ],
+        "default": "Observe"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "created_id": {
+        "type": "string"
+      },
+      "created": {
+        "type": "array"
+      }
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "id": "genesis",
+  "summary": "THE 'Start New' front door. Begin a project from an INTENTION (not existing code): record a durable workspace identity + intent + authority and seed the first journal entry. No domain required.",
+  "category": "orientation",
+  "authority": "Apply",
+  "operates_on": "project",
+  "writes": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/genesis/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "intent": {
+        "type": "string",
+        "description": "one sentence: what this project is for. REQUIRED - genesis begins a project from this intention."
+      },
+      "name": {
+        "type": "string",
+        "description": "a name for the project (default: untitled-project)"
+      },
+      "authority": {
+        "type": "string",
+        "enum": ["Observe", "Sandbox", "Apply"],
+        "description": "optional authority ceiling recorded for this workspace (a hint; enforcement stays with governance)"
+      },
+      "profile": {
+        "type": "string",
+        "description": "optional profile HINT (e.g. python-app). A suggestion recorded on the workspace, never a forced identity."
+      },
+      "overwrite": {
+        "type": "boolean",
+        "default": false,
+        "description": "replace an existing workspace identity (its recorded intent changes). Refused without this."
+      },
+      "apply": {
+        "type": "boolean",
+        "default": false,
+        "description": "record for real. Without it you get a no-write preview."
+      }
+    },
+    "required": ["intent"]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "created": { "type": "boolean" },
+      "workspace": { "type": "object", "description": "the recorded identity: workspace_id, name, intent, authority, profile_hint, created_at" },
+      "journal_seeded": { "type": "boolean", "description": "whether the first journal entry was written (best-effort through the seam)" },
+      "dry_run": { "type": "boolean" },
+      "next": { "type": "array" }
+    }
+  },
+  "provenance": {
+    "donor": "",
+    "treatment": "NEW",
+    "note": "E3. Makes 'Start New' first-class and converges it onto the same observe->act loop as attach. Writes only sidecar state (workspace.json + journal); nothing into the target. attach reads workspace.json and maps at whatever evidence density exists."
+  }
+}

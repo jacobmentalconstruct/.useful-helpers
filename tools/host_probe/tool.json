@@ -1,0 +1,35 @@
+{
+  "id": "host_probe",
+  "summary": "Probe Python version, platform, and common developer-tool availability (git, node, docker, ...).",
+  "category": "introspection",
+  "authority": "Observe",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/host_probe/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {}
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "python": {
+        "type": "object"
+      },
+      "platform": {
+        "type": "object"
+      },
+      "env": {
+        "type": "object"
+      },
+      "tools_present": {
+        "type": "object"
+      }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "id": "dep_install",
+  "summary": "Governed dependency install behind an HITL batch gate: the dry-run lists the COMPLETE dependency set (with sources and target venv); one apply installs the whole batch. Never installs into the system interpreter.",
+  "category": "operations",
+  "authority": "Apply",
+  "operates_on": "project",
+  "writes": "target",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/dep_install/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "packages": { "type": "array", "items": { "type": "string" }, "description": "explicit package specs to add to the set" },
+      "requirements": { "type": "string", "description": "a requirements file (default: auto-detect requirements.txt + pyproject dependencies)" },
+      "venv": { "type": "string", "default": ".venv", "description": "target virtualenv (confined to the roots)" },
+      "create_venv": { "type": "boolean", "default": false, "description": "create the venv if missing (required rather than using the system interpreter)" },
+      "apply": { "type": "boolean", "description": "install the whole batch (else preview the list)" }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "dry_run": { "type": "boolean" },
+      "venv": { "type": "string" },
+      "venv_exists": { "type": "boolean" },
+      "count": { "type": "integer" },
+      "packages": { "type": "array", "description": "the full set: [{package, source}]  -  this is the ONE list to approve" },
+      "installed": { "type": "boolean" },
+      "exit_code": { "type": "integer" }
+    }
+  }
+}

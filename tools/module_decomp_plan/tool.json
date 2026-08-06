@@ -1,0 +1,42 @@
+{
+  "id": "module_decomp_plan",
+  "summary": "Propose Python module decomposition candidates from size, symbols, imports, and complexity cues.",
+  "category": "code-intel",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/module_decomp_plan/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "description": "workspace-relative root"
+      },
+      "max_files": {
+        "type": "integer",
+        "default": 500
+      },
+      "limit": {
+        "type": "integer",
+        "default": 20
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "summary": {
+        "type": "object"
+      },
+      "candidates": {
+        "type": "array"
+      }
+    }
+  }
+}

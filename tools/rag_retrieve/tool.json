@@ -1,0 +1,62 @@
+{
+  "id": "rag_retrieve",
+  "summary": "Retrieve relevant context from text, files, or precomputed chunks.",
+  "category": "memory-workflow",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/rag_retrieve/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      },
+      "path": {
+        "type": "string"
+      },
+      "paths": {
+        "type": "array"
+      },
+      "chunks": {
+        "type": "array"
+      },
+      "chunks_path": {
+        "type": "string"
+      },
+      "top_k": {
+        "type": "integer",
+        "default": 5
+      },
+      "context": {
+        "type": "boolean",
+        "default": true
+      }
+    },
+    "required": [
+      "query"
+    ]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "results": {
+        "type": "array"
+      },
+      "context": {
+        "type": "string"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

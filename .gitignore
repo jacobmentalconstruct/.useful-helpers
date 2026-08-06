@@ -1,0 +1,167 @@
+# Useful Helpers Workbench - repository ignore rules
+#
+# Established Tranche 0, 2026-08-05.
+#
+# This file replaces an inherited copy of the toolkit's own .gitignore, which
+# described itself as ignoring "ONLY the toolkit's own output" and was written
+# from the toolkit's perspective rather than the repository root's. The
+# toolkit keeps its own .gitignore at toolkit/.gitignore; the rules below are
+# the workbench root's.
+#
+# Principle: runtime state and generated artifacts are never checked in, and no
+# inherited runtime database, log, or crash record is tracked.
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+.build_venv/
+
+# --- Workbench runtime state (never tracked) ---
+# The state root normally resolves to a platform user-data location; a
+# development override (USEFUL_HELPERS_STATE_ROOT) may place it here.
+/state/
+/artifacts/
+*.sqlite3
+*.sqlite3-journal
+*.sqlite3-wal
+*.sqlite3-shm
+
+# --- Toolkit state and exhaust (any depth) ---
+# Durable memory is engagement-local; artifacts and exports are regenerable.
+_state/
+_artifacts/
+_exports/
+logs/
+
+# Derived from tools/*/tool.json via `cli registry-refresh`.
+toolkit/config/registry.json
+
+# --- Historical harness output ---
+# _harness/ is retained as reference evidence; its run output is not.
+/_harness/runs/
+
+# --- Installed sidecar copies inside harness targets ---
+# The harness copies toolkit/ into <target>/.useful-helpers/ fresh on every run.
+# A committed copy is a stale duplicate that drifts from the canonical toolkit:
+# one such copy claimed VERSION 1.1.0 while carrying 78 tools against the real 95.
+# Never track an installed copy.
+_harness/targets/**/.useful-helpers/
+**/.useful-helpers/
+
+# --- Test scratch ---
+# smoke_test.py and the harness create temporary sidecar installs here.
+.useful-helpers-test-tmp/
+
+# --- Removal staging ---
+# NOTE: this directory is emptied by the host, so a move here is effectively an
+# immediate permanent delete, not reversible staging. Treat it as deletion.
+# This sandbox mount denies unlink, so removals are staged here for the operator
+# to delete from the host. Never tracked.
+/_trash/
+
+# --- Logs and crash records ---
+*.log
+crash_*.json
+crash_*.txt
+
+# --- COMPILED BINARIES AND BUILD OUTPUT (never commit) ---
+# A 34 MB NoStringsPDF.exe was tracked; PyInstaller output is regenerable.
+*.exe
+*.dll
+*.so
+*.dylib
+*.pyd
+*.msi
+*.app
+**/_Release/
+**/_utilities-used-for-installation/
+
+# --- ARCHIVES (never commit) ---
+# A 34 MB _NoStringsPDF_backup.tar.gz was tracked - a backup OF the tree it sits in.
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+*.gz
+*.bz2
+*.xz
+
+# --- LARGE DATA, CORPORA AND MODEL BLOBS (never commit) ---
+# A 27 MB dictionary corpus was tracked.
+*.npy
+*.npz
+*.bin
+*.gguf
+*.safetensors
+*.pt
+*.pth
+*.onnx
+*.model
+*.pkl
+*.parquet
+**/_corpuses/
+**/corpora/
+
+# --- INHERITED RUNTIME STATE (never commit) ---
+# Predecessor apps carry live databases, WAL files, crash dumps and snapshots.
+# These are another project's runtime memory, not source.
+*.db
+*.db-wal
+*.db-shm
+*.sqlite-wal
+*.sqlite-shm
+**/runtime/snapshots/
+**/state/agent_memory*
+**/_sandbox/runs/
+crash_*/
+
+# --- SECRETS AND SIGNING MATERIAL (never commit) ---
+# A code-signing certificate is present in the daily-driver target tree at
+# _harness/targets/_UsefulHelperSCRIPTS/_UsefulHelperScriptsMENU/developer_cert.pfx
+# and may carry a private key. These patterns are deliberately broad.
+*.pfx
+*.p12
+*.pem
+*.key
+*.jks
+*.keystore
+id_rsa*
+id_ed25519*
+.env
+*.env
+!.env.example
+secrets.json
+credentials.json
+*.credentials
+
+# --- Build output inside reference/target trees ---
+/_harness/targets/**/build/
+/_harness/targets/**/dist/
+*.spec.bak
+
+# --- Editor and OS noise ---
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# --- Deliberately tracked ---
+# .bcc/   builder control: contract, plan, state, provenance, testing, matrix
+# _docs/  builder documentation and the active journal

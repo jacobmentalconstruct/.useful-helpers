@@ -1,0 +1,62 @@
+{
+  "id": "prompt_case_builder",
+  "summary": "Build deterministic benchmark/training case JSON from a scenario and constraints.",
+  "category": "prompt-eval",
+  "authority": "Apply",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/prompt_case_builder/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "prompt": {
+        "type": "string"
+      },
+      "scenario": {
+        "type": "string"
+      },
+      "constraints": {
+        "type": "array"
+      },
+      "id": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      },
+      "probe_type": {
+        "type": "string"
+      },
+      "write": {
+        "type": "boolean",
+        "default": false
+      },
+      "out": {
+        "type": "string"
+      },
+      "overwrite": {
+        "type": "boolean",
+        "default": false
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "case": {
+        "type": "object"
+      },
+      "suite": {
+        "type": "object"
+      },
+      "written": {
+        "type": "boolean"
+      }
+    }
+  }
+}

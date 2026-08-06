@@ -1,0 +1,37 @@
+{
+  "id": "web_search",
+  "summary": "Governed web search behind a provider adapter (searxng|brave|tavily): preview shows what would be sent where, apply returns normalised {title,url,snippet} results. Audit-logged; never fabricates when unconfigured.",
+  "category": "operations",
+  "authority": "Apply",
+  "operates_on": "project",
+  "writes": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/web_search/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "query": { "type": "string", "description": "the search query" },
+      "limit": { "type": "integer", "default": 8, "description": "max results (cap 25)" },
+      "evidence": { "type": "boolean", "description": "attach the results to the Bag of Evidence" },
+      "apply": { "type": "boolean", "description": "actually run the search (else preview what would be sent)" }
+    },
+    "required": ["query"]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "dry_run": { "type": "boolean" },
+      "provider": { "type": "string" },
+      "endpoint": { "type": "string" },
+      "query": { "type": "string" },
+      "searched": { "type": "boolean" },
+      "count": { "type": "integer" },
+      "results": { "type": "array" },
+      "evidence_id": { "type": "string" },
+      "configure": { "type": "string", "description": "how to configure a provider, when none is set" }
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "id": "bd_index",
+  "summary": "Run split -> emit -> scribe for a workspace-local source into a BD graph DB.",
+  "category": "bd-graph",
+  "authority": "Apply",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/bd_index/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string"
+      },
+      "root": {
+        "type": "string"
+      },
+      "db": {
+        "type": "string"
+      },
+      "max_size": {
+        "type": "integer",
+        "default": 1000
+      },
+      "max_files": {
+        "type": "integer",
+        "default": 250
+      },
+      "dimensions": {
+        "type": "integer",
+        "default": 16
+      },
+      "limit": {
+        "type": "integer",
+        "default": 5000
+      },
+      "dry_run": {
+        "type": "boolean",
+        "default": true
+      },
+      "confirm": {
+        "type": "boolean",
+        "default": false
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "status": {
+        "type": "object"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

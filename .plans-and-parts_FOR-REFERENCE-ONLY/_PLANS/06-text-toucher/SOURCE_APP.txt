@@ -1,0 +1,5 @@
+Parts-bin reference app: _TextTOUCHER
+Source in this bundle:   ../../_PARTS-FOR-PLANS/_TextTOUCHER/
+Contract:                TEXT_TOUCHER_TOOL_CONTRACT.md
+Review journal:          0008-text-toucher-tool-contract-review.md
+Adapter:                 adapter-text_toucher.py

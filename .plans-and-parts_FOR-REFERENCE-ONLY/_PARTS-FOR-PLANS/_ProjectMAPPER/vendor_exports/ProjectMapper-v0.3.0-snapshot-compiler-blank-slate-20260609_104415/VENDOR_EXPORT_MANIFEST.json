@@ -1,0 +1,40 @@
+{
+  "app_name": "ProjectMapper Snapshot Compiler",
+  "app_version": "0.3.0-snapshot-compiler",
+  "export_kind": "blank_slate_vendor_app",
+  "export_name": "ProjectMapper-v0.3.0-snapshot-compiler-blank-slate-20260609_104415",
+  "exported_at": "2026-06-09T10:44:15",
+  "included_paths": [
+    ".gitignore",
+    "INSTALL_FRESH_START.md",
+    "LICENSE.md",
+    "README.md",
+    "VENDOR_EXPORT_MANIFEST.json",
+    "assets/Screenshots/Screenshot_ex01.PNG",
+    "assets/icons/projectmapper.ico",
+    "requirements.txt",
+    "run.bat",
+    "setup_env.bat",
+    "src/__init__.py",
+    "src/app.py",
+    "tools/export_vendor_app.py"
+  ],
+  "skipped": [
+    {
+      "path": "__pycache__",
+      "reason": "excluded_name:__pycache__"
+    },
+    {
+      "path": "__pycache__",
+      "reason": "excluded_name:__pycache__"
+    }
+  ],
+  "blank_slate_guarantees": [
+    "No git history or repository metadata is copied.",
+    "No virtual environment is copied.",
+    "No Python cache files are copied.",
+    "No prior _projectmapper snapshot outputs are copied.",
+    "No SQLite snapshot/history databases are copied.",
+    "No local .env files are copied."
+  ]
+}

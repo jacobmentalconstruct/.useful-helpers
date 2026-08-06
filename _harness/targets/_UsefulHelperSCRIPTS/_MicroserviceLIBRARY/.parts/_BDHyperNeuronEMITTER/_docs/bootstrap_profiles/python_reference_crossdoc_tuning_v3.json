@@ -1,0 +1,26 @@
+{
+  "edge_threshold": 0.24,
+  "dominance_threshold": 0.43,
+  "surface_fractions": {
+    "grammatical": 0.3,
+    "structural": 0.3,
+    "statistical": 0.2,
+    "semantic": 0.15,
+    "verbatim": 0.05
+  },
+  "grammatical_match_profile": {
+    "exact_code_kind": 1.0,
+    "exact_heading_kind": 0.74,
+    "exact_structured_prose_kind": 0.44,
+    "exact_generic_prose_kind": 0.2,
+    "exact_fragment_kind": 0.16,
+    "family_code_kind": 0.5,
+    "family_prose_kind": 0.12,
+    "family_fragment_kind": 0.05
+  },
+  "explicit_reference_profile": {
+    "overlap_weight": 0.18,
+    "target_hint_bonus": 0.12
+  },
+  "semantic_absent_threshold_scale": 0.9
+}

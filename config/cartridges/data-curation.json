@@ -1,0 +1,28 @@
+{
+  "domain": "data-curation",
+  "summary": "A body of structured data -- tables, datasets, databases.",
+  "detect": {
+    "markers": {},
+    "extensions": {
+      ".csv": 2, ".tsv": 2, ".parquet": 3, ".xlsx": 2, ".xls": 2,
+      ".sqlite": 3, ".sqlite3": 3, ".db": 2, ".jsonl": 2, ".ndjson": 2
+    }
+  },
+  "entry_hints": [],
+  "mounted": [
+    "file_tree", "repo_search", "sqlite_inspect", "sqlite_exec", "schema_diff",
+    "semantic_chunk", "rag_retrieve", "snapshot_verify", "snapshot_diff",
+    "report", "secret_audit",
+    "journal", "evidence"
+  ],
+  "policy": {
+    "secret_audit": {
+      "confidence": "high",
+      "note": "Raw data bodies frequently carry PII/credentials. Run this before anything leaves the workbench."
+    },
+    "sqlite_inspect": {
+      "confidence": "high",
+      "note": "Read-only: schema, rows, counts. There is no governed write path for SQLite yet."
+    }
+  }
+}

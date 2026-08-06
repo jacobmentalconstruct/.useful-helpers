@@ -1,0 +1,38 @@
+{
+  "id": "sidecar_install",
+  "summary": "Dry-run-first installer: copy a clean-app view of the toolkit into an external project's .useful-helpers/ sidecar. Writes exactly one directory and nothing else  -  the target is never modified.",
+  "category": "packaging",
+  "authority": "Apply",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/sidecar_install/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "target": { "type": "string", "description": "existing project folder to install the sidecar into (external)" },
+      "folder": { "type": "string", "default": ".useful-helpers", "description": "sidecar subfolder name inside the target" },
+      "dry_run": { "type": "boolean", "default": true },
+      "confirm": { "type": "boolean", "default": false, "description": "required when dry_run is false" },
+      "overwrite": { "type": "boolean", "default": false, "description": "clean reinstall: wipe the existing sidecar first (destroys its runtime memory)" },
+      "update": { "type": "boolean", "default": false, "description": "overlay code onto an existing sidecar, preserving its state root (journal/evidence/event-log/workbench)" }
+    },
+    "required": ["target"]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "target": { "type": "string" },
+      "sidecar": { "type": "string" },
+      "file_count": { "type": "integer" },
+      "written_count": { "type": "integer" }
+    }
+  },
+  "provenance": {
+    "donor": "",
+    "treatment": "NEW",
+    "note": "Vending step for the finished toolkit. Reuses vendor_export's clean-app exclusion lists; deliberately writes outside the workspace (that is the install), guarded by dry-run-first + confirm and self-overlap refusal."
+  }
+}

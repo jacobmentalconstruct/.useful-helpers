@@ -1,0 +1,58 @@
+{
+  "id": "git",
+  "summary": "Git: init a repo, status, or add -> commit (-> push), with a .gitignore safety gate.",
+  "category": "git",
+  "authority": "Apply",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/git/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "repo": {
+        "type": "string",
+        "description": "path to the repo (default: the project root)"
+      },
+      "action": {
+        "type": "string",
+        "enum": [
+          "init",
+          "status",
+          "commit",
+          "sync"
+        ],
+        "default": "status"
+      },
+      "message": {
+        "type": "string",
+        "description": "commit message (required for commit/sync)"
+      },
+      "allow_no_gitignore": {
+        "type": "boolean",
+        "description": "override the no-.gitignore safety gate"
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "action": {
+        "type": "string"
+      },
+      "branch": {
+        "type": "string"
+      },
+      "clean": {
+        "type": "boolean"
+      },
+      "steps": {
+        "type": "array"
+      }
+    }
+  }
+}

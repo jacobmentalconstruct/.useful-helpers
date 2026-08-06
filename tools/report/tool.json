@@ -1,0 +1,40 @@
+{
+  "id": "report",
+  "summary": "Structural logical-analysis of Python code (file or tree): purpose, classes/methods, functions, imports.",
+  "category": "analysis",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/report/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string",
+        "description": "a .py file or a directory to walk (default: cwd)"
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "kind": {
+        "type": "string"
+      },
+      "summary": {
+        "type": "object"
+      },
+      "modules": {
+        "type": "array"
+      },
+      "markdown": {
+        "type": "string"
+      }
+    }
+  }
+}

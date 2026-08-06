@@ -1,0 +1,35 @@
+{
+  "id": "read_file",
+  "summary": "Read a file's contents (optionally a 1-based line range), byte-capped, within the work target or toolkit home.",
+  "category": "introspection",
+  "authority": "Observe",
+  "operates_on": "project",
+  "writes": "none",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/read_file/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "path": { "type": "string", "description": "file path (relative to the work target, or absolute within the roots)" },
+      "offset": { "type": "integer", "description": "first line to return (1-based)" },
+      "limit": { "type": "integer", "description": "max lines to return from offset" },
+      "max_bytes": { "type": "integer", "default": 1000000 }
+    },
+    "required": ["path"]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "path": { "type": "string" },
+      "content": { "type": "string" },
+      "start_line": { "type": "integer" },
+      "end_line": { "type": "integer" },
+      "total_lines": { "type": "integer" },
+      "bytes": { "type": "integer" },
+      "truncated": { "type": "boolean" }
+    }
+  }
+}

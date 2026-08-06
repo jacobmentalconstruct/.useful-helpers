@@ -1,0 +1,8 @@
+{
+  "steps": [
+    { "id": "roll", "tool": "event_log", "args": { "action": "rollup" } },
+    { "id": "log", "tool": "journal", "args": {
+        "action": "add", "phase": "T-gov", "title": "Governance rollup",
+        "summary": "@roll.markdown" } }
+  ]
+}

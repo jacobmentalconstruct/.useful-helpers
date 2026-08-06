@@ -1,0 +1,33 @@
+{
+  "id": "bd_knowledge",
+  "summary": "Ingest journal + evidence into the BD graph as knowledge nodes linked to the code they reference (the 'why' layer). Preview-first.",
+  "category": "bd-graph",
+  "authority": "Apply",
+  "operates_on": "project",
+  "writes": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/bd_knowledge/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "db": { "type": "string", "description": "graph DB (default: the toolkit's bd_graph store)" },
+      "journal_db": { "type": "string", "description": "override journal DB path (default: state root)" },
+      "evidence_db": { "type": "string", "description": "override evidence DB path (default: state root)" },
+      "link_cap": { "type": "integer", "default": 50, "description": "max code links per knowledge node" },
+      "dry_run": { "type": "boolean", "default": true },
+      "confirm": { "type": "boolean", "default": false },
+      "apply": { "type": "boolean", "description": "execute for real (equivalent to dry_run:false + confirm:true)" }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "dry_run": { "type": "boolean" },
+      "summary": { "type": "object" },
+      "status": { "type": "object" }
+    }
+  }
+}

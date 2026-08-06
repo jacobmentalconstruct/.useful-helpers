@@ -1,0 +1,60 @@
+{
+  "id": "dead_code",
+  "summary": "Unused-symbol candidates proven by reachability over the RESOLVED symbol graph - dead clusters and name coincidences included - with an honesty ledger bounding the proof.",
+  "category": "code-intel",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/dead_code/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "description": "workspace-relative root"
+      },
+      "max_files": {
+        "type": "integer",
+        "default": 500
+      },
+      "limit": {
+        "type": "integer",
+        "default": 50
+      },
+      "include_private": {
+        "type": "boolean",
+        "default": false
+      },
+      "entrypoint_decorators": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "extra decorator names treated as framework entrypoints (merged with defaults)"
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "summary": {
+        "type": "object"
+      },
+      "candidates": {
+        "type": "array"
+      },
+      "warnings": {
+        "type": "array"
+      },
+      "honesty": {
+        "type": "object",
+        "description": "unresolved-construct ledger (dynamic dispatch, star imports) that bounds what 'unreachable' proves"
+      }
+    }
+  }
+}

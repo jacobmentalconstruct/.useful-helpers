@@ -1,0 +1,64 @@
+{
+  "id": "test_scaffold",
+  "summary": "Generate preview-first unittest/pytest starter tests for a Python module; writes only with write:true.",
+  "category": "code-intel",
+  "authority": "Apply",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/test_scaffold/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string",
+        "description": "workspace-relative Python file"
+      },
+      "framework": {
+        "type": "string",
+        "enum": [
+          "unittest",
+          "pytest"
+        ],
+        "default": "unittest"
+      },
+      "module": {
+        "type": "string",
+        "description": "override import module path"
+      },
+      "out": {
+        "type": "string",
+        "description": "workspace-relative output test path"
+      },
+      "write": {
+        "type": "boolean",
+        "default": false
+      },
+      "overwrite": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "required": [
+      "path"
+    ]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "summary": {
+        "type": "object"
+      },
+      "content": {
+        "type": "string"
+      },
+      "written": {
+        "type": "boolean"
+      }
+    }
+  }
+}

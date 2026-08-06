@@ -1,0 +1,44 @@
+{
+  "id": "tkinter_widget_tree",
+  "summary": "Extract Tkinter/ttk windows, widgets, layout/config calls, commands, and binds without launching UI.",
+  "category": "code-intel",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/tkinter_widget_tree/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "description": "workspace-relative root"
+      },
+      "max_files": {
+        "type": "integer",
+        "default": 500
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "summary": {
+        "type": "object"
+      },
+      "windows": {
+        "type": "array"
+      },
+      "widgets": {
+        "type": "array"
+      },
+      "widget_types": {
+        "type": "object"
+      }
+    }
+  }
+}

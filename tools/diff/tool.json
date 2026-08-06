@@ -1,0 +1,35 @@
+{
+  "id": "diff",
+  "summary": "Unified diff between two files (paths within the roots) or inline texts; reports the diff plus added/removed line counts.",
+  "category": "introspection",
+  "authority": "Observe",
+  "operates_on": "project",
+  "writes": "none",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/diff/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "a": { "type": "string", "description": "left file path (or use a_text)" },
+      "b": { "type": "string", "description": "right file path (or use b_text)" },
+      "a_text": { "type": "string", "description": "left inline text" },
+      "b_text": { "type": "string", "description": "right inline text" },
+      "context": { "type": "integer", "default": 3, "description": "lines of context" },
+      "from_label": { "type": "string" },
+      "to_label": { "type": "string" }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "identical": { "type": "boolean" },
+      "added": { "type": "integer" },
+      "removed": { "type": "integer" },
+      "diff": { "type": "string" },
+      "truncated": { "type": "boolean" }
+    }
+  }
+}

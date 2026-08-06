@@ -1,0 +1,53 @@
+{
+  "id": "model_benchmark",
+  "summary": "Load benchmark cases and either emit a run plan or evaluate supplied responses.",
+  "category": "prompt-eval",
+  "authority": "Observe",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/model_benchmark/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "suite": {
+        "type": "object"
+      },
+      "suite_path": {
+        "type": "string"
+      },
+      "suite_name": {
+        "type": "string",
+        "default": "default"
+      },
+      "responses": {
+        "type": "object"
+      },
+      "constraints": {
+        "type": "array"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 50
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "run_plan": {
+        "type": "array"
+      },
+      "results": {
+        "type": "array"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+Parts-bin reference app: _WasmInferenceWRAPPER
+Source in this bundle:   ../../_PARTS-FOR-PLANS/_WasmInferenceWRAPPER/
+Contract:                WASM_INFERENCE_WRAPPER_TOOL_CONTRACT.md
+Review journal:          0021-wasm-inference-wrapper-contract-scaffold.md
+Adapter:                 adapter-wasm_inference_wrapper.py

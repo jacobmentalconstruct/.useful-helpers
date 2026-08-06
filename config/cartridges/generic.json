@@ -1,0 +1,16 @@
+{
+  "domain": "generic",
+  "summary": "Fallback -- the target's kind was not confidently identified. Structural tools only.",
+  "detect": { "markers": {}, "extensions": {} },
+  "entry_hints": [],
+  "mounted": [
+    "file_tree", "repo_search", "report", "secret_audit", "git_inspect",
+    "journal", "evidence"
+  ],
+  "policy": {
+    "_cartridge": {
+      "confidence": "low",
+      "note": "No domain was detected, so nothing here is tuned to this target. Mounts only tools whose output is objective regardless of domain. Pick a cartridge explicitly with attach {\"domain\": \"...\"} if you know better."
+    }
+  }
+}

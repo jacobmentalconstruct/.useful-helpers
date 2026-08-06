@@ -1,0 +1,49 @@
+{
+  "id": "session_replay",
+  "summary": "Replay workspace-local session memory as events and transcript text.",
+  "category": "memory-workflow",
+  "authority": "Observe",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/session_replay/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "session": {
+        "type": "string"
+      },
+      "root": {
+        "type": "string"
+      },
+      "role": {
+        "type": "string"
+      },
+      "kind": {
+        "type": "string"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 50
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "events": {
+        "type": "array"
+      },
+      "transcript": {
+        "type": "string"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

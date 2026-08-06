@@ -1,0 +1,94 @@
+{
+  "id": "ollama_gov",
+  "summary": "Hardware-aware Ollama governor: list safety tiers, list local models, run token-governed inference, and report what local inference has cost.",
+  "category": "model",
+  "authority": "Sandbox",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/ollama_gov/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": [
+          "tiers",
+          "models",
+          "run",
+          "usage"
+        ],
+        "default": "tiers"
+      },
+      "search": {
+        "type": "string",
+        "description": "filter for models action"
+      },
+      "model": {
+        "type": "string",
+        "description": "model name for run action"
+      },
+      "prompt": {
+        "type": "string",
+        "description": "prompt for run action"
+      },
+      "tier": {
+        "type": "string",
+        "description": "safety tier name (governs num_ctx/num_predict)"
+      },
+      "num_ctx": {
+        "type": "integer"
+      },
+      "num_predict": {
+        "type": "integer"
+      },
+      "temperature": {
+        "type": "number",
+        "description": "sampling temperature for run action"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 20,
+        "description": "usage action: how many recent call records to return"
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "action": {
+        "type": "string"
+      },
+      "tiers": {
+        "type": "object"
+      },
+      "models": {
+        "type": "array"
+      },
+      "response": {
+        "type": "string"
+      },
+      "duration_ms": {
+        "type": "integer"
+      },
+      "prompt_tokens": {
+        "type": "integer"
+      },
+      "output_tokens": {
+        "type": "integer"
+      },
+      "calls": {
+        "type": "integer",
+        "description": "usage action: total recorded local-model calls"
+      },
+      "by_purpose": {
+        "type": "object",
+        "description": "usage action: calls/duration/output tokens grouped by the capability that spent them"
+      }
+    }
+  }
+}

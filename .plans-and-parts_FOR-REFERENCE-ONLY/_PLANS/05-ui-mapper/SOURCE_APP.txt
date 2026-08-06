@@ -1,0 +1,5 @@
+Parts-bin reference app: _UiMAPPER
+Source in this bundle:   ../../_PARTS-FOR-PLANS/_UiMAPPER/
+Contract:                UI_MAPPER_TOOL_CONTRACT.md
+Review journal:          0007-ui-mapper-tool-contract-review.md
+Adapter:                 adapter-ui_mapper.py

@@ -1,0 +1,57 @@
+{
+  "id": "prompt_diff_report",
+  "summary": "Compare baseline and candidate prompts/responses and report changed terms and risks.",
+  "category": "prompt-eval",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/prompt_diff_report/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "baseline": {
+        "type": "string"
+      },
+      "candidate": {
+        "type": "string"
+      },
+      "baseline_path": {
+        "type": "string"
+      },
+      "candidate_path": {
+        "type": "string"
+      },
+      "required_terms": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "forbidden_terms": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "changed": {
+        "type": "boolean"
+      },
+      "summary": {
+        "type": "object"
+      },
+      "diff": {
+        "type": "array"
+      }
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "id": "semantic_chunk",
+  "summary": "Chunk Python, Markdown, and text into deterministic semantic records.",
+  "category": "memory-workflow",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/semantic_chunk/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "text": {
+        "type": "string"
+      },
+      "path": {
+        "type": "string"
+      },
+      "paths": {
+        "type": "array"
+      },
+      "filename": {
+        "type": "string"
+      },
+      "chunk_size": {
+        "type": "integer",
+        "default": 1500
+      },
+      "overlap": {
+        "type": "integer",
+        "default": 0
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "chunks": {
+        "type": "array"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

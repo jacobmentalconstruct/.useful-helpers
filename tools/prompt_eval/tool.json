@@ -1,0 +1,56 @@
+{
+  "id": "prompt_eval",
+  "summary": "Score supplied responses across benchmark/training cases and aggregate results.",
+  "category": "prompt-eval",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/prompt_eval/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "cases": {
+        "type": "array"
+      },
+      "suite": {
+        "type": "object"
+      },
+      "suite_path": {
+        "type": "string"
+      },
+      "suite_name": {
+        "type": "string",
+        "default": "default"
+      },
+      "responses": {
+        "type": "object"
+      },
+      "response": {
+        "type": "string"
+      },
+      "constraints": {
+        "type": "array"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 50
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "results": {
+        "type": "array"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

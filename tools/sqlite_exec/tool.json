@@ -1,0 +1,34 @@
+{
+  "id": "sqlite_exec",
+  "summary": "Governed SQLite write (INSERT/UPDATE/DELETE/DDL), parameterized, preview-first via transaction rollback (accurate affected-row count, non-destructive). DB confined to the roots.",
+  "category": "operations",
+  "authority": "Apply",
+  "operates_on": "project",
+  "writes": "target",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/sqlite_exec/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "db": { "type": "string", "description": "SQLite file (confined to the roots)" },
+      "sql": { "type": "string", "description": "one write statement (INSERT/UPDATE/DELETE/REPLACE or CREATE/DROP/ALTER)" },
+      "params": { "type": "array", "description": "bound parameters for ? placeholders" },
+      "apply": { "type": "boolean", "description": "commit (else preview + rollback)" }
+    },
+    "required": ["db", "sql"]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "dry_run": { "type": "boolean" },
+      "db": { "type": "string" },
+      "statement": { "type": "string" },
+      "would_affect_rows": { "type": "integer" },
+      "affected_rows": { "type": "integer" },
+      "committed": { "type": "boolean" }
+    }
+  }
+}

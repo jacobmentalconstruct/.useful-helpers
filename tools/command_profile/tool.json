@@ -1,0 +1,31 @@
+{
+  "id": "command_profile",
+  "summary": "Detect likely setup/test/run/build/dev commands from project files.",
+  "category": "introspection",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/command_profile/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "description": "workspace-relative project root"
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "commands": {
+        "type": "array"
+      }
+    }
+  }
+}

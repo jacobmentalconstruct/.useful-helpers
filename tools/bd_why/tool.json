@@ -1,0 +1,30 @@
+{
+  "id": "bd_why",
+  "summary": "From a code path or symbol, return the linked knowledge (journal decisions + evidence)  -  the 'why' behind the code.",
+  "category": "bd-graph",
+  "authority": "Observe",
+  "operates_on": "project",
+  "writes": "none",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/bd_why/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "db": { "type": "string" },
+      "target": { "type": "string", "description": "a file path or symbol to explain" },
+      "limit": { "type": "integer", "default": 20 }
+    },
+    "required": ["target"]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "target": { "type": "string" },
+      "code_matches": { "type": "integer" },
+      "knowledge": { "type": "array" }
+    }
+  }
+}

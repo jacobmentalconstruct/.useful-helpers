@@ -1,0 +1,46 @@
+{
+  "id": "rules_eval",
+  "summary": "Evaluate proposed content and paths against deterministic safety rules.",
+  "category": "memory-workflow",
+  "authority": "Observe",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/rules_eval/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string"
+      },
+      "content": {
+        "type": "string"
+      },
+      "rules": {
+        "type": "object"
+      },
+      "read": {
+        "type": "boolean",
+        "default": false
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "allowed": {
+        "type": "boolean"
+      },
+      "violations": {
+        "type": "array"
+      },
+      "summary": {
+        "type": "object"
+      }
+    }
+  }
+}

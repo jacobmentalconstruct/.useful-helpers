@@ -1,0 +1,58 @@
+{
+  "id": "operation",
+  "summary": "Recovery ledger: make a multi-step effort durable and RESUMABLE across crashes. Start/advance/pause/resume with explicit failure classes; resume re-observes the target first and reports drift (stale_witness) rather than continuing onto a changed world.",
+  "category": "orientation",
+  "authority": "Apply",
+  "operates_on": "project",
+  "writes": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/operation/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": ["start", "step", "pause", "resume", "finish", "abandon", "list", "show"],
+        "default": "list",
+        "description": "start: open an operation. step: record a step outcome. pause: park with a witness. resume: re-observe then continue (or report stale_witness). finish/abandon: close. list/show: inspect (the recovery surface)."
+      },
+      "op_id": { "type": "string", "description": "the operation to act on (step/pause/resume/finish/abandon/show)" },
+      "title": { "type": "string", "description": "start: what this operation is" },
+      "goal": { "type": "string", "description": "start: the intended outcome" },
+      "steps": { "type": "array", "description": "start: optional planned steps [{tool, note}]" },
+      "tool": { "type": "string", "description": "step: the tool the step ran" },
+      "args_hash": { "type": "string", "description": "step: hash of the step's args (correlates to the event log)" },
+      "status": { "type": "string", "enum": ["pending", "running", "done", "failed"], "description": "step: outcome (default done)" },
+      "failure_class": {
+        "type": "string",
+        "enum": ["proposal_rejected", "capability_unavailable", "timeout", "no_effect", "partial_effect", "effect_ok_observation_failed", "observation_ok_validation_failed", "stale_witness", "malformed_output", "runtime_crash"],
+        "description": "step: REQUIRED when status=failed. A generic failure is not allowed."
+      },
+      "result_ref": { "type": "string", "description": "step: pointer to the result (e.g. an evidence id)" },
+      "idempotency_key": { "type": "string", "description": "step: op-step identity; a resumed operation will not re-run a step with an existing key" },
+      "resume_hint": { "type": "string", "description": "pause: what to do next when resumed" },
+      "note": { "type": "string" },
+      "reason": { "type": "string", "description": "abandon: why" },
+      "limit": { "type": "integer", "default": 50 }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "op_id": { "type": "string" },
+      "operation": { "type": "object", "description": "the operation + its ordered steps" },
+      "operations": { "type": "array", "description": "list action" },
+      "resumed": { "type": "boolean", "description": "resume: false when the target drifted" },
+      "drift": { "type": "boolean", "description": "resume: true = stale_witness, do not blindly continue" },
+      "idempotent_hit": { "type": "boolean", "description": "step: true = this step already landed, not re-applied" }
+    }
+  },
+  "provenance": {
+    "donor": "",
+    "treatment": "NEW",
+    "note": "E4. Recovery as normal operation. A durable, resumable ledger ABOVE the event log (correlates raw calls into an operation - review sec 23), separate storage from journal/evidence (no truth-class collapse - review sec 9). Resume re-observes before trusting the paused world (review sec 13/17)."
+  }
+}

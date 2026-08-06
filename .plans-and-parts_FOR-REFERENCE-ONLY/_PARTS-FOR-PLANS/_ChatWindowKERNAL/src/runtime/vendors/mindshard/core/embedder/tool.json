@@ -1,0 +1,37 @@
+{
+  "tool_id": "bdvec.inspect_text",
+  "name": "BDVec Inspect Text",
+  "description": "Inspect BDVec tokenization and nearest-token relationships for a text snippet or file.",
+  "kind": "tool_package",
+  "entry": "inspect_text.py",
+  "output_mode": "json_envelope",
+  "safe_by_default": true,
+  "tags": [
+    "bdvec",
+    "embedding",
+    "tokenizer",
+    "mechanical",
+    "inspection"
+  ],
+  "args_schema": {
+    "required": [],
+    "properties": {
+      "text": {
+        "type": "string",
+        "description": "Text to tokenize and inspect."
+      },
+      "path": {
+        "type": "string",
+        "description": "Optional file path to read instead of text."
+      },
+      "nearest_k": {
+        "type": "string",
+        "description": "How many nearest tokens to return. Default 8."
+      },
+      "max_chars": {
+        "type": "string",
+        "description": "Optional file read cap. Default 4000."
+      }
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "id": "pdf_extract",
+  "summary": "Extract selected PDF pages to PDF or text; writes only with write:true.",
+  "category": "pdf",
+  "authority": "Apply",
+  "operates_on": "project",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/pdf_extract/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string"
+      },
+      "pages": {
+        "type": "string",
+        "default": "all"
+      },
+      "mode": {
+        "type": "string",
+        "enum": [
+          "pdf",
+          "text"
+        ],
+        "default": "pdf"
+      },
+      "write": {
+        "type": "boolean",
+        "default": false
+      },
+      "out": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "path"
+    ]
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "pages": {
+        "type": "array"
+      },
+      "summary": {
+        "type": "object"
+      },
+      "written": {
+        "type": "boolean"
+      }
+    }
+  }
+}

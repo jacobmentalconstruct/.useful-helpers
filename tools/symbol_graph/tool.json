@@ -1,0 +1,82 @@
+{
+  "id": "symbol_graph",
+  "summary": "Resolved symbol graph: who actually defines and refers to whom (bound through imports, not name coincidence), plus CAS-cached one-line module summaries - with an honesty ledger of what static analysis cannot see.",
+  "category": "code-intel",
+  "authority": "Observe",
+  "operates_on": "project",
+  "writes": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/symbol_graph/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": [
+          "stats",
+          "refs",
+          "build",
+          "summarize"
+        ],
+        "default": "stats",
+        "description": "stats: graph shape + honesty ledger. refs: a symbol's resolved callers/callees + its module's cached summary. build: persist the graph artifact. summarize: one-sentence purpose per module via a local model, cached by content hash (re-runs only touch changed files)."
+      },
+      "root": {
+        "type": "string",
+        "description": "subtree to analyze (default: the work target)"
+      },
+      "symbol": {
+        "type": "string",
+        "description": "refs action: symbol to look up - a name ('start'), qualname ('Engine.start'), or id ('app.core.engine::start')"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 50,
+        "description": "refs action: max inbound/outbound edges returned per match"
+      },
+      "max_files": {
+        "type": "integer",
+        "default": 2000
+      },
+      "max_nodes": {
+        "type": "integer",
+        "default": 40,
+        "description": "summarize action: max modules to summarize in one call"
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "action": {
+        "type": "string"
+      },
+      "symbols": {
+        "type": "array",
+        "description": "refs action: per-match definition site, resolved inbound (real callers), resolved outbound, and fuzzy_attr_count"
+      },
+      "honesty": {
+        "type": "object",
+        "description": "the unresolved ledger: dynamic dispatch, star imports, parse errors - the boundary of what 'no references' proves"
+      },
+      "summarized": {
+        "type": "integer",
+        "description": "summarize action: modules summarized this call (cached ones are free)"
+      },
+      "degraded": {
+        "type": "boolean",
+        "description": "summarize action: true when no local model was reachable; missing modules are listed, never invented"
+      }
+    }
+  },
+  "provenance": {
+    "donor": "",
+    "treatment": "NEW",
+    "note": "D2/G6+G5. Replaces name-coincidence evidence with resolved edges; substrate shared with dead_code (two-tier reachability) and domain_boundary_audit (anchored relative imports) so all three answer from the same facts. Summaries ride the governed inference seam (llm_shared)."
+  }
+}

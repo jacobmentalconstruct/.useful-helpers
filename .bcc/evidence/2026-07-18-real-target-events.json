@@ -1,0 +1,1432 @@
+[
+ {
+  "ts": "2026-07-18T12:04:08.612776+00:00",
+  "tool_id": "git",
+  "authority": "Apply",
+  "category": "git",
+  "ok": 0,
+  "exit_code": 0,
+  "duration_ms": 119,
+  "error": "not a git repository: <project>\\does_not_exist"
+ },
+ {
+  "ts": "2026-07-18T12:04:08.797498+00:00",
+  "tool_id": "domain_boundary_audit",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 122,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:08.916179+00:00",
+  "tool_id": "domain_boundary_audit",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 0,
+  "exit_code": 0,
+  "duration_ms": 114,
+  "error": "policy_profile must be 1-64 characters using letters, digits, hyphens, or underscores"
+ },
+ {
+  "ts": "2026-07-18T12:04:09.034853+00:00",
+  "tool_id": "domain_boundary_audit",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 0,
+  "exit_code": 0,
+  "duration_ms": 115,
+  "error": "policy.layers must be a JSON object"
+ },
+ {
+  "ts": "2026-07-18T12:04:09.807749+00:00",
+  "tool_id": "git",
+  "authority": "Apply",
+  "category": "git",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 166,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:09.940535+00:00",
+  "tool_id": "git",
+  "authority": "Apply",
+  "category": "git",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 129,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:10.078677+00:00",
+  "tool_id": "git_inspect",
+  "authority": "Observe",
+  "category": "git",
+  "ok": 0,
+  "exit_code": 0,
+  "duration_ms": 133,
+  "error": "not a git repository: <project>"
+ },
+ {
+  "ts": "2026-07-18T12:04:10.584617+00:00",
+  "tool_id": "http_probe",
+  "authority": "Observe",
+  "category": "operations",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 261,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:10.742882+00:00",
+  "tool_id": "http_probe",
+  "authority": "Observe",
+  "category": "operations",
+  "ok": 0,
+  "exit_code": 0,
+  "duration_ms": 154,
+  "error": "non-local host 'example.com'; pass allow_remote:true to probe beyond localhost"
+ },
+ {
+  "ts": "2026-07-18T12:04:10.944703+00:00",
+  "tool_id": "fetch",
+  "authority": "Apply",
+  "category": "operations",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 198,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:11.146740+00:00",
+  "tool_id": "fetch",
+  "authority": "Apply",
+  "category": "operations",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 198,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:11.904603+00:00",
+  "tool_id": "sidecar_install",
+  "authority": "Apply",
+  "category": "packaging",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 139,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:12.139021+00:00",
+  "tool_id": "artifact_cleaner",
+  "authority": "Apply",
+  "category": "cleanup",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 135,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:12.260664+00:00",
+  "tool_id": "artifact_cleaner",
+  "authority": "Apply",
+  "category": "cleanup",
+  "ok": 0,
+  "exit_code": 0,
+  "duration_ms": 117,
+  "error": "cleanup requires confirm:true when dry_run is false"
+ },
+ {
+  "ts": "2026-07-18T12:04:12.386691+00:00",
+  "tool_id": "bd_split",
+  "authority": "Observe",
+  "category": "bd-graph",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 120,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:12.510517+00:00",
+  "tool_id": "bd_emit",
+  "authority": "Observe",
+  "category": "bd-graph",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 119,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:12.634080+00:00",
+  "tool_id": "bd_scribe",
+  "authority": "Apply",
+  "category": "bd-graph",
+  "ok": 0,
+  "exit_code": 0,
+  "duration_ms": 119,
+  "error": "bd_scribe requires confirm:true when dry_run is false"
+ },
+ {
+  "ts": "2026-07-18T12:04:12.757817+00:00",
+  "tool_id": "bd_index",
+  "authority": "Apply",
+  "category": "bd-graph",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 120,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:12.889669+00:00",
+  "tool_id": "bd_index",
+  "authority": "Apply",
+  "category": "bd-graph",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 128,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:13.011380+00:00",
+  "tool_id": "bd_status",
+  "authority": "Observe",
+  "category": "bd-graph",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 118,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:13.135975+00:00",
+  "tool_id": "bd_query",
+  "authority": "Observe",
+  "category": "bd-graph",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 120,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:13.259743+00:00",
+  "tool_id": "bd_project",
+  "authority": "Observe",
+  "category": "bd-graph",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 120,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:13.385109+00:00",
+  "tool_id": "module_decomp_plan",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 119,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:13.508257+00:00",
+  "tool_id": "domain_boundary_audit",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 119,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:13.628663+00:00",
+  "tool_id": "ui_callback_graph",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 116,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:13.746027+00:00",
+  "tool_id": "test_scaffold",
+  "authority": "Apply",
+  "category": "code-intel",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 113,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:13.877788+00:00",
+  "tool_id": "import_graph",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 126,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:13.998099+00:00",
+  "tool_id": "complexity_score",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 116,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:14.119769+00:00",
+  "tool_id": "dead_code",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 117,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:14.238473+00:00",
+  "tool_id": "blocking_call_scan",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 114,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:14.357738+00:00",
+  "tool_id": "tkinter_widget_tree",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 115,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:14.528317+00:00",
+  "tool_id": "dev_server_manager",
+  "authority": "Apply",
+  "category": "operations",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 166,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:14.699674+00:00",
+  "tool_id": "dev_server_manager",
+  "authority": "Apply",
+  "category": "operations",
+  "ok": 0,
+  "exit_code": 0,
+  "duration_ms": 167,
+  "error": "start requires confirm:true"
+ },
+ {
+  "ts": "2026-07-18T12:04:14.869496+00:00",
+  "tool_id": "dev_server_manager",
+  "authority": "Apply",
+  "category": "operations",
+  "ok": 0,
+  "exit_code": 0,
+  "duration_ms": 165,
+  "error": "no registered server for command_id: run_bat"
+ },
+ {
+  "ts": "2026-07-18T12:04:15.281378+00:00",
+  "tool_id": "pdf_info",
+  "authority": "Observe",
+  "category": "pdf",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 276,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:15.560268+00:00",
+  "tool_id": "pdf_extract",
+  "authority": "Apply",
+  "category": "pdf",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 275,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:15.841470+00:00",
+  "tool_id": "pdf_info",
+  "authority": "Observe",
+  "category": "pdf",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 277,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:16.120201+00:00",
+  "tool_id": "pdf_split",
+  "authority": "Apply",
+  "category": "pdf",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 274,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:16.233870+00:00",
+  "tool_id": "pdf_merge",
+  "authority": "Apply",
+  "category": "pdf",
+  "ok": 0,
+  "exit_code": 0,
+  "duration_ms": 110,
+  "error": "pdf_merge requires confirm:true when dry_run is false"
+ },
+ {
+  "ts": "2026-07-18T12:04:16.517184+00:00",
+  "tool_id": "pdf_merge",
+  "authority": "Apply",
+  "category": "pdf",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 279,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:16.795529+00:00",
+  "tool_id": "pdf_interleave",
+  "authority": "Apply",
+  "category": "pdf",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 274,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:17.077381+00:00",
+  "tool_id": "pdf_rotate",
+  "authority": "Apply",
+  "category": "pdf",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 278,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:17.358548+00:00",
+  "tool_id": "pdf_compress",
+  "authority": "Apply",
+  "category": "pdf",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 277,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:17.635876+00:00",
+  "tool_id": "pdf_thumbnails",
+  "authority": "Apply",
+  "category": "pdf",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 273,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:17.749401+00:00",
+  "tool_id": "edit",
+  "authority": "Apply",
+  "category": "text",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 108,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:17.877255+00:00",
+  "tool_id": "evidence",
+  "authority": "Apply",
+  "category": "evidence",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 122,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:18.002740+00:00",
+  "tool_id": "evidence",
+  "authority": "Apply",
+  "category": "evidence",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 121,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:18.127323+00:00",
+  "tool_id": "evidence",
+  "authority": "Apply",
+  "category": "evidence",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 120,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:18.251840+00:00",
+  "tool_id": "evidence",
+  "authority": "Apply",
+  "category": "evidence",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 120,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:18.440323+00:00",
+  "tool_id": "file_tree",
+  "authority": "Observe",
+  "category": "introspection",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 183,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:20.001821+00:00",
+  "tool_id": "host_probe",
+  "authority": "Observe",
+  "category": "introspection",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 1556,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:20.124208+00:00",
+  "tool_id": "journal",
+  "authority": "Apply",
+  "category": "journal",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 116,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:20.247132+00:00",
+  "tool_id": "journal",
+  "authority": "Apply",
+  "category": "journal",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 119,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:20.366657+00:00",
+  "tool_id": "journal",
+  "authority": "Apply",
+  "category": "journal",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 115,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:20.485029+00:00",
+  "tool_id": "linenumber",
+  "authority": "Observe",
+  "category": "text",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 113,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:20.602534+00:00",
+  "tool_id": "linenumber",
+  "authority": "Observe",
+  "category": "text",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 113,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:20.722397+00:00",
+  "tool_id": "workflow_templates",
+  "authority": "Observe",
+  "category": "memory-workflow",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 115,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:20.842351+00:00",
+  "tool_id": "workflow_decompose",
+  "authority": "Observe",
+  "category": "memory-workflow",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 116,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:20.970471+00:00",
+  "tool_id": "semantic_chunk",
+  "authority": "Observe",
+  "category": "memory-workflow",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 124,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:21.090482+00:00",
+  "tool_id": "rag_retrieve",
+  "authority": "Observe",
+  "category": "memory-workflow",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 116,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:21.209299+00:00",
+  "tool_id": "rules_eval",
+  "authority": "Observe",
+  "category": "memory-workflow",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 115,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:21.338656+00:00",
+  "tool_id": "session_record",
+  "authority": "Apply",
+  "category": "memory-workflow",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 125,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:21.467554+00:00",
+  "tool_id": "session_record",
+  "authority": "Apply",
+  "category": "memory-workflow",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 124,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:21.589765+00:00",
+  "tool_id": "session_replay",
+  "authority": "Observe",
+  "category": "memory-workflow",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 118,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:21.709075+00:00",
+  "tool_id": "memory_flush",
+  "authority": "Apply",
+  "category": "memory-workflow",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 115,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:21.822019+00:00",
+  "tool_id": "ollama_gov",
+  "authority": "Sandbox",
+  "category": "model",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 108,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:22.004833+00:00",
+  "tool_id": "repo_search",
+  "authority": "Observe",
+  "category": "introspection",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 177,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:22.119527+00:00",
+  "tool_id": "workspace_audit",
+  "authority": "Observe",
+  "category": "introspection",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 111,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:22.233625+00:00",
+  "tool_id": "command_profile",
+  "authority": "Observe",
+  "category": "introspection",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 110,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:23.062123+00:00",
+  "tool_id": "dependency_check",
+  "authority": "Observe",
+  "category": "introspection",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 824,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:23.189032+00:00",
+  "tool_id": "secret_audit",
+  "authority": "Observe",
+  "category": "security",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 123,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:23.327955+00:00",
+  "tool_id": "projectmapper",
+  "authority": "Apply",
+  "category": "curation",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 132,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:23.463236+00:00",
+  "tool_id": "projectmapper",
+  "authority": "Apply",
+  "category": "curation",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 131,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:23.599651+00:00",
+  "tool_id": "snapshot_verify",
+  "authority": "Observe",
+  "category": "packaging",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 132,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:23.726316+00:00",
+  "tool_id": "snapshot_diff",
+  "authority": "Observe",
+  "category": "packaging",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 123,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:23.857097+00:00",
+  "tool_id": "artifact_catalog",
+  "authority": "Observe",
+  "category": "packaging",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 126,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:23.985036+00:00",
+  "tool_id": "vendor_export",
+  "authority": "Apply",
+  "category": "packaging",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 123,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:24.180245+00:00",
+  "tool_id": "codebase_bundle",
+  "authority": "Apply",
+  "category": "packaging",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 189,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:24.371021+00:00",
+  "tool_id": "tempserver",
+  "authority": "Apply",
+  "category": "packaging",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 187,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:24.495793+00:00",
+  "tool_id": "app_factory",
+  "authority": "Apply",
+  "category": "packaging",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 120,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:24.621611+00:00",
+  "tool_id": "app_factory",
+  "authority": "Apply",
+  "category": "packaging",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 122,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:24.751624+00:00",
+  "tool_id": "app_factory",
+  "authority": "Apply",
+  "category": "packaging",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 126,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:24.866103+00:00",
+  "tool_id": "patch",
+  "authority": "Apply",
+  "category": "text",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 110,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:24.980483+00:00",
+  "tool_id": "patch",
+  "authority": "Apply",
+  "category": "text",
+  "ok": 0,
+  "exit_code": 0,
+  "duration_ms": 110,
+  "error": "Hunk 1: Search block not found."
+ },
+ {
+  "ts": "2026-07-18T12:04:25.144050+00:00",
+  "tool_id": "ping",
+  "authority": "Observe",
+  "category": "introspection",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 159,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:25.531797+00:00",
+  "tool_id": "process_port_inspector",
+  "authority": "Observe",
+  "category": "introspection",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 382,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:25.669789+00:00",
+  "tool_id": "projectmapper",
+  "authority": "Apply",
+  "category": "curation",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 133,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:25.804992+00:00",
+  "tool_id": "projectmapper",
+  "authority": "Apply",
+  "category": "curation",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 131,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:25.924691+00:00",
+  "tool_id": "constraint_build",
+  "authority": "Observe",
+  "category": "prompt-eval",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 114,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:26.043128+00:00",
+  "tool_id": "constraint_query",
+  "authority": "Observe",
+  "category": "prompt-eval",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 114,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:26.163731+00:00",
+  "tool_id": "prompt_case_builder",
+  "authority": "Apply",
+  "category": "prompt-eval",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 117,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:26.283217+00:00",
+  "tool_id": "prompt_rubric_judge",
+  "authority": "Observe",
+  "category": "prompt-eval",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 116,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:26.402598+00:00",
+  "tool_id": "prompt_eval",
+  "authority": "Observe",
+  "category": "prompt-eval",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 115,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:26.521706+00:00",
+  "tool_id": "prompt_diff_report",
+  "authority": "Observe",
+  "category": "prompt-eval",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 115,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:26.641022+00:00",
+  "tool_id": "agent_interview",
+  "authority": "Observe",
+  "category": "prompt-eval",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 115,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:26.760661+00:00",
+  "tool_id": "model_benchmark",
+  "authority": "Observe",
+  "category": "prompt-eval",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 116,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:26.882470+00:00",
+  "tool_id": "model_benchmark",
+  "authority": "Observe",
+  "category": "prompt-eval",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 117,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:27.001076+00:00",
+  "tool_id": "report",
+  "authority": "Observe",
+  "category": "analysis",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 113,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:27.214180+00:00",
+  "tool_id": "smoke_runner",
+  "authority": "Sandbox",
+  "category": "testing",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 208,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:27.337229+00:00",
+  "tool_id": "sqlite_inspect",
+  "authority": "Observe",
+  "category": "introspection",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 114,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:27.455284+00:00",
+  "tool_id": "schema_diff",
+  "authority": "Observe",
+  "category": "introspection",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 114,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:27.472700+00:00",
+  "tool_id": "does_not_exist",
+  "authority": "unknown",
+  "category": null,
+  "ok": 0,
+  "exit_code": null,
+  "duration_ms": 12,
+  "error": "unknown tool: does_not_exist"
+ },
+ {
+  "ts": "2026-07-18T12:04:28.208699+00:00",
+  "tool_id": "ping",
+  "authority": "Observe",
+  "category": "introspection",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 159,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:28.226932+00:00",
+  "tool_id": "ghost",
+  "authority": "unknown",
+  "category": null,
+  "ok": 0,
+  "exit_code": null,
+  "duration_ms": 13,
+  "error": "unknown tool: ghost"
+ },
+ {
+  "ts": "2026-07-18T12:04:28.487197+00:00",
+  "tool_id": "report",
+  "authority": "Observe",
+  "category": "analysis",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 115,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:28.617953+00:00",
+  "tool_id": "evidence",
+  "authority": "Apply",
+  "category": "evidence",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 126,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:28.744628+00:00",
+  "tool_id": "evidence",
+  "authority": "Apply",
+  "category": "evidence",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 122,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:28.909376+00:00",
+  "tool_id": "ping",
+  "authority": "Observe",
+  "category": "introspection",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 159,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:28.926589+00:00",
+  "tool_id": "does_not_exist",
+  "authority": "unknown",
+  "category": null,
+  "ok": 0,
+  "exit_code": null,
+  "duration_ms": 13,
+  "error": "unknown tool: does_not_exist"
+ },
+ {
+  "ts": "2026-07-18T12:04:29.051974+00:00",
+  "tool_id": "project_run",
+  "authority": "Apply",
+  "category": "operations",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 113,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:29.248315+00:00",
+  "tool_id": "project_run",
+  "authority": "Apply",
+  "category": "operations",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 192,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:29.369390+00:00",
+  "tool_id": "project_run",
+  "authority": "Apply",
+  "category": "operations",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 117,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:29.504769+00:00",
+  "tool_id": "projectmapper",
+  "authority": "Apply",
+  "category": "curation",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 129,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:30.249855+00:00",
+  "tool_id": "ping",
+  "authority": "Observe",
+  "category": "introspection",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 591,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:30.950462+00:00",
+  "tool_id": "ping",
+  "authority": "Observe",
+  "category": "introspection",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 597,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:31.174787+00:00",
+  "tool_id": "edit",
+  "authority": "Apply",
+  "category": "text",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 110,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:31.289455+00:00",
+  "tool_id": "edit",
+  "authority": "Apply",
+  "category": "text",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 109,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:31.402281+00:00",
+  "tool_id": "edit",
+  "authority": "Apply",
+  "category": "text",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 109,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:31.544924+00:00",
+  "tool_id": "sidecar_install",
+  "authority": "Apply",
+  "category": "packaging",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 138,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:31.674466+00:00",
+  "tool_id": "vendor_export",
+  "authority": "Apply",
+  "category": "packaging",
+  "ok": 0,
+  "exit_code": 0,
+  "duration_ms": 125,
+  "error": "vendor_export requires confirm:true when dry_run is false"
+ },
+ {
+  "ts": "2026-07-18T12:04:31.966912+00:00",
+  "tool_id": "sidecar_install",
+  "authority": "Apply",
+  "category": "packaging",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 288,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:32.370196+00:00",
+  "tool_id": "sidecar_install",
+  "authority": "Apply",
+  "category": "packaging",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 289,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:33.876412+00:00",
+  "tool_id": "dead_code",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 119,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:33.998484+00:00",
+  "tool_id": "blocking_call_scan",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 118,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:34.122186+00:00",
+  "tool_id": "domain_boundary_audit",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 120,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:34.247111+00:00",
+  "tool_id": "domain_boundary_audit",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 121,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:34.408393+00:00",
+  "tool_id": "sidecar_install",
+  "authority": "Apply",
+  "category": "packaging",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 139,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:34.694217+00:00",
+  "tool_id": "sidecar_install",
+  "authority": "Apply",
+  "category": "packaging",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 282,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:04:34.825396+00:00",
+  "tool_id": "sidecar_install",
+  "authority": "Apply",
+  "category": "packaging",
+  "ok": 0,
+  "exit_code": 0,
+  "duration_ms": 125,
+  "error": "target overlaps the toolkit source tree; choose a separate project folder"
+ },
+ {
+  "ts": "2026-07-18T12:04:34.951963+00:00",
+  "tool_id": "sidecar_install",
+  "authority": "Apply",
+  "category": "packaging",
+  "ok": 0,
+  "exit_code": 0,
+  "duration_ms": 122,
+  "error": "sidecar already exists; use update:true (preserve runtime memory) or overwrite:true (clean reinstall): C:\\Jacob\\_AppDesign\\_SANDBOX\\.useful-helpers\\.useful-helpers-test-tmp\\tmp63034e0ae25045e1a64b10f11a0eee4f\\.useful-helpers"
+ },
+ {
+  "ts": "2026-07-18T12:04:35.228907+00:00",
+  "tool_id": "sidecar_install",
+  "authority": "Apply",
+  "category": "packaging",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 273,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:05:08.696494+00:00",
+  "tool_id": "attach",
+  "authority": "Observe",
+  "category": "orientation",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 551,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:05:09.501771+00:00",
+  "tool_id": "file_tree",
+  "authority": "Observe",
+  "category": "introspection",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 685,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:05:12.019064+00:00",
+  "tool_id": "report",
+  "authority": "Observe",
+  "category": "analysis",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 2402,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:05:13.997488+00:00",
+  "tool_id": "import_graph",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 1853,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:05:17.546778+00:00",
+  "tool_id": "complexity_score",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 3440,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:05:20.804123+00:00",
+  "tool_id": "module_decomp_plan",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 3147,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:05:23.436104+00:00",
+  "tool_id": "dead_code",
+  "authority": "Observe",
+  "category": "code-intel",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 2520,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:05:28.612728+00:00",
+  "tool_id": "secret_audit",
+  "authority": "Observe",
+  "category": "security",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 5066,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:05:29.068306+00:00",
+  "tool_id": "command_profile",
+  "authority": "Observe",
+  "category": "introspection",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 345,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:05:30.257825+00:00",
+  "tool_id": "dependency_check",
+  "authority": "Observe",
+  "category": "introspection",
+  "ok": 1,
+  "exit_code": 0,
+  "duration_ms": 1080,
+  "error": null
+ },
+ {
+  "ts": "2026-07-18T12:05:30.723705+00:00",
+  "tool_id": "git_inspect",
+  "authority": "Observe",
+  "category": "git",
+  "ok": 0,
+  "exit_code": 0,
+  "duration_ms": 356,
+  "error": "not a git repository: <project>"
+ },
+ {
+  "ts": "2026-07-18T12:05:33.457682+00:00",
+  "tool_id": "harnessevilprobe",
+  "authority": "Observe",
+  "category": "introspection",
+  "ok": 0,
+  "exit_code": 0,
+  "duration_ms": 333,
+  "error": "precept violation: 'harnessevilprobe' (writes=none) modified the target it may not write to: ['C:\\\\Jacob\\\\_AppDesign\\\\_SANDBOX\\\\.useful-helpers\\\\_harness\\\\targets\\\\_UsefulHelperSCRIPTS\\\\HARNESS_PRECEPT_PROBE.txt']"
+ }
+]

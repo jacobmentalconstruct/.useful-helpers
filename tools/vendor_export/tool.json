@@ -1,0 +1,75 @@
+{
+  "id": "vendor_export",
+  "summary": "Dry-run-first clean export folder/zip creator excluding donors, git state, caches, artifacts, and local DBs.",
+  "category": "packaging",
+  "authority": "Apply",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/vendor_export/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "default": "."
+      },
+      "name": {
+        "type": "string"
+      },
+      "out_root": {
+        "type": "string",
+        "default": "_artifacts/vendor_exports"
+      },
+      "dry_run": {
+        "type": "boolean",
+        "default": true
+      },
+      "confirm": {
+        "type": "boolean",
+        "default": false
+      },
+      "overwrite": {
+        "type": "boolean",
+        "default": false
+      },
+      "zip": {
+        "type": "boolean",
+        "default": true
+      },
+      "exclude_paths": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "extra root-relative posix paths to prune (dir prunes subtree, file drops it)"
+      },
+      "clean_app": {
+        "type": "boolean",
+        "description": "vendable clean-app profile: also strip build scaffolding so the export is the tool, not the WIP project"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 5000
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "summary": {
+        "type": "object"
+      },
+      "files": {
+        "type": "array"
+      },
+      "skipped": {
+        "type": "array"
+      }
+    }
+  }
+}

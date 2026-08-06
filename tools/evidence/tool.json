@@ -1,0 +1,98 @@
+{
+  "id": "evidence",
+  "summary": "Bag of Evidence: attach content-addressed, verifiable evidence items (verify re-hashes to detect drift).",
+  "category": "evidence",
+  "authority": "Apply",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/evidence/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": [
+          "attach",
+          "verify",
+          "list",
+          "show",
+          "get"
+        ],
+        "default": "list"
+      },
+      "kind": {
+        "type": "string",
+        "description": "file_excerpt|tool_output|diff|screenshot|citation|external|scan_summary|git_observation"
+      },
+      "summary": {
+        "type": "string"
+      },
+      "body": {
+        "type": "string",
+        "description": "evidence content (attach)"
+      },
+      "body_json": {
+        "type": "object",
+        "description": "structured evidence content (attach)"
+      },
+      "source_path": {
+        "type": "string"
+      },
+      "source_line_range": {
+        "type": "string"
+      },
+      "attached_to": {
+        "type": "string",
+        "description": "object this grounds, e.g. a journal uid"
+      },
+      "attached_to_type": {
+        "type": "string"
+      },
+      "evidence_id": {
+        "type": "string",
+        "description": "for verify/show/get"
+      },
+      "hash": {
+        "type": "string",
+        "description": "for get"
+      },
+      "include_body": {
+        "type": "boolean",
+        "description": "show: include the stored body"
+      },
+      "limit": {
+        "type": "integer",
+        "default": 50
+      },
+      "db": {
+        "type": "string",
+        "description": "override DB path (testing)"
+      }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "evidence_id": {
+        "type": "string"
+      },
+      "hash": {
+        "type": "string"
+      },
+      "verified": {
+        "type": "boolean"
+      },
+      "status": {
+        "type": "string"
+      },
+      "evidence": {
+        "type": "array"
+      }
+    }
+  }
+}

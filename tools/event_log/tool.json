@@ -1,0 +1,31 @@
+{
+  "id": "event_log",
+  "summary": "Read the governance event log (audit trail of invoke calls): recent, per-tool summary, one tool's history, or a journal-ready rollup.",
+  "category": "governance",
+  "authority": "Observe",
+  "operates_on": "toolkit",
+  "invocation": {
+    "interpreter": "${ROOT_VENV_PYTHON}",
+    "entry": "tools/event_log/cli.py"
+  },
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": { "type": "string", "enum": ["recent", "summary", "tool", "rollup"], "default": "recent" },
+      "tool_id": { "type": "string", "description": "for action=tool" },
+      "limit": { "type": "integer", "default": 50 }
+    }
+  },
+  "output_shape": {
+    "type": "object",
+    "properties": {
+      "ok": { "type": "boolean" },
+      "action": { "type": "string" },
+      "count": { "type": "integer" },
+      "total": { "type": "integer" },
+      "by_tool": { "type": "array" },
+      "events": { "type": "array" }
+    }
+  },
+  "provenance": { "origin": "local" }
+}
