@@ -10,8 +10,12 @@ NOTES:      Written during tranche declaration, before implementation, per
 from __future__ import annotations
 
 import json
+import os
 import re
+import shutil
 import subprocess
+import sys
+import tempfile
 from pathlib import Path
 
 OUTCOME = "one authority, one numbering, no inherited memory"
@@ -76,8 +80,13 @@ def check(r, root: Path) -> None:
             f"entries={entries}")
 
     # --- no inherited memory ----------------------------------------------
-    stale = [d for d in ("_artifacts", "_design") if (root / d).exists()]
-    r.check("root carries no pre-reset memory zones", not stale, f"present={stale}")
+    # `_design` was archived and must never reappear at the root. `_artifacts` is
+    # NOT in this group: it is regenerable runtime output that any tool run
+    # recreates, and it is covered by the runtime-output checks above. Asserting
+    # its absence was the same mistake already corrected for _state and logs -
+    # a check that the act of testing itself defeats.
+    stale = [d for d in ("_design",) if (root / d).exists()]
+    r.check("archived zones have not reappeared at the root", not stale, f"present={stale}")
 
     # --- one sidecar, not a sidecar inside a sidecar -----------------------
     r.check("no nested toolkit/ directory", not (root / "toolkit").exists(),
@@ -154,9 +163,55 @@ def check(r, root: Path) -> None:
 
     # --- development dependencies are declared -----------------------------
     dev = root / "requirements-dev.txt"
-    r.check("the test runner is a declared dependency",
-            dev.is_file() and "pytest" in dev.read_text(encoding="utf-8", errors="replace"),
-            "tests/ needs pytest; it must not be an undeclared assumption")
+    r.check("development dependencies are declared", dev.is_file(),
+            "requirements-dev.txt should exist even if the suite is stdlib-only")
+
+    # --- the test suite actually runs --------------------------------------
+    # This gate previously asserted only that a runner was DECLARED, and then
+    # pronounced the baseline sound. It could not, and did not, notice that a
+    # test was failing. A gate that never executes the suite cannot tell you the
+    # suite is broken. SUITE_TEST_TMP keeps the suite's scratch on fast local
+    # storage; without it the suite redirects all temp I/O onto the project's own
+    # filesystem, which stalls on network or FUSE-mounted checkouts.
+    #
+    # Preflight: several tests delete files they created, under the project root.
+    # A filesystem that denies unlink therefore fails them for a reason that has
+    # nothing to do with the project - reporting that as "the suite fails" would
+    # be a false accusation. Detect it and skip honestly instead. Verified on the
+    # development mount: test_c1_hands and test_c4_data both raise
+    # PermissionError [Errno 1] on unlink inside _artifacts/.
+    probe = root / f".gate-unlink-probe-{os.getpid()}"
+    unlink_ok = True
+    try:
+        probe.write_text("probe", encoding="utf-8")
+        probe.unlink()
+    except OSError:
+        unlink_ok = False
+
+    if not unlink_ok:
+        r.skip("the test suite passes",
+               "this filesystem denies unlink, and the suite deletes files it "
+               "creates - it cannot pass here for environmental reasons. Run it "
+               "on a host with normal delete semantics before trusting the baseline")
+        return
+
+    tmp = tempfile.mkdtemp(prefix="uh-gate-")
+    env = {**os.environ, "SUITE_TEST_TMP": tmp}
+    try:
+        out = subprocess.run(
+            [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-t", "."],
+            cwd=root, capture_output=True, text=True, timeout=900, env=env,
+        )
+        tail = (out.stderr or out.stdout).strip().splitlines()
+        r.check("the test suite passes", out.returncode == 0,
+                " | ".join(tail[-3:]) if tail else f"exit {out.returncode}")
+    except subprocess.TimeoutExpired:
+        # Honest skip: a skipped check must never read as a pass (protocol sec 3.2 rule 7).
+        r.skip("the test suite passes",
+               "exceeded 900s even with SUITE_TEST_TMP on local storage - "
+               "investigate before trusting this baseline")
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
 
     # --- history is not grafted onto a predecessor's -----------------------
     # Earlier revisions of this check asserted "exactly one commit" and then

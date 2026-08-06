@@ -1,8 +1,12 @@
 # Development dependencies. NOT part of the vended payload.
 #
-# The sidecar's control plane is standard-library only; requirements.txt carries
-# just what shipped tools need. The test suite, however, needs a runner, and it
-# was previously undeclared - a fresh developer could not run tests/ without
-# already knowing to install pytest.
+# The sidecar's control plane is standard-library only, and so is its test suite:
+# tests/test_smoke.py uses `unittest`, run via `python smoke_test.py` or
+# `python -m unittest discover -s tests -t .`. No test runner needs installing.
+#
+# An earlier revision of this file claimed pytest was required. It is not - that
+# was asserted without running the suite.
 -r requirements.txt
-pytest
+
+# Lint only. Optional; the suite does not depend on it.
+ruff

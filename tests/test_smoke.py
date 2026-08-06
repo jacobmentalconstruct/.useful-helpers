@@ -63,7 +63,18 @@ class SpineSmokeTest(unittest.TestCase):
         if os.environ.get("SUITE_TEST_TMP"):
             tmp_root = Path(os.environ["SUITE_TEST_TMP"])
         else:
-            tmp_root = home.parent / ".useful-helpers-test-tmp"
+            # INSIDE the sidecar, never beside it. This used to read `home.parent`,
+            # which was correct only while the sidecar was nested one level down:
+            # `home` was toolkit/, so the scratch landed at the repository root.
+            # Now that the sidecar IS the root, `home.parent` would place scratch
+            # in the operator's staging folder - outside the project entirely.
+            #
+            # Note this directory is on the project's own filesystem, and
+            # `tempfile.tempdir` is redirected here for the whole suite. On a
+            # network or FUSE-mounted checkout that makes every temp operation
+            # slow enough to stall the run; set SUITE_TEST_TMP to a local path
+            # (e.g. /tmp) to keep scratch on fast storage.
+            tmp_root = home / ".useful-helpers-test-tmp"
         cls._suite_tmp_root = tmp_root
         cls._suite_tmp_owned = not bool(os.environ.get("SUITE_TEST_TMP"))
         cls._orig_tempdir = tempfile.tempdir
@@ -786,8 +797,24 @@ class SpineSmokeTest(unittest.TestCase):
         # 1. Exactly ONE `import ollama` in the shipped tree, and it lives in llm_shared.
         root = _Path(__file__).resolve().parents[1]
         offenders = []
+        # Scan the SHIPPED PAYLOAD only. The assertion is about what the sidecar
+        # ships, so reference material and development scaffolding are out of scope
+        # by definition - and scanning them is not merely wasteful but ruinous:
+        # `root` was toolkit/ before the sidecar was collapsed to the repository
+        # root, so this walk went from ~136 files to 2,755, of which 95% are the
+        # parts bin and harness targets. Every one is read in full. On a network or
+        # FUSE-mounted checkout that stalls the suite outright.
+        #
+        # NOTE: this is the third place that describes what ships, after
+        # _harness/_PAYLOAD_EXCLUDE and vendor_export's CLEAN_APP_STRIP. They must
+        # converge on one manifest; tracked as a T1 item.
+        _NOT_PAYLOAD = {
+            ".venv", "_artifacts", "_state", "tests", "__pycache__",
+            ".plans-and-parts_FOR-REFERENCE-ONLY", "_harness", ".bcc", "_docs",
+            "gates", "_trash", ".git", ".useful-helpers-test-tmp",
+        }
         for py in root.rglob("*.py"):
-            if any(part in {".venv", "_artifacts", "_state", "tests"} for part in py.parts):
+            if any(part in _NOT_PAYLOAD for part in py.parts):
                 continue
             for i, line in enumerate(py.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
                 if line.strip() == "import ollama" and py.name != "llm_shared.py":
@@ -1898,31 +1925,42 @@ class SpineSmokeTest(unittest.TestCase):
             root.destroy()
 
     def test_project_root_resolution(self):
-        # The work target (project_root) is the toolkit home standalone, but the PARENT when
-        # installed as a sidecar (dot-folder home, a .suite_sidecar marker, or the env override).
+        # The work target is resolved by EVIDENCE ONLY - four cases, no fallthrough.
+        # This test previously asserted the older contract, in which a plain home was
+        # its own project and a dot-prefixed folder NAME inferred a parent target.
+        # Both are gone: a name is not evidence of installation, and that heuristic
+        # made the sidecar's own repository bind to the operator's staging folder.
         import os
         import tempfile
         from pathlib import Path
 
-        from src.core.config import _resolve_project_root
+        from src.core.config import NoTargetBound, _resolve_project_root
 
-        # standalone: a plain home is its own project
+        # 1. not installed, no override -> NO TARGET. Callers must refuse, not guess.
         plain = Path(tempfile.mkdtemp()) / "proj"
-        self.assertEqual(_resolve_project_root(plain), plain)
-        # dot-folder home -> parent
+        self.assertIsNone(_resolve_project_root(plain))
+
+        # 2. a dot-prefixed NAME is not evidence of anything
         dotted = Path(tempfile.mkdtemp()) / ".useful-helpers"
-        self.assertEqual(_resolve_project_root(dotted), dotted.parent)
-        # marker file -> parent
+        self.assertIsNone(_resolve_project_root(dotted))
+
+        # 3. the .suite_sidecar marker IS evidence of a vend -> bind to the parent
         home = Path(tempfile.mkdtemp()) / "sidecar"
         home.mkdir()
         (home / ".suite_sidecar").write_text("x", encoding="utf-8")
         self.assertEqual(_resolve_project_root(home), home.parent)
-        # env override wins
+
+        # 4. an explicit valid override wins over everything
         override = tempfile.mkdtemp()
         prev = os.environ.get("SUITE_PROJECT_ROOT")
         os.environ["SUITE_PROJECT_ROOT"] = override
         try:
             self.assertEqual(_resolve_project_root(plain), Path(override).resolve())
+            # 5. an explicit INVALID override is a hard error, never a silent fallback.
+            #    This is the defect that made a typo indistinguishable from success.
+            os.environ["SUITE_PROJECT_ROOT"] = str(Path(override) / "does-not-exist")
+            with self.assertRaises(NoTargetBound):
+                _resolve_project_root(home)
         finally:
             if prev is None:
                 os.environ.pop("SUITE_PROJECT_ROOT", None)
