@@ -31,6 +31,22 @@ CLEAN_APP_STRIP = {
     "_state",  # durable memory: the TARGET's history, never the toolkit's to ship
     "tools/vendor_export/clean_app_docs",  # the override templates ship AS the docs, not verbatim
     "packaging",  # build/packaging tooling (the installer wraps the product from OUTSIDE the zip)
+
+    # --- development scaffolding: never vended -------------------------------
+    # These became reachable when the sidecar was collapsed to the repository root.
+    # Previously the ship boundary was the nested toolkit/ folder, so everything here
+    # sat outside it and no exclusion was needed. Afterwards it was all in scope, and
+    # an install copied 4,009 files - the operator's entire reference library and this
+    # project's own build records - into every target. That breaks the precept (the
+    # target must learn nothing about the sidecar) and the blank-vend condition.
+    "_harness",     # the proving ground; also a RECURSION guard, its targets live inside
+    ".bcc",         # builder contract, charter, plan, evidence
+    "_docs",        # the sidecar's own journal - the TARGET's record starts empty
+    "gates",        # tranche gates
+    "_trash",       # removal staging
+    ".plans-and-parts_FOR-REFERENCE-ONLY",  # parts bin: predecessor apps and their plans
+    ".useful-helpers-test-tmp",             # suite scratch
+    "requirements-dev.txt",                 # dev-only dependency declaration
 }
 
 # clean_app: after copy, these export files are replaced by the tool-focused templates so the

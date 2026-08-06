@@ -93,7 +93,11 @@ def resolve_paths(root: Path | None = None) -> Paths:
         config=root / "config",
         tools=root / "tools",
         apps=root / "apps",
-        docs=root / "_docs",
+        # Product-facing documentation. This moved from `_docs/` to `docs/` when the
+        # sidecar was collapsed to the repository root: `_docs/` is now the sidecar's
+        # own record (its journal), and `docs/` is what ships. This line was missed in
+        # that move, so paths.docs pointed at the journal directory.
+        docs=root / "docs",
         logs=root / "logs",
         state=Path(state_override).resolve() if state_override else root / "_state",
         venv_python=venv_python,

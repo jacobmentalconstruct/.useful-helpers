@@ -2,7 +2,16 @@
 # instrument should model the bar it implies.
 line-length = 120
 target-version = "py311"
-extend-exclude = ["_artifacts", "_exports", "tests/fixtures", "__pycache__"]
+# Lint the SHIPPED PAYLOAD only. Reference material and development scaffolding are
+# not ours to lint: the parts bin holds twelve predecessor applications, and linting
+# them reports thousands of findings about code this project did not write and will
+# delete. Before the sidecar was collapsed to the repository root these were outside
+# the lint root and the exclusion was unnecessary.
+extend-exclude = [
+    "_artifacts", "_exports", "tests/fixtures", "__pycache__",
+    ".plans-and-parts_FOR-REFERENCE-ONLY", "_harness", "_trash",
+    ".bcc", "_docs", ".useful-helpers-test-tmp",
+]
 
 [lint]
 # Substantive correctness + import hygiene are enforced to ZERO: E4 (imports), E7 (statement

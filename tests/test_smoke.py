@@ -2067,9 +2067,19 @@ class SpineSmokeTest(unittest.TestCase):
 
         root = self.paths.root
         link_re = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+        # SHIPPED docs only, as the comment above says. Reference material is excluded
+        # deliberately: the parts bin holds twelve predecessor applications whose READMEs
+        # cite absolute paths on a machine that is not this one. Those links are broken,
+        # they are not ours, and they will leave with the parts bin. Before the sidecar
+        # was collapsed to the repository root they were outside this walk entirely.
+        _NOT_SHIPPED = (
+            "_state", "_artifacts", "__pycache__", "node_modules",
+            ".plans-and-parts_FOR-REFERENCE-ONLY", "_harness", "_trash",
+            ".useful-helpers-test-tmp", ".git",
+        )
         dangling = []
         for md in sorted(root.rglob("*.md")):
-            if any(p in md.parts for p in ("_state", "_artifacts", "__pycache__", "node_modules")):
+            if any(p in md.parts for p in _NOT_SHIPPED):
                 continue
             text = md.read_text(encoding="utf-8", errors="ignore")
             for t in (m.group(1) for m in link_re.finditer(text)):
@@ -2822,7 +2832,12 @@ class SpineSmokeTest(unittest.TestCase):
         import tempfile
         from pathlib import Path as _P
 
-        env = dict(os.environ, PYTHONIOENCODING="utf-8")
+        # This subprocess runs the seam from the sidecar's own source tree, which is not
+        # a vended install and therefore has NO work target - every call would correctly
+        # refuse. The test is about --args-file plumbing, not target binding, so bind one
+        # explicitly.
+        env = dict(os.environ, PYTHONIOENCODING="utf-8",
+                   SUITE_PROJECT_ROOT=str(self.paths.root))
         nasty = {"message": 'nested "quotes" and C:\\win\\style\\path', "arr": [1, {"k": True}]}
         f = _P(tempfile.mkdtemp()) / "args.json"
         f.write_text(_json.dumps(nasty), encoding="utf-8")
@@ -3176,6 +3191,11 @@ class SpineSmokeTest(unittest.TestCase):
             cwd=str(self.paths.root),
             capture_output=True,
             text=True,
+            # Windows pipes default to cp1252, which raises UnicodeDecodeError on ruff's
+            # output and destroys the failure message - the assertion below then reports
+            # "1 != 0" with nothing to act on.
+            encoding="utf-8",
+            errors="replace",
             timeout=120,
         )
         self.assertEqual(r.returncode, 0, msg=(r.stdout or r.stderr)[-1500:])
