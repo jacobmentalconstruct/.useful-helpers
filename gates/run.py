@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import os
 import sys
 from pathlib import Path
 
@@ -36,6 +37,28 @@ class Result:
 
     def skip(self, name: str, reason: str) -> None:
         self.rows.append((SKIP, name, reason))
+
+    @staticmethod
+    def filesystem_permits_unlink(root: Path) -> bool:
+        """Can files be deleted here? Shared because more than one gate needs it.
+
+        Several checks create and remove scratch, and a filesystem that denies
+        unlink fails them for a reason that has nothing to do with the project -
+        reporting that as a project failure would be a false accusation. Gates use
+        this to skip honestly instead.
+
+        The probe name is covered by .gitignore: on a filesystem that denies unlink -
+        the exact condition being tested - the probe cannot be removed and lingers,
+        and one was once swept into a commit by `git add -A`. A check must not change
+        the thing it measures.
+        """
+        probe = root / f".gate-unlink-probe-{os.getpid()}"
+        try:
+            probe.write_text("probe", encoding="utf-8")
+            probe.unlink()
+            return True
+        except OSError:
+            return False
 
     @property
     def failed(self) -> bool:

@@ -115,11 +115,7 @@ def check(r, root: Path) -> None:
             f"would lint code this project did not write: {missing}")
 
     # --- 4. a REAL vend, inspected ------------------------------------------
-    probe = root / f".t01-unlink-probe-{os.getpid()}"
-    try:
-        probe.write_text("x", encoding="utf-8")
-        probe.unlink()
-    except OSError:
+    if not r.filesystem_permits_unlink(root):
         r.skip("a vend contains only the sidecar",
                "this filesystem denies unlink, so a vend cannot be performed or "
                "cleaned up here - run on a host with normal delete semantics")
@@ -230,3 +226,29 @@ def check(r, root: Path) -> None:
     bound = int(getattr(mod, "MAX_PAYLOAD_FILES", 500))
     r.check(f"vended file count is within bound ({bound})", count <= bound,
             f"{count} files - a leak once shipped 4,009 where 275 belong")
+
+    # --- 8. the payload is SELF-HOSTING and the manifest is a fixed point ----
+    # A vended sidecar must be able to vend, which means the manifest itself has to
+    # ship - vendor_export imports it at module load, so a payload missing it would
+    # be silently unable to reproduce itself. And generation 2 must equal generation
+    # 1: if it grows, some path is being pulled in by the copy that the manifest did
+    # not account for; if it shrinks, the payload is eroding each time it is passed
+    # on. Either way the boundary is not a fixed point, and a sidecar that cannot
+    # reproduce itself exactly cannot be trusted to reproduce anything else.
+    r.check("the manifest itself ships", (sidecar / "src" / "core" / "payload.py").is_file(),
+            "vendor_export imports it at load; without it the payload cannot vend")
+
+    gen2_target = Path(tempfile.mkdtemp(prefix="t01-gen2-"))
+    subprocess.run(
+        [sys.executable, "-m", "src.app", "cli", "tool-call", "--tool",
+         "sidecar_install", "--args-json",
+         json.dumps({"target": str(gen2_target), "dry_run": False, "confirm": True})],
+        cwd=sidecar, capture_output=True, text=True, encoding="utf-8",
+        errors="replace", timeout=600,
+        env={**os.environ, "SUITE_PROJECT_ROOT": str(gen2_target)},
+    )
+    gen2 = gen2_target / ".useful-helpers"
+    gen2_count = sum(1 for p in gen2.rglob("*") if p.is_file()) if gen2.is_dir() else -1
+    r.check("the payload can reproduce itself exactly (self-hosting)",
+            gen2_count == count,
+            f"generation 1 = {count} files, generation 2 = {gen2_count}")

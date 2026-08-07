@@ -194,13 +194,7 @@ def check(r, root: Path) -> None:
     # be a false accusation. Detect it and skip honestly instead. Verified on the
     # development mount: test_c1_hands and test_c4_data both raise
     # PermissionError [Errno 1] on unlink inside _artifacts/.
-    probe = root / f".gate-unlink-probe-{os.getpid()}"
-    unlink_ok = True
-    try:
-        probe.write_text("probe", encoding="utf-8")
-        probe.unlink()
-    except OSError:
-        unlink_ok = False
+    unlink_ok = r.filesystem_permits_unlink(root)
 
     if not unlink_ok:
         r.skip("the test suite passes",
