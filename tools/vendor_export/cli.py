@@ -19,41 +19,40 @@ from pathlib import Path
 
 from tools._toolkit import suite_home, tool_main
 
-EXCLUDE_DIRS = {".git", ".venv", "venv", "__pycache__", "_artifacts", ".pytest_cache",
-                ".mypy_cache", ".ruff_cache", "node_modules", "build", "dist"}
-EXCLUDE_SUFFIXES = {".sqlite", ".sqlite3", ".db", ".pyc", ".pyo", ".log"}
+from src.core import payload
 
-# clean_app profile: also strip this toolkit's *build scaffolding* so the export is the tool
-# itself, not the WIP project that produced it. State (_state/: journal/evidence/event-log/
-# workbench) is left empty on purpose  -  once installed it becomes the TARGET's history.
-CLEAN_APP_STRIP = {
-    "_exports", "_tmp_sqlite_probe",
-    "_state",  # durable memory: the TARGET's history, never the toolkit's to ship
-    "tools/vendor_export/clean_app_docs",  # the override templates ship AS the docs, not verbatim
-    "packaging",  # build/packaging tooling (the installer wraps the product from OUTSIDE the zip)
+# Derived from the ONE ship manifest. These used to be literals here, in the
+# harness, in ruff.toml and twice in the test suite - five copies of one rule, free
+# to drift apart, and they did: see src/core/payload.py for what that cost.
+#
+# The split matters. EXCLUDE_DIRS/SUFFIXES apply to ANY export, including an export
+# of the USER'S project. CLEAN_APP_STRIP applies only when exporting the sidecar
+# ITSELF - a target may legitimately have its own _docs/ or gates/, and stripping
+# those would be the sidecar quietly editing the target's shape.
+EXCLUDE_DIRS = set(payload.REGENERABLE | payload.VCS)
+EXCLUDE_SUFFIXES = set(payload.EXCLUDE_SUFFIXES)
 
-    # --- development scaffolding: never vended -------------------------------
-    # These became reachable when the sidecar was collapsed to the repository root.
-    # Previously the ship boundary was the nested toolkit/ folder, so everything here
-    # sat outside it and no exclusion was needed. Afterwards it was all in scope, and
-    # an install copied 4,009 files - the operator's entire reference library and this
-    # project's own build records - into every target. That breaks the precept (the
-    # target must learn nothing about the sidecar) and the blank-vend condition.
-    "_harness",     # the proving ground; also a RECURSION guard, its targets live inside
-    ".bcc",         # builder contract, charter, plan, evidence
-    "_docs",        # the sidecar's own journal - the TARGET's record starts empty
-    "gates",        # tranche gates
-    "_trash",       # removal staging
-    ".plans-and-parts_FOR-REFERENCE-ONLY",  # parts bin: predecessor apps and their plans
-    ".useful-helpers-test-tmp",             # suite scratch
-    "requirements-dev.txt",                 # dev-only dependency declaration
-}
+# clean_app profile: strip the sidecar's own build scaffolding so the export is the
+# tool itself, not the WIP project that produced it. Derived, by category, from the
+# manifest - NEVER_SHIP (scaffolding and history), INSTALLER_ONLY (deliverable #1,
+# which ships beside the payload rather than inside it) and EXPORT_SUBSTITUTED (the
+# doc templates, swapped back in below).
+CLEAN_APP_STRIP = set(payload.SIDECAR_STRIP)
 
 # clean_app: after copy, these export files are replaced by the tool-focused templates so the
 # clean app never links to stripped build docs. (source_rel_in_toolkit -> dest_rel_in_export)
+# NOTE: the destination is `docs/`, not `_docs/`. Product-facing documentation moved
+# there when the sidecar was collapsed to the repository root; `_docs/` is now the
+# sidecar's own journal and is stripped from every export. This mapping still pointed
+# at the old location, so the substituted onboarding doc was being written into a
+# directory that does not ship.
 CLEAN_APP_DOC_OVERRIDES = {
     "tools/vendor_export/clean_app_docs/README.md": "README.md",
-    "tools/vendor_export/clean_app_docs/ONBOARDING.md": "_docs/ONBOARDING.md",
+    "tools/vendor_export/clean_app_docs/ONBOARDING.md": "docs/ONBOARDING.md",
+    # The development .gitignore names the parts bin, harness, gates and trash -
+    # zones that do not exist in an installed sidecar, and whose names would tell a
+    # target about the build process. The payload gets its own.
+    "tools/vendor_export/clean_app_docs/gitignore": ".gitignore",
 }
 
 

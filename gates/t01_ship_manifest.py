@@ -96,10 +96,18 @@ def check(r, root: Path) -> None:
                 f"{rel} still declares its own exclusion list")
 
     # --- 3. ruff.toml cannot import, so it is checked for drift -------------
+    # Checked against FOREIGN, not NEVER_SHIP: lint scope is a different axis from
+    # ship scope. `gates/` does not ship but is ours and should be linted; the parts
+    # bin is neither. Asserting the ship set here would have excluded our own gates
+    # from linting.
     ruff = (root / "ruff.toml").read_text(encoding="utf-8", errors="replace")
-    missing = [d for d in MUST_NOT_SHIP if d not in ruff]
-    r.check("ruff.toml excludes agree with the manifest", not missing,
-            f"not excluded from lint: {missing}")
+    foreign = set(getattr(mod, "FOREIGN", ()) or ())
+    r.check("the manifest distinguishes foreign code from unshipped code",
+            bool(foreign) and foreign < never,
+            "expected FOREIGN as a proper subset of NEVER_SHIP")
+    missing = [d for d in sorted(foreign) if d not in ruff]
+    r.check("ruff.toml excludes all foreign code", not missing,
+            f"would lint code this project did not write: {missing}")
 
     # --- 4. a REAL vend, inspected ------------------------------------------
     probe = root / f".t01-unlink-probe-{os.getpid()}"

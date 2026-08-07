@@ -815,11 +815,10 @@ class SpineSmokeTest(unittest.TestCase):
         # NOTE: this is the third place that describes what ships, after
         # _harness/_PAYLOAD_EXCLUDE and vendor_export's CLEAN_APP_STRIP. They must
         # converge on one manifest; tracked as a T1 item.
-        _NOT_PAYLOAD = {
-            ".venv", "_artifacts", "_state", "tests", "__pycache__",
-            ".plans-and-parts_FOR-REFERENCE-ONLY", "_harness", ".bcc", "_docs",
-            "gates", "_trash", ".git", ".useful-helpers-test-tmp",
-        }
+        # Derived from the ONE ship manifest. This was a literal set - one of five
+        # copies of the same rule that drifted apart when the layout changed.
+        from src.core import payload as _payload
+        _NOT_PAYLOAD = set(_payload.PAYLOAD_EXCLUDE) | {"tests"}
         for py in root.rglob("*.py"):
             if any(part in _NOT_PAYLOAD for part in py.parts):
                 continue
@@ -2079,11 +2078,9 @@ class SpineSmokeTest(unittest.TestCase):
         # cite absolute paths on a machine that is not this one. Those links are broken,
         # they are not ours, and they will leave with the parts bin. Before the sidecar
         # was collapsed to the repository root they were outside this walk entirely.
-        _NOT_SHIPPED = (
-            "_state", "_artifacts", "__pycache__", "node_modules",
-            ".plans-and-parts_FOR-REFERENCE-ONLY", "_harness", "_trash",
-            ".useful-helpers-test-tmp", ".git",
-        )
+        # Derived from the ONE ship manifest, same reason as above.
+        from src.core import payload as _payload
+        _NOT_SHIPPED = tuple(_payload.PAYLOAD_EXCLUDE)
         dangling = []
         for md in sorted(root.rglob("*.md")):
             if any(p in md.parts for p in _NOT_SHIPPED):

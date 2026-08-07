@@ -1,0 +1,33 @@
+# Useful Helpers sidecar - installed copy.
+#
+# This is the PAYLOAD's ignore file, substituted at export time. The development
+# repository's .gitignore names the parts bin, the harness, gates and trash - zones
+# that do not exist in an installed sidecar, and whose names would tell a target
+# about the sidecar's build process. Shipping it would leak build-time shape into
+# a delivered artifact.
+#
+# An installed sidecar keeps its own memory. If the operator version-controls it,
+# these are the things that must not be committed.
+
+# Durable memory: the journal, evidence, the event log, the workbench map.
+# This is the TARGET's history and belongs to whoever the sidecar is attached to.
+_state/
+
+# Disposable, regenerable exhaust.
+_artifacts/
+_exports/
+logs/
+
+# Derived from tools/*/tool.json; regenerated on demand.
+config/registry.json
+
+# Python bytecode and environments.
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Databases and logs produced while working.
+*.sqlite3
+*.sqlite3-journal
+*.log

@@ -32,17 +32,15 @@ FACTORY = HERE.parent
 # ship boundary is the payload manifest below, not a directory.
 TOOLKIT = FACTORY
 
-# What must NEVER be copied into a target. The first group is regenerable noise;
-# the second is development scaffolding that does not ship; `_harness` is also a
-# RECURSION GUARD  -  targets live under `_harness/targets/`, so copying the root
-# into one without excluding `_harness` would copy the target into itself.
-_PAYLOAD_EXCLUDE = (
-    "__pycache__", "*.pyc", "_artifacts", "logs", "workbench", ".venv", "_state",
-    ".ruff_cache", ".pytest_cache", ".git", ".useful-helpers", ".useful-helpers-test-tmp",
-    "_harness",                                # recursion guard - must stay
-    ".bcc", "_docs", "gates", "_trash",        # development scaffolding
-    ".plans-and-parts_FOR-REFERENCE-ONLY",     # parts bin
-)
+# Derived from the ONE ship manifest (src/core/payload.py). This used to be a literal
+# list here, duplicating the same rule kept in vendor_export, ruff.toml and the test
+# suite. `_harness` is in NEVER_SHIP and is also the RECURSION guard: harness targets
+# live under it, so copying the root into one without excluding it copies a target
+# into itself.
+sys.path.insert(0, str(FACTORY))
+from src.core import payload  # noqa: E402
+
+_PAYLOAD_EXCLUDE = tuple(sorted(payload.PAYLOAD_EXCLUDE)) + ("*.pyc", "workbench")
 TARGETS = HERE / "targets"
 RUNS = HERE / "runs"
 SIDECAR_NAME = ".useful-helpers"
