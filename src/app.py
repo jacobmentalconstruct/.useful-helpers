@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import sys
 
-from src.core import registry
+from src.core import presence, registry
 from src.core.config import NoTargetBound, resolve_paths
 from src.interfaces import cli, mcp_server
 from src.lib import logging_setup
@@ -46,6 +46,11 @@ def main(argv: list[str]) -> int:
     # entrance - cli, mcp, ui - works out of the box rather than requiring the
     # operator to know about `registry-refresh` first.
     registry.ensure_manifest(paths)
+
+    # Presence is EPHEMERAL: a new session must not inherit the last one's
+    # context. Stale presence is worse than none, because it answers
+    # confidently. This is the restart the store is defined against.
+    presence.clear(paths)
 
     scrub = [(str(paths.root), "<toolkit>")]
     if paths.project_root is not None:

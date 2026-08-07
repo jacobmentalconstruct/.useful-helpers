@@ -1,0 +1,205 @@
+"""
+FILE:       gates/t02_ledger_presence.py
+ROLE:       Gate for T2 - Ledger and Presence.
+DOMAIN:     factory
+DOES:       Asserts the seam contract exists in code: a durable, readable, attributed
+            ledger of what happened, and ephemeral constant-size presence of what is
+            true now, with confirmation recorded as a first-class event.
+NOTES:      Written during tranche declaration, BEFORE implementation, per
+            .bcc/TRANCHE_PROTOCOL.md sec 3.2 rule 1.
+
+            Two assertions here exist because they were raised as RISKS at
+            declaration rather than discovered later - the migration trap and the
+            presence-accumulation trap. Encoding a hazard as an assertion before the
+            work starts is what stops it becoming a defect to schedule.
+"""
+from __future__ import annotations
+
+import json
+import os
+import sqlite3
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+OUTCOME = "two channels, one seam: a readable attributed ledger, ephemeral presence"
+
+# The columns the events table must carry after T2.
+REQUIRED_COLUMNS = {"event_id", "ts", "tool_id", "authority", "category", "ok",
+                    "exit_code", "duration_ms", "args_hash", "arg_keys", "error",
+                    "client", "kind"}
+
+# The pre-T2 shape, used to build an old database and prove the migration.
+LEGACY_SCHEMA = """
+CREATE TABLE IF NOT EXISTS events (
+  event_id    INTEGER PRIMARY KEY AUTOINCREMENT,
+  ts          TEXT NOT NULL,
+  tool_id     TEXT NOT NULL,
+  authority   TEXT,
+  category    TEXT,
+  ok          INTEGER,
+  exit_code   INTEGER,
+  duration_ms INTEGER,
+  args_hash   TEXT,
+  arg_keys    TEXT,
+  error       TEXT
+);
+"""
+
+
+def _load(root: Path, dotted: str):
+    sys.path.insert(0, str(root))
+    try:
+        mod = __import__(dotted, fromlist=["_"])
+        return mod
+    except Exception:
+        return None
+    finally:
+        if str(root) in sys.path:
+            sys.path.remove(str(root))
+
+
+def check(r, root: Path) -> None:
+    ev = _load(root, "src.core.event_log")
+    pr = _load(root, "src.core.presence")
+
+    # --- 1. the ledger is readable, not write-only -------------------------
+    r.check("the ledger has a read API", ev is not None and hasattr(ev, "read"),
+            "event_log exposed only record(); a ledger nobody can read is a write-only "
+            "audit trail, and E6a cannot be built on it")
+    r.check("the ledger reports its size", ev is not None and hasattr(ev, "count"))
+
+    # --- 2. attribution ----------------------------------------------------
+    r.check("the schema declares client and kind",
+            ev is not None and REQUIRED_COLUMNS <= set(_columns_of(ev)),
+            f"missing: {sorted(REQUIRED_COLUMNS - set(_columns_of(ev))) if ev else 'module missing'}")
+
+    # --- 3. THE MIGRATION TRAP (raised as a risk at declaration) -----------
+    # CREATE TABLE IF NOT EXISTS silently does nothing against an old database, so
+    # new code would write into a schema that lacks the column - no error, just a
+    # field that is not there. _state/ is gitignored, so every developer has a
+    # different history and both shapes must be tolerated.
+    if ev is not None and hasattr(ev, "migrate"):
+        tmp = Path(tempfile.mkdtemp(prefix="t02-mig-"))
+        db = tmp / "legacy.sqlite3"
+        con = sqlite3.connect(db)
+        con.executescript(LEGACY_SCHEMA)
+        con.execute("INSERT INTO events (ts, tool_id, ok) VALUES ('2026-01-01','ping',1)")
+        con.commit()
+        con.close()
+
+        ev.migrate(db)
+        cols1 = _db_columns(db)
+        ev.migrate(db)                      # idempotence
+        cols2 = _db_columns(db)
+
+        r.check("an old-shape ledger is migrated, not silently ignored",
+                "client" in cols1 and "kind" in cols1,
+                f"columns after migrate: {sorted(cols1)}")
+        r.check("migration is idempotent", cols1 == cols2,
+                "running it twice must change nothing")
+
+        con = sqlite3.connect(db)
+        row = con.execute("SELECT client FROM events WHERE tool_id='ping'").fetchone()
+        con.close()
+        r.check("pre-existing rows read 'unknown', not a guessed attribution",
+                row and row[0] == "unknown",
+                f"legacy row client={row[0] if row else None!r} - attributing old rows "
+                "to a caller that was never recorded would be a fabricated audit trail")
+    else:
+        r.check("the ledger exposes a migration", False,
+                "expected event_log.migrate(db_path)")
+
+    # --- 4. confirmation is a first-class event ----------------------------
+    r.check("confirmation is recordable as its own event kind",
+            ev is not None and hasattr(ev, "record_decision"),
+            "approving or refusing an Apply operation is the moment authority is "
+            "actually exercised; today it is a boolean buried in a tool call and "
+            "leaves no trace")
+
+    # --- 5. presence exists, and is STATE not events -----------------------
+    r.check("a presence store exists", pr is not None,
+            "expected src/core/presence.py")
+    if pr is None:
+        return
+    for fn in ("read", "update", "clear"):
+        r.check(f"presence exposes {fn}()", hasattr(pr, fn))
+
+    # --- 6. THE ACCUMULATION TRAP (raised as a risk at declaration) --------
+    # It would be easy to let presence grow - a recent-selections list, a history of
+    # focus changes. The moment it accumulates it is a second ledger with none of the
+    # ledger's guarantees. Assert it does not grow, not merely that it exists.
+    if not r.filesystem_permits_unlink(root):
+        r.skip("presence does not accumulate",
+               "this filesystem denies unlink, so the ephemeral store cannot be "
+               "exercised or cleaned up here")
+        return
+
+    state = Path(tempfile.mkdtemp(prefix="t02-pres-"))
+    env_backup = os.environ.get("SUITE_STATE_ROOT")
+    os.environ["SUITE_STATE_ROOT"] = str(state)
+    try:
+        paths = _paths(root)
+        if paths is None:
+            r.check("presence is exercisable", False, "could not resolve paths")
+            return
+        pr.clear(paths)
+        sizes = []
+        for i in range(12):
+            pr.update(paths, browse_selection=f"file_{i}.py", target_root=str(state))
+            p = pr.path(paths)
+            sizes.append(p.stat().st_size if p.is_file() else 0)
+        r.check("presence does not accumulate across updates",
+                max(sizes) - min(sizes) < 64 and sizes[-1] <= sizes[0] + 64,
+                f"footprint grew {sizes[0]} -> {sizes[-1]} bytes over 12 updates; "
+                "presence is STATE, not a second event log")
+
+        snap = pr.read(paths)
+        r.check("presence answers what is true NOW",
+                isinstance(snap, dict) and snap.get("browse_selection") == "file_11.py",
+                f"read back: {snap}")
+
+        # ephemeral: clear() is what a restart does
+        pr.clear(paths)
+        r.check("presence is dropped on restart", not pr.read(paths),
+               "clear() models a restart; presence must not survive one")
+    finally:
+        if env_backup is None:
+            os.environ.pop("SUITE_STATE_ROOT", None)
+        else:
+            os.environ["SUITE_STATE_ROOT"] = env_backup
+
+    # --- 7. the two channels stay separate ---------------------------------
+    src = (root / "src" / "core" / "event_log.py").read_text(encoding="utf-8", errors="replace")
+    r.check("no UI-state vocabulary leaked into the ledger",
+            not any(w in src for w in ("browse_selection", "operation_inclusion", "focus")),
+            "selection and focus belong to presence; ledgering them is the growth "
+            "path that made the size question urgent in the first place")
+
+
+def _columns_of(ev) -> set:
+    import re
+    schema = getattr(ev, "_SCHEMA", "") or ""
+    return set(re.findall(r"^\s{2}(\w+)\s", schema, re.M))
+
+
+def _db_columns(db: Path) -> set:
+    con = sqlite3.connect(db)
+    try:
+        return {row[1] for row in con.execute("PRAGMA table_info(events)")}
+    finally:
+        con.close()
+
+
+def _paths(root: Path):
+    sys.path.insert(0, str(root))
+    try:
+        from src.core.config import resolve_paths
+        os.environ.setdefault("SUITE_PROJECT_ROOT", str(root))
+        return resolve_paths(root)
+    except Exception:
+        return None
+    finally:
+        if str(root) in sys.path:
+            sys.path.remove(str(root))

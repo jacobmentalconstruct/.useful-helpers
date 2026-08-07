@@ -95,7 +95,7 @@ class MCPHandler:
         arguments = params.get("arguments") or {}
         if not name:
             raise _MCPError(-32602, "tools/call requires 'name'")
-        result = invoke_mod.invoke(self._paths, name, arguments)
+        result = invoke_mod.invoke(self._paths, name, arguments, client="agent")
         if not result.ok:
             return {"isError": True, "content": [{"type": "text", "text": result.error or "tool failed"}]}
         return {

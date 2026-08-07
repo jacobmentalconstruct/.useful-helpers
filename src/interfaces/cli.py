@@ -62,7 +62,7 @@ def dispatch(paths: Paths, argv: list[str]) -> int:
         if isinstance(args, tuple):  # (error dict,) passthrough
             _print(args[0])
             return 2
-        result = invoke_mod.invoke(paths, tool_id, args)
+        result = invoke_mod.invoke(paths, tool_id, args, client="cli")
         _print(asdict(result))
         return 0 if result.ok else 1
 

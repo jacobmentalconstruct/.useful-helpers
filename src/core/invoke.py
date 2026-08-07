@@ -184,7 +184,8 @@ def _dispatch(paths: Paths, tool, tool_id: str, args: dict) -> InvokeResult:
     return InvokeResult(ok, tool_id, output, error, 0)
 
 
-def invoke(paths: Paths, tool_id: str, args: dict, allow: str | None = None) -> InvokeResult:
+def invoke(paths: Paths, tool_id: str, args: dict, allow: str | None = None,
+           client: str = event_log.UNKNOWN_CLIENT) -> InvokeResult:
     """Resolve, ENFORCE authority, run, capture, log + record one governance event. The single
     dispatch chokepoint. `allow` (Observe|Sandbox|Apply) can only tighten the policy ceiling."""
     started = time.monotonic()
@@ -229,5 +230,9 @@ def invoke(paths: Paths, tool_id: str, args: dict, allow: str | None = None) -> 
         exit_code=result.exit_code,
         error=result.error,
         duration_ms=duration_ms,
+        # Who caused this. Recorded, never used to grant privilege: a GUI click and an
+        # agent call take the same path and meet the same authority ceiling. The point
+        # is that each party can see what the other did, not that either is trusted more.
+        client=client,
     )
     return result

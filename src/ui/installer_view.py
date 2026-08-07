@@ -126,7 +126,7 @@ class InstallerView:
         threading.Thread(target=self._worker, args=(args,), daemon=True).start()
 
     def _worker(self, args: dict) -> None:
-        result = invoke_mod.invoke(self.paths, _TOOL_ID, args)
+        result = invoke_mod.invoke(self.paths, _TOOL_ID, args, client="gui")
         self._results.put(result)
 
     def _poll(self, widget) -> None:
