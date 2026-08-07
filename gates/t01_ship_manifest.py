@@ -64,6 +64,24 @@ def check(r, root: Path) -> None:
             set(MUST_NOT_SHIP) <= never,
             f"missing from manifest: {sorted(set(MUST_NOT_SHIP) - never)}")
 
+    # --- exclusions must state their REASON, not just their name -----------
+    # A flat list cannot distinguish "regenerable junk" from "must never exist in
+    # a target" from "belongs to the other deliverable". Under the flat list
+    # packaging/ sat beside _trash, which invites exactly the wrong cleanup.
+    for cat in ("NEVER_SHIP", "REGENERABLE", "INSTALLER_ONLY", "EXPORT_SUBSTITUTED"):
+        r.check(f"manifest declares the {cat} category",
+                hasattr(mod, cat), f"expected src/core/payload.py::{cat}")
+
+    installer_only = set(getattr(mod, "INSTALLER_ONLY", ()) or ())
+    r.check("packaging/ is classified INSTALLER_ONLY, not scaffolding",
+            "packaging" in installer_only and "packaging" not in never,
+            "packaging/ is deliverable #1 - it ships NEXT TO the payload, never "
+            "inside it. Excluded for a different reason than _trash.")
+
+    r.check("deliverable #1 is present and intact in the repository",
+            (root / "packaging" / "installer" / "install.py").is_file(),
+            "the installer must not be mistaken for scaffolding and removed")
+
     # --- 2. consumers derive from it, rather than repeating it -------------
     consumers = {
         "tools/vendor_export/cli.py": "vend and installer",
@@ -113,6 +131,12 @@ def check(r, root: Path) -> None:
     leaked = sorted(top & set(MUST_NOT_SHIP))
     r.check("no development zone reached the target", not leaked, f"leaked={leaked}")
 
+    # Deliverable #1 must not be inside deliverable #2: a payload carrying its own
+    # installer is circular and dead weight.
+    r.check("the payload does not contain the installer",
+            "packaging" not in top,
+            "packaging/ ships beside the payload, not within it")
+
     nested = [p for p in sidecar.rglob(".useful-helpers")]
     r.check("the vend did not recurse", not nested, f"{nested[:2]}")
 
@@ -155,6 +179,33 @@ def check(r, root: Path) -> None:
     else:
         r.check("the payload ships an ignore file", False,
                 "the sidecar keeps its own state; it needs its own ignore rules")
+
+    # --- 6b. deliverable #1 must be blank too --------------------------------
+    # The installer is a shipped artifact and no check has ever looked at it. It
+    # travels to the same machines as the payload and must be equally free of this
+    # project's history.
+    inst = root / "packaging" / "installer"
+    inst_bleed = []
+    if inst.is_dir():
+        for f in inst.rglob("*"):
+            if not f.is_file() or f.suffix.lower() not in {".md", ".py", ".bat", ".sh", ".txt"}:
+                continue
+            try:
+                t = f.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            if re.search(r"[A-Za-z]:\\\\?(Users|Jacob)\\", t) or "/sessions/" in t:
+                inst_bleed.append(f"{f.name} (absolute path)")
+            for name in PREDECESSOR_NAMES:
+                if name in t.lower():
+                    inst_bleed.append(f"{f.name} ({name})")
+                    break
+            for marker in ("AppJOURNAL", "CHARTER.md", "TRANCHE_"):
+                if marker in t:
+                    inst_bleed.append(f"{f.name} ({marker})")
+                    break
+    r.check("E11 - the installer ships blank as well", not inst_bleed,
+            f"{inst_bleed[:4]}")
 
     # --- 7. the regression signal -------------------------------------------
     count = sum(1 for p in sidecar.rglob("*") if p.is_file())

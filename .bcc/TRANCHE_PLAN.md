@@ -85,7 +85,22 @@ The four current descriptions:
 
 **Work.**
 
-1. Declare the manifest once, in one module, as the single source of truth.
+1. Declare the manifest once, in one module, as the single source of truth —
+   **with named categories, not one flat set.** `CLEAN_APP_STRIP` currently holds
+   four unrelated reasons for exclusion in a single list, which is why the
+   `packaging/` question looked open when it was not:
+
+   | Category | Meaning | Members |
+   | --- | --- | --- |
+   | `NEVER_SHIP` | development scaffolding and this project's history; absent from **both** deliverables | `.bcc`, `_docs`, `gates`, `_trash`, `_harness`, parts bin, `requirements-dev.txt`, test scratch |
+   | `REGENERABLE` | recreated on use; excluded because stale, not secret | `_state`, `_artifacts`, `_exports`, `_tmp_sqlite_probe`, caches |
+   | `INSTALLER_ONLY` | **ships as deliverable #1, beside the payload, never inside it** | `packaging/` |
+   | `EXPORT_SUBSTITUTED` | replaced at export time by a tool-focused version | `tools/vendor_export/clean_app_docs` |
+
+   The payload exclusion set is then *derived* as the union. Keeping the reasons
+   named is the point: a flat list cannot distinguish "junk", "must never exist
+   in a target", and "belongs to the other half of the product". Under the flat
+   list, `packaging/` sat beside `_trash` — inviting exactly the wrong cleanup.
 2. Derive `vendor_export`'s exclusion sets from it.
 3. Derive the harness's `_PAYLOAD_EXCLUDE` from it.
 4. Derive both test scoping sets from it.
@@ -94,14 +109,41 @@ The four current descriptions:
 6. Ship a minimal payload `.gitignore` covering the sidecar's own `_state`,
    `_artifacts` and `logs` — not the development one, which names the parts bin
    and harness.
-7. Resolve `packaging/`: it is stripped from the vend while the installer is
-   deliverable #1. Record the decision explicitly rather than leaving it implied.
+7. **Reclassify `packaging/` as `INSTALLER_ONLY`, and gate deliverable #1.**
+
+   The question raised at declaration — *is stripping `packaging/` correct when
+   the installer is deliverable #1?* — is answered by the installer itself:
+
+   > `DOMAIN: packaging (ships NEXT TO the product zip, not inside it)`
+
+   It resolves a sibling `useful-helpers-toolkit/` folder or zip, and is
+   stdlib-only so it runs on a bare machine. The two-deliverable split is already
+   built; stripping it from the payload is correct and must stay.
+
+   What is wrong is that this is invisible. `packaging/` sits in a flat exclusion
+   list beside `_trash` and `_state`, indistinguishable from disposable material,
+   and the reasoning survives only in a file header. So:
+
+   - move it to `INSTALLER_ONLY`, so the manifest states *why* it is excluded;
+   - assert it is **absent from the payload** — a payload containing its own
+     installer is circular and dead weight;
+   - assert it is **present and intact in the repository**, so a future cleanup
+     cannot mistake deliverable #1 for scaffolding;
+   - apply the **E11 blank check to the installer too**. It is a shipped artifact
+     and currently no check looks at it at all. It must carry no journal, no
+     evidence, no build-machine path and no predecessor name, exactly as the
+     payload must not.
 8. Implement charter condition **E11** — vends blank.
 
 **Gate — `gates/t01_ship_manifest.py`**
 
-- one manifest module exists and declares the payload boundary
+- one manifest module exists and declares the payload boundary **by named
+  category**, so each exclusion states its reason
 - every consumer derives from it; no independent literal exclusion lists remain
+- `packaging/` is classified `INSTALLER_ONLY`: absent from the payload, present
+  and intact in the repository as deliverable #1
+- the installer passes the same blank check as the payload — no journal,
+  evidence, build-machine path or predecessor name
 - `ruff.toml`'s excludes are consistent with the manifest
 - a real vend into a scratch directory contains **no** `_harness`, `.bcc`,
   `_docs`, `gates`, `_trash`, parts bin, or nested `.useful-helpers`
