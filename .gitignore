@@ -62,6 +62,14 @@ toolkit/config/registry.json
 _harness/targets/**/.useful-helpers/
 **/.useful-helpers/
 
+# --- Gate probes ---
+# The gates write a probe file into the repository root to test whether this
+# filesystem permits unlink, then delete it. On a filesystem that DENIES unlink -
+# the exact condition being probed - the file cannot be removed and lingers. One
+# was swept into a commit by `git add -A`. The probe must never be trackable.
+.gate-unlink-probe-*
+.t01-unlink-probe-*
+
 # --- Test scratch ---
 # smoke_test.py and the harness create temporary sidecar installs here.
 .useful-helpers-test-tmp/
