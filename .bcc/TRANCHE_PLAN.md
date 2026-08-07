@@ -16,8 +16,8 @@ written during declaration, before implementation.
 
 | # | Tranche | Proves |
 | --- | --- | --- |
-| T0 | Foundation and Reset | A blank, unified project with one authority |
-| T1 | Explicit Target and Root Safety | The sidecar cannot act on the wrong tree |
+| T0 | Foundation and Reset | **CLOSED** — a blank, unified project with one authority |
+| T1 | One Ship Manifest | The sidecar vends only itself, and blank |
 | T2 | Ledger and Presence | The seam contract exists in code |
 | T3 | Live Channel | E6a, E6b |
 | T4 | Cancellation and Progress | Long work is observable and stoppable |
@@ -58,29 +58,65 @@ source, with provenance preserved.
 
 ---
 
-## T1 — Explicit Target and Root Safety
+## T1 — One Ship Manifest · DECLARED
 
-**Outcome.** The sidecar refuses to act unless a valid target is explicitly
-supplied, and can never silently operate on the wrong tree.
+**Note on numbering.** T1 originally read *Explicit Target and Root Safety*. That
+work was pulled forward into T0: collapsing the sidecar to the repository root
+exposed the defect live, so root resolution was rewritten and verified there. The
+slot is reused rather than renumbered; T2–T10 are unchanged.
 
-**Work.** Remove parent inference (`.suite_sidecar`, dot-prefixed home). Require
-an explicit target root. Validate before launch; assert the echoed root equals
-the requested root; fail hard on mismatch. Treat unparseable tool output as
-failure. Set `SUITE_STRICT_OBSERVE=1` explicitly per invocation.
+**Outcome.** Exactly one declared description of what the sidecar ships, consumed
+by every place that needs it — and a vend that provably contains only the sidecar,
+carrying none of its own history.
 
-**Gate — `gates/t01_root_safety.py`**
+**Why now.** Five separate defects trace to this being undeclared. The ship
+boundary used to be the nested `toolkit/` folder; collapsing it erased an implicit
+rule that four different mechanisms had each been relying on. Each was repaired
+individually in journal 0003. Convergence is the actual fix.
 
-- a non-existent target root produces a **non-zero** result naming the bad path
-- no invocation resolves a target the caller did not name
-- a tool returning unparseable output is reported as failure
-- an Observe tool that writes to the target fails the call and the violation is
-  reported as a damage event
-- `SUITE_STRICT_OBSERVE=0` in the ambient environment does **not** disable the
-  guard for a sidecar-initiated call
+The four current descriptions:
 
-**Non-goals.** No UI. No new tools.
+| Consumer | Where |
+| --- | --- |
+| Harness install | `_harness/harness.py::_PAYLOAD_EXCLUDE` |
+| Vend / installer | `tools/vendor_export/cli.py::EXCLUDE_DIRS`, `CLEAN_APP_STRIP` |
+| Lint scope | `ruff.toml::extend-exclude` |
+| Test scopes | `tests/test_smoke.py` — two independent sets |
 
-**Note.** This closes the most dangerous verified defect (charter §7.2).
+**Work.**
+
+1. Declare the manifest once, in one module, as the single source of truth.
+2. Derive `vendor_export`'s exclusion sets from it.
+3. Derive the harness's `_PAYLOAD_EXCLUDE` from it.
+4. Derive both test scoping sets from it.
+5. `ruff.toml` is static TOML and cannot import — so the **gate** asserts it
+   remains consistent with the manifest rather than silently drifting.
+6. Ship a minimal payload `.gitignore` covering the sidecar's own `_state`,
+   `_artifacts` and `logs` — not the development one, which names the parts bin
+   and harness.
+7. Resolve `packaging/`: it is stripped from the vend while the installer is
+   deliverable #1. Record the decision explicitly rather than leaving it implied.
+8. Implement charter condition **E11** — vends blank.
+
+**Gate — `gates/t01_ship_manifest.py`**
+
+- one manifest module exists and declares the payload boundary
+- every consumer derives from it; no independent literal exclusion lists remain
+- `ruff.toml`'s excludes are consistent with the manifest
+- a real vend into a scratch directory contains **no** `_harness`, `.bcc`,
+  `_docs`, `gates`, `_trash`, parts bin, or nested `.useful-helpers`
+- the vended payload carries the minimal ignore file, not the development one
+- **E11:** the vend contains no journal entry, event log, evidence file,
+  development document, `.git`, build-machine absolute path, or predecessor
+  project name
+- vended file count stays within a declared bound — the regression signal that
+  caught 4,009 files shipping where 275 belong
+
+**Non-goals.** No UI work. No chains. No ledger or presence work. No new tools.
+No change to root resolution — that closed in T0.
+
+**Stop condition.** `python gates/run.py` green, including T0's gate, on a host
+with normal delete semantics.
 
 ---
 
