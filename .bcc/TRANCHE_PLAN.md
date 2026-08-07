@@ -343,10 +343,95 @@ On a green T10, the project is **closed** per charter §4.
 - **Read-only mount prevention on Windows/macOS.** No known strategy; reports
   UNAVAILABLE with a reason.
 
+## Capability Gap — `lint` · **PRIORITY**
+
+Recorded 2026-08-06. Raised by the operator after noticing the review pass was
+using `grep` and `ast.parse` rather than the sidecar.
+
+**The gap.** There is no lint tool and no syntax-validation tool. Confirmed
+against the live registry: searching 95 tools for lint/style/format/syntax
+returns nothing — the apparent hits are `blocking_call_scan` (an async-safety
+scanner) and `provenance`, both false matches.
+
+**Why it matters more than convenience.** The toolkit's own charter states the
+measure: *every time an agent reaches past the sidecar for its own hands, the
+sidecar has a gap.* Over this session the most frequently reached-past verb was
+"does this file still parse" — run by hand as `ast.parse` and `compileall` after
+almost every edit, outside the seam, unlogged and ungoverned. That is the
+highest-frequency ungoverned action in the whole engagement.
+
+Static analysis is well covered — `dead_code`, `complexity_score`,
+`domain_boundary_audit`, `blocking_call_scan`, `import_graph`, `symbol_graph`,
+`secret_audit` all answer *"is this code sound?"* Nothing answers the cheaper,
+far more frequent *"is this valid, and does it meet the bar?"*
+
+### Corollary gaps — all verified, all closed or eased by the same tool
+
+1. **Syntax validation is the cheapest mode and should be first-class.**
+   `ast.parse` per edited file is the fastest possible correctness signal and was
+   used constantly by hand. A lint tool whose cheapest mode is "does it parse"
+   removes the single largest ungoverned action.
+
+2. **`command_profile` does not detect lint commands.** Verified: with
+   `ruff.toml` sitting at the repository root, it detects `smoke`, `unittest`,
+   `run_bat` and `setup_env` — and no lint command. A project carrying a linter
+   config obviously has a lint command. Fixing detection would let `project_run`
+   reach it *even before* a dedicated tool exists, and is a smaller change.
+
+3. **Lint has exactly one path, and it is the wrong one.** `test_self_lint_clean`
+   is the only enforcement of the style bar. It lives in the test suite, shells
+   out to `ruff`, and **skips silently when ruff is absent** — which it is in the
+   development sandbox. So the bar goes unenforced there and no gate notices. This
+   violates the one-capability-one-governed-path rule the whole project is built
+   on: lint is reachable only through a test.
+
+4. **Gates cannot assert lint cleanliness.** They would need the tool. Today a
+   gate can only reach it by invoking the entire suite.
+
+5. **Unavailability is invisible.** Nine tests skip in the sandbox, one of them
+   the lint check, and nothing surfaces *which* capability is unavailable or why.
+   The tool must report `UNAVAILABLE` with a reason — the harness's honest-skip
+   contract — rather than pass or vanish.
+
+6. **Dev dependencies are undeclared to the tooling.** `requirements-dev.txt`
+   exists but `dependency_check` reports only `declarations`/`envs`/`host` and
+   does not distinguish dev from runtime. A lint tool needs to know its own
+   dependency is declared but optional.
+
+7. **`ruff.toml` scope is gate-enforced, not derived.** T1 could not make the lint
+   config import the manifest, because TOML cannot import, so a gate asserts
+   agreement instead. A lint tool owning the scope — taking it from
+   `payload.FOREIGN` — would remove that entire class of drift and make the
+   exclude list generated rather than hand-maintained. **This is the strongest
+   synergy: the tool would delete a gate assertion rather than add one.**
+
+8. **Windows pipe encoding must be handled.** A `cp1252` `UnicodeDecodeError`
+   destroyed a lint failure message earlier today, reducing the assertion to
+   `1 != 0` with nothing actionable. Any tool shelling to a linter must force
+   utf-8 with replacement.
+
+### Shape when built
+
+Observe authority, `writes: none`, structured findings, scope derived from
+`payload.FOREIGN`, honest `UNAVAILABLE` when the linter is absent, utf-8 forced,
+and a `syntax_only` fast mode. Small, high-frequency, and it closes a hole this
+session fell through repeatedly.
+
+**Priority: high.** Not scheduled into a tranche yet — inserting it mid-plan is
+the scope creep the protocol warns against — but it should be considered before
+T2 rather than after, because every tranche from here writes code, and the
+cheapest check on that code is the one currently unavailable.
+
+---
+
 ## Backlog
 
-| Item | Origin |
-| --- | --- |
+| Item | Origin | Priority |
+| --- | --- | --- |
+| **`lint` tool** — see the capability gap above | Review pass, 2026-08-06 | **High** |
+| `command_profile` misses lint commands despite `ruff.toml` | Corollary 2 | High — smaller than the tool |
+| Lint enforcement lives only in the test suite and skips silently | Corollary 3 | High |
+| `dependency_check` does not distinguish dev from runtime deps | Corollary 6 | Medium |
 | `VERSION` does not move when tools change | Charter §7.4 |
 | Precept-guard cost unmeasured on large targets | Charter §7.3 |
 | Windows behavior wholly unverified | Charter §7.5 |
