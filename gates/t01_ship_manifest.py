@@ -30,9 +30,14 @@ MUST_NOT_SHIP = (
 )
 
 # Traces of this project's own history. None may survive a vend (charter E11).
+#
+# Named artifacts only - a bare word like "evidence" matched `tools/evidence/`, the
+# shipped evidence TOOL, and reported a legitimate capability as leaked history. The
+# sidecar ships tools NAMED for the concepts it records; the record itself is what
+# must not travel.
 HISTORY_MARKERS = (
     "AppJOURNAL", "CHARTER.md", "TRANCHE_PROTOCOL.md", "TRANCHE_PLAN.md",
-    "event_log.sqlite3", "journal.sqlite3", "evidence",
+    "BUILDER-CONSTRAINT-CONTRACT.md", "event_log.sqlite3", "journal.sqlite3",
 )
 
 PREDECESSOR_NAMES = ("mindshard", "parts-bin", "uimapper", "appfoundry", "bdneural")
@@ -180,8 +185,13 @@ def check(r, root: Path) -> None:
     # --- 6. the payload carries its OWN ignore file -------------------------
     gi = sidecar / ".gitignore"
     if gi.is_file():
-        body = gi.read_text(encoding="utf-8", errors="replace")
-        dev_only = [d for d in ("_harness", ".plans-and-parts_FOR-REFERENCE-ONLY", "gates") if d in body]
+        # RULES only, not prose. Comments legitimately explain what the file omits,
+        # and an earlier revision of this check read its own explanation as a
+        # violation. What matters is what the file actually ignores.
+        rules = [ln.strip() for ln in gi.read_text(encoding="utf-8", errors="replace").splitlines()
+                 if ln.strip() and not ln.lstrip().startswith("#")]
+        dev_only = [d for d in ("_harness", ".plans-and-parts_FOR-REFERENCE-ONLY", "gates", "_trash")
+                    if any(d in rule for rule in rules)]
         r.check("the payload ships a minimal ignore file, not the development one",
                 not dev_only, f"development rules present: {dev_only}")
     else:
