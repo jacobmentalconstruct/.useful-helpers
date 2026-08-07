@@ -169,6 +169,52 @@ re-cut.
 
 ---
 
+## 5.4 First real run — Windows, 85 tests, 170s
+
+The suite completed for the first time. Every `unlink` error from the sandbox
+disappeared, confirming those were environmental. `test_d1_o1` passed, confirming
+the payload-scoping fix. Five genuine failures remained, all now repaired.
+
+**The serious one: the vend shipped everything.** `CLEAN_APP_STRIP` excluded none
+of the development zones, so `sidecar_install` copied **4,009 files** into a
+target — `_harness`, `.bcc`, `_docs`, `gates`, `_trash`, and the entire parts bin.
+The operator's reference library and this project's own build records would land
+inside every project the sidecar is installed into. That breaks the precept
+outright and makes E11 unmeetable.
+
+The cause is the same one running through this whole entry: **the ship boundary
+used to be the nested `toolkit/` folder.** Collapsing the sidecar to the root put
+everything in scope and nothing re-drew the line. `test_target_is_never_modified`
+was the symptom, failing on a `PermissionError` deep inside a copied `_harness`
+target.
+
+**Two further regressions from the collapse, both mine.** `paths.docs` still
+pointed at `_docs/` after product documentation moved to `docs/`, so
+`TOOLS.md` could not be found. And `test_seam_args_file_and_stdin` spawns the seam
+from the source tree, which has no work target and correctly refuses — it tests
+`--args-file` plumbing, not binding, so it now supplies an explicit root.
+
+**Two from checking reference material.** `ruff` linted the parts bin, reporting
+findings about predecessor code this project did not write and will delete; its
+failure message was additionally lost to a cp1252 decode error on Windows pipes,
+so the assertion reported `1 != 0` with nothing actionable. And
+`test_docs_have_no_dangling_links` walked the whole repository — all nine dangling
+links were predecessor READMEs citing absolute paths on another machine.
+
+### The pattern, stated once
+
+Four of the five failures, and the earlier hang, share one root cause: **a
+boundary that was implicit in the folder layout became invisible when the layout
+changed.** Scanning, linting, doc-checking and vending each had their own idea of
+what "the project" meant, and each silently widened from ~136 files to thousands.
+
+There are now four places describing what ships — `_PAYLOAD_EXCLUDE`,
+`CLEAN_APP_STRIP`, `ruff.toml`, and the two test scopes. **Converging them on one
+declared manifest is no longer a tidiness item; it is the fix for a defect class
+that has now produced five separate failures.** T1.
+
+---
+
 ## 6. Next Action
 
 **Requires a Windows host — nothing further can be done in this sandbox.**
