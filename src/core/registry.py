@@ -121,6 +121,29 @@ def get(paths: Paths, tool_id: str) -> "ToolRecord | None":
     return None
 
 
+def ensure_manifest(paths: Paths) -> bool:
+    """Generate config/registry.json if it is missing. Returns True if it was written.
+
+    The registry JSON is DERIVED state: `discover()` reads the tool.json manifests
+    directly and never needs it, so it is deliberately untracked. But consumers that
+    read the file - `operational_audit`, and the suite's registry cross-check -
+    reasonably expect it to exist, and a fresh clone has no such file.
+
+    That combination made the repository unable to pass its own suite from a clean
+    checkout, while passing everywhere the file happened to linger from an earlier
+    run. Untracking a file does not delete it, so the defect was invisible in every
+    working tree that had ever generated one.
+
+    Generating on demand keeps the file out of version control (no drift, no merge
+    conflicts on a build artifact) while making a clean checkout work with no manual
+    setup step. Cheap and idempotent: it is a no-op once the file exists.
+    """
+    if (paths.config / "registry.json").is_file():
+        return False
+    generate_manifest(paths)
+    return True
+
+
 def generate_manifest(paths: Paths) -> dict:
     """Regenerate config/registry.json from discovered manifests (derived state)."""
     records = discover(paths)

@@ -101,6 +101,13 @@ class SpineSmokeTest(unittest.TestCase):
             else:
                 os.environ["SUITE_PROJECT_ROOT"] = prev
 
+        # The derived registry is untracked, so a CLEAN CLONE does not have one.
+        # These tests run in-process and never go through src/app.py, which is where
+        # an entrance would generate it. Without this, two tests fail on a fresh
+        # checkout while passing in any tree that had ever generated the file - the
+        # exact blind spot that let a broken clean clone look green.
+        registry.ensure_manifest(cls.paths)
+
     @classmethod
     def tearDownClass(cls) -> None:
         import shutil

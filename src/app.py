@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import sys
 
+from src.core import registry
 from src.core.config import NoTargetBound, resolve_paths
 from src.interfaces import cli, mcp_server
 from src.lib import logging_setup
@@ -41,6 +42,11 @@ def main(argv: list[str]) -> int:
         # fallback. Report it plainly rather than as a traceback.
         sys.stderr.write(f"error: {e}\n")
         return 2
+    # A clean checkout has no derived registry. Generate it once, here, so any
+    # entrance - cli, mcp, ui - works out of the box rather than requiring the
+    # operator to know about `registry-refresh` first.
+    registry.ensure_manifest(paths)
+
     scrub = [(str(paths.root), "<toolkit>")]
     if paths.project_root is not None:
         scrub.insert(0, (str(paths.project_root), "<project>"))
