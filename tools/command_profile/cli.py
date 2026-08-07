@@ -38,6 +38,28 @@ def run(args: dict) -> dict:
         _add(commands, "unittest", "test", "python -m unittest discover -s tests -t .", "tests/")
     if (root / "run.bat").exists():
         _add(commands, "run_bat", "run", "run.bat", "run.bat")
+
+    # Lint. A project carrying a linter config obviously has a lint command, but this
+    # detected none - so `project_run` could not reach linting either, and the only
+    # path to it was a single test that skips silently when the linter is absent.
+    # Until a dedicated lint tool exists this is what makes it reachable through the
+    # seam at all. Recorded as corollary 2 of the lint capability gap.
+    for cfg, cmd in (
+        ("ruff.toml", "python -m ruff check ."),
+        (".ruff.toml", "python -m ruff check ."),
+        ("setup.cfg", "python -m flake8"),
+        (".flake8", "python -m flake8"),
+    ):
+        if (root / cfg).exists():
+            _add(commands, "lint", "lint", cmd, cfg)
+            break
+    if (root / "pyproject.toml").exists():
+        try:
+            body = (root / "pyproject.toml").read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            body = ""
+        if "[tool.ruff" in body:
+            _add(commands, "lint", "lint", "python -m ruff check .", "pyproject.toml")
     if (root / "setup_env.bat").exists():
         _add(commands, "setup_env", "setup", "setup_env.bat", "setup_env.bat")
 
