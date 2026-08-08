@@ -172,7 +172,7 @@ class PlannerView:
         threading.Thread(target=self._worker, args=(args,), daemon=True).start()
 
     def _worker(self, args: dict) -> None:
-        self._results.put((args.get("action"), invoke_mod.invoke(self.paths, _TOOL_ID, args)))
+        self._results.put((args.get("action"), invoke_mod.invoke(self.paths, _TOOL_ID, args, client="gui")))
 
     def _poll(self, widget) -> None:
         try:
@@ -249,7 +249,7 @@ class PlannerView:
 
     def run_sync(self, args: dict):
         """Bounded, mainloop-free dispatch for the plan-probe."""
-        result = invoke_mod.invoke(self.paths, _TOOL_ID, args)
+        result = invoke_mod.invoke(self.paths, _TOOL_ID, args, client="gui")
         self._render(args.get("action"), result)
         return result
 

@@ -173,7 +173,7 @@ class RegistryView:
         threading.Thread(target=self._worker, args=(tool_id, args), daemon=True).start()
 
     def _worker(self, tool_id: str, args: dict) -> None:
-        result = invoke_mod.invoke(self.paths, tool_id, args)
+        result = invoke_mod.invoke(self.paths, tool_id, args, client="gui")
         self._results.put(result)
 
     def _poll(self, widget) -> None:
@@ -205,7 +205,7 @@ class RegistryView:
         if tool_id in self.tools:
             self.tree.selection_set(tool_id)
             self._on_select()
-        result = invoke_mod.invoke(self.paths, tool_id, args)
+        result = invoke_mod.invoke(self.paths, tool_id, args, client="gui")
         self._render_result(result)
         return result
 

@@ -376,7 +376,7 @@ class MapperView:
         threading.Thread(target=self._worker, args=(args,), daemon=True).start()
 
     def _worker(self, args: dict) -> None:
-        result = invoke_mod.invoke(self.paths, _TOOL_ID, args)
+        result = invoke_mod.invoke(self.paths, _TOOL_ID, args, client="gui")
         self._results.put((result, self._pending_dir, self._pending_path))
 
     def _poll(self, widget) -> None:
@@ -443,7 +443,7 @@ class MapperView:
     # ---- probe support (bounded, mainloop-free) -------------------------
     def run_generate_sync(self, args: dict):
         """Run one snapshot inline and render  -  for the bounded map-probe verification."""
-        result = invoke_mod.invoke(self.paths, _TOOL_ID, args)
+        result = invoke_mod.invoke(self.paths, _TOOL_ID, args, client="gui")
         parent = Path(args["out"]).parent if args.get("out") else (
             Path.cwd() / "_artifacts" / "projectmapper")
         name = args.get("name") or Path(args["root"]).name

@@ -186,7 +186,7 @@ class InstallerView:
 
     def run_sync(self, args: dict):
         """Bounded, mainloop-free dispatch for the install-probe."""
-        result = invoke_mod.invoke(self.paths, _TOOL_ID, args)
+        result = invoke_mod.invoke(self.paths, _TOOL_ID, args, client="gui")
         self._render(result)
         return result
 
