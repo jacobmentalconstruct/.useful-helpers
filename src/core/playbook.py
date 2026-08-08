@@ -84,7 +84,11 @@ def run_playbook(paths: Paths, steps: list, *, stop_on_error: bool = True) -> di
                 break
             continue
 
-        result = invoke(paths, tool, args)
+        # A chain step is a WORKFLOW caller, not an anonymous one. Left unattributed
+        # every step of every chain recorded as "unknown" - and chains are how the
+        # daily drivers will be expressed, so the whole of T7 would have been
+        # invisible in the shared record.
+        result = invoke(paths, tool, args, client="workflow")
         context[sid] = result.output if isinstance(result.output, dict) else {}
         reports.append({"id": sid, "tool": tool, "ok": result.ok,
                         "output": result.output, "error": result.error})

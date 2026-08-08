@@ -117,6 +117,33 @@ def check(r, root: Path) -> None:
             "actually exercised; today it is a boolean buried in a tool call and "
             "leaves no trace")
 
+    # --- 4b. EVERY caller attributes itself ---------------------------------
+    # E5 says a human and an agent are indistinguishable to the seam - true only if
+    # both SAY who they are. Seven of eight GUI call sites passed no client, and so
+    # did every chain step in playbook.py, so most operator and workflow actions were
+    # recorded as "unknown" while the scoreboard claimed E5 outright.
+    #
+    # Placed HERE, before any filesystem-dependent skip. An earlier revision sat after
+    # the presence section's `return` and therefore never ran on a filesystem that
+    # denies unlink - a static check silently gated behind an unrelated capability.
+    #
+    # Matched on the real call shape `invoke(<paths>, ...)` rather than on a module
+    # prefix: the first version required `invoke_mod.invoke(` and would have missed
+    # playbook.py's bare `invoke(` entirely - the same blind spot as the bug it was
+    # written to catch, which is why it now scans all of src/.
+    import re as _re
+    call_re = _re.compile(r"\binvoke\(\s*(?:self\.)?paths\b(?:[^()]|\([^()]*\))*\)")
+    unattributed = []
+    for py in sorted((root / "src").rglob("*.py")):
+        if py.name == "invoke.py":
+            continue                      # the seam defines the parameter
+        body = py.read_text(encoding="utf-8", errors="replace")
+        for m in call_re.finditer(body):
+            if "client=" not in m.group(0):
+                unattributed.append(f"{py.parent.name}/{py.name}")
+    r.check("every caller attributes itself", not unattributed,
+            f"unattributed call sites in: {sorted(set(unattributed))}")
+
     # --- 5. presence exists, and is STATE not events -----------------------
     r.check("a presence store exists", pr is not None,
             "expected src/core/presence.py")
@@ -208,16 +235,6 @@ def check(r, root: Path) -> None:
     # because it produces a valid row that is merely wrong.
     import re as _re
     unattributed = []
-    for sub in ("ui", "interfaces"):
-        for py in (root / "src" / sub).glob("*.py"):
-            body = py.read_text(encoding="utf-8", errors="replace")
-            for call in _re.findall(r"invoke\((?:[^()]|\([^()]*\))*\)", body):
-                if "invoke_mod.invoke(" in call or "invoke.invoke(" in call:
-                    if "client=" not in call:
-                        unattributed.append(py.name)
-    r.check("every entrance attributes its calls", not unattributed,
-            f"unattributed call sites in: {sorted(set(unattributed))}")
-
     # --- 7. the two channels stay separate ---------------------------------
     src = (root / "src" / "core" / "event_log.py").read_text(encoding="utf-8", errors="replace")
     r.check("no UI-state vocabulary leaked into the ledger",
