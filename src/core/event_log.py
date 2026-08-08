@@ -75,7 +75,14 @@ def _scrub_roots(paths) -> tuple:
             (str(paths.root), "<toolkit>"))
 
 
-def migrate(db: "Path | str") -> None:
+# Databases this process has already brought up to date. Migration is idempotent, but
+# it was being run on EVERY event: a PRAGMA plus two whole-table UPDATEs, on a second
+# connection, on the hot path of every governed action. Correct and wasteful. Memoised
+# per process; a fresh process re-checks, which is when the shape could have changed.
+_MIGRATED: set[str] = set()
+
+
+def migrate(db: "Path | str", *, force: bool = False) -> None:
     """Bring an existing ledger up to the current schema. Idempotent.
 
     Additive only: columns are appended and pre-existing rows are backfilled with
@@ -83,6 +90,9 @@ def migrate(db: "Path | str") -> None:
     audit trail that edits its own history is not an audit trail.
     """
     db = Path(db)
+    key = str(db.resolve()) if db.exists() else str(db)
+    if not force and key in _MIGRATED:
+        return
     db.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(db))
     try:
@@ -97,6 +107,7 @@ def migrate(db: "Path | str") -> None:
         conn.execute(
             "UPDATE events SET kind = ? WHERE kind IS NULL", (KIND_INVOCATION,))
         conn.commit()
+        _MIGRATED.add(key)
     finally:
         conn.close()
 

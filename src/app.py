@@ -47,10 +47,13 @@ def main(argv: list[str]) -> int:
     # operator to know about `registry-refresh` first.
     registry.ensure_manifest(paths)
 
-    # Presence is EPHEMERAL: a new session must not inherit the last one's
-    # context. Stale presence is worse than none, because it answers
-    # confidently. This is the restart the store is defined against.
-    presence.clear(paths)
+    # Presence is EPHEMERAL, but "restart" means a new SESSION - not a new process.
+    # Only the long-lived entrances own a session; cli and mcp are clients of one.
+    # Clearing unconditionally here meant every `cli tool-call` wiped the operator's
+    # context, so an agent working through the CLI destroyed the very state E6b
+    # exists to expose - the exact opposite of the intent.
+    if mode in {"ui", "map", "install", "plan"}:
+        presence.clear(paths)
 
     scrub = [(str(paths.root), "<toolkit>")]
     if paths.project_root is not None:

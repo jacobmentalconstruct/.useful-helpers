@@ -160,6 +160,25 @@ def check(r, root: Path) -> None:
                 isinstance(snap, dict) and snap.get("browse_selection") == "file_11.py",
                 f"read back: {snap}")
 
+        # A CLI call is a CLIENT of a session, not a new one. This assertion exists
+        # because its absence let a real bug through: clearing presence at the
+        # composition root ran on every process start, so every `cli tool-call` wiped
+        # the operator's context - an agent working through the CLI destroyed the very
+        # state E6b exposes.
+        pr.update(paths, browse_selection="operator/was/here.py")
+        subprocess.run(
+            [sys.executable, "-m", "src.app", "cli", "tool-call", "--tool", "ping",
+             "--args-json", "{}"],
+            cwd=root, capture_output=True, text=True, timeout=180,
+            env={**os.environ, "SUITE_STATE_ROOT": str(state),
+                 "SUITE_PROJECT_ROOT": str(state)},
+        )
+        after = pr.read(paths) or {}
+        r.check("a CLI invocation does not wipe presence",
+                after.get("browse_selection") == "operator/was/here.py",
+                f"presence after a cli tool-call: {after.get('browse_selection')!r} - "
+                "only a session-owning entrance may clear it")
+
         # ephemeral: clear() is what a restart does
         pr.clear(paths)
         r.check("presence is dropped on restart", not pr.read(paths),
