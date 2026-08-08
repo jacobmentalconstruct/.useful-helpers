@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import sys
 
+from src.core import invoke as invoke_mod
 from src.core import presence, registry
 from src.core.config import NoTargetBound, resolve_paths
 from src.interfaces import cli, mcp_server
@@ -54,6 +55,11 @@ def main(argv: list[str]) -> int:
     # exists to expose - the exact opposite of the intent.
     if mode in {"ui", "map", "install", "plan"}:
         presence.clear(paths)
+
+    # Children run in their own process group so a cancel reaches grandchildren.
+    # That also stops them dying with the parent, so the cascade is put back here
+    # deliberately - otherwise killing the seam leaves its tools running.
+    invoke_mod.install_shutdown_handlers()
 
     scrub = [(str(paths.root), "<toolkit>")]
     if paths.project_root is not None:

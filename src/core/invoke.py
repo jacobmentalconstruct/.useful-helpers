@@ -17,6 +17,7 @@ NOTES:      THE GOVERNANCE SEAM. Every call is gated by authority policy (slice 
 """
 from __future__ import annotations
 
+import atexit
 import json
 import os
 import signal
@@ -114,6 +115,57 @@ def cancel(op_id: str) -> bool:
     _terminate(handle.proc)
     log.info("invoke CANCELLED op=%s tool=%s", op_id, handle.tool_id)
     return True
+
+
+def reap_all() -> int:
+    """Stop everything this process started. Returns how many were reaped.
+
+    Necessary because children run in their OWN process group - which is what lets
+    cancel() kill a tool AND its grandchildren, but also means they no longer die
+    with the parent. Detaching to gain reach costs the automatic cascade, so the
+    cascade has to be put back deliberately.
+
+    Without this, killing the seam leaves its tools running: a sleep(120) fixture
+    survived its parent and was still there afterwards. In use that is a worker
+    holding a file lock, or a server holding a port, long after the thing that
+    started it is gone.
+    """
+    with _RUNNING_LOCK:
+        handles = list(_RUNNING.values())
+    for handle in handles:
+        handle.cancelled = True
+        try:
+            _terminate(handle.proc)
+        except Exception:
+            pass
+    if handles:
+        log.info("invoke reaped %d in-flight operation(s) on shutdown", len(handles))
+    return len(handles)
+
+
+atexit.register(reap_all)
+
+
+def install_shutdown_handlers() -> None:
+    """Reap in-flight work on SIGTERM/SIGINT as well as on a normal exit.
+
+    atexit alone is not enough: the default disposition for SIGTERM ends the process
+    without running exit handlers, which is exactly the case that orphaned a tool.
+
+    Called from the composition root rather than on import - installing signal
+    handlers is a process-level decision, and a library that does it behind the
+    caller's back will surprise anything embedding it.
+    """
+    def _handler(signum, _frame):
+        reap_all()
+        signal.signal(signum, signal.SIG_DFL)
+        os.kill(os.getpid(), signum)
+
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        try:
+            signal.signal(sig, _handler)
+        except (ValueError, OSError, AttributeError):
+            pass    # not the main thread, or unsupported on this platform
 
 
 def _announce(paths: Paths, tool_id: str, op_id: str, phase: str, client: str) -> None:
