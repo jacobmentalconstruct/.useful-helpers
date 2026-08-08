@@ -140,6 +140,16 @@ A tranche is parked when **all** of the following are true:
 - generated debris is cleaned or staged in `_trash/`
 - the next action is stated
 - the journal entry is closed
+- **the shipped documentation matches what the sidecar now is**
+
+That last one is a parking criterion, not a courtesy. `docs/` and `AGENTS.md` are
+**deliverables**: they travel to every target the sidecar is installed into, and
+`AGENTS.md` is the first thing an arriving agent reads. Three tranches were parked
+before anyone noticed the shipped architecture document still described the sidecar
+as it stood before T1 — no ledger, no presence, no attribution — so a vended sidecar
+was documenting a version of itself that no longer existed.
+
+Catching up at the end is a rewrite. Updating at each close is a paragraph.
 
 If the gate does not pass, the tranche is **blocked**, not parked. A blocked
 tranche records what blocks it and stops. Blocked is a legitimate, honest

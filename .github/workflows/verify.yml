@@ -1,0 +1,77 @@
+# Verification on push.
+#
+# WHY THIS EXISTS
+# Every tranche has ended with "please run this on Windows". That is a dependency
+# on human availability, it is the step most likely to be skipped, and skipping it
+# is exactly how the lint check accumulated a two-error backlog while the gates
+# reported green. This turns that manual step into a push-time check.
+#
+# WHY WINDOWS IS THE PRIMARY JOB
+# The development sandbox has no tkinter and no ollama, so 8 tests skip there, and
+# its filesystem denies unlink, which several tests need. Windows is the only host
+# that has run this suite with zero skips.
+#
+# VERIFICATION STANDING
+# This workflow has NOT been executed. It cannot be: a workflow's first real run is
+# on the runner. `_harness/README.md` warned about precisely this - "shipping
+# unverified config would be the same failure in a different costume" - so it is
+# recorded here rather than claimed as working. The YAML parses; nothing more is
+# asserted until it runs.
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    name: suite and gates (windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install development dependencies
+        # The control plane is standard-library only; this is the linter and
+        # anything else declared dev-only. The suite itself needs no runner.
+        run: python -m pip install --quiet -r requirements-dev.txt
+
+      - name: Lint
+        # Surfaced as its own step so a lint failure is legible at a glance rather
+        # than buried inside the suite, which is where it hid for the whole of T0-T2.
+        run: python -m ruff check .
+
+      - name: Suite
+        env:
+          # Keep scratch off the checkout: the suite redirects all temp I/O to its
+          # own directory, and on a slow filesystem that stalls the run.
+          SUITE_TEST_TMP: ${{ runner.temp }}\uh-test
+        run: python smoke_test.py
+
+      - name: Gates
+        env:
+          SUITE_TEST_TMP: ${{ runner.temp }}\uh-gates
+        run: python gates/run.py
+
+  linux:
+    name: gates (linux, fast feedback)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install --quiet -r requirements-dev.txt
+      - run: python -m ruff check .
+      - name: Gates
+        # Expect honest SKIPs here for tkinter and ollama. A skip is not a pass, so
+        # this job may report non-zero by design; Windows is the authority.
+        continue-on-error: true
+        env:
+          SUITE_TEST_TMP: /tmp/uh-gates
+        run: python gates/run.py

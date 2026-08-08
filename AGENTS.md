@@ -133,6 +133,32 @@ python -m src.app mcp                                               # MCP entran
 - **Chain tools:** `python -m src.app cli run-playbook --file playbooks/<name>.json`
 - **Humans:** `run.bat ui` (browse/run any tool) - `run.bat map` (shareable snapshot) - `run.bat plan` (new project)
 
+## You are not working alone
+
+A human may be working on this same target at the same time, through the GUI. The
+seam keeps you both visible to each other, and neither of you is privileged.
+
+**Everything you do is attributed.** Your calls are recorded as `client=agent`, the
+operator's as `gui`. That is for visibility, not permission - you meet the same
+authority ceiling they do.
+
+**You can see what they did.** The ledger is readable, oldest first, and includes
+their actions alongside yours. It also records **decisions** - when a human approves
+or refuses an Apply operation. If your proposal was declined, that is a fact you can
+read rather than infer from silence.
+
+**You can see what they are doing now.** Presence answers the current question -
+which project is bound, what they have selected, what is included for the next
+operation, which chain is running. It is a snapshot, not a history: ask and get an
+answer.
+
+**And you can notice a change without polling blindly.** `watch` hands you a cursor
+and tells you what has happened since it. A quiet channel returns nothing, so a poll
+loop stays cheap.
+
+The practical consequence: before assuming a file is untouched or a decision is
+still open, look. The record is shared on purpose.
+
 ## Memory is THIS target's memory
 
 `journal` (durable, append-only) and `evidence` (content-addressed proof) start **empty** and

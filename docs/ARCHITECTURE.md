@@ -43,6 +43,36 @@ move the target and it still runs. This is enforced, not merely intended (see se
                                         (subprocess; cwd = the work target)
 ```
 
+## 2a. The two channels
+
+Every call crosses the seam, and the seam feeds **two channels with deliberately
+opposite properties.** They are separate because merging them was the mistake
+waiting to happen: tool calls are coarse and deliberate, while UI state changes
+thousands of times an hour, so a single log would have buried the governed actions
+inside the noise.
+
+| | Ledger (`src/core/event_log.py`) | Presence (`src/core/presence.py`) |
+|---|---|---|
+| Answers | what **happened** | what is **true now** |
+| Shape | events, append-only | one overwritten snapshot |
+| Lifetime | permanent | dropped on restart |
+| Growth | one row per governed action | constant |
+| Audited | yes | no |
+
+**The ledger** records every invocation with the `client` that caused it — `cli`,
+`agent`, `gui`, `test`. Attribution is *recorded, never used to grant privilege*: a
+GUI click and an agent call take the same path and meet the same authority ceiling.
+It also records **decisions** — a human granting or refusing an Apply operation —
+because that is the moment authority is actually exercised.
+
+**Presence** is state, not events. Asking what the operator is looking at returns an
+answer rather than a history to replay. Its field vocabulary is closed, so it cannot
+quietly become a second log.
+
+**`src/core/watch.py`** is how a change announces itself. A client holds an opaque
+**cursor** and polls; a poll costs well under a millisecond. Callers hold a position,
+not a connection, so the transport underneath can change without touching them.
+
 ## 3. The registry
 
 `config/registry.json` is discovered from every `tools/*/tool.json` and `apps/*/tool.json` and

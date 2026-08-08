@@ -65,7 +65,8 @@ needs it, rather than displacing product work now.
 | T2 | Ledger and Presence | The seam contract exists in code |
 | T3 | Live Channel | E6a, E6b |
 | T4 | Cancellation and Progress | Long work is observable and stoppable |
-| T5 | One Surface | E3 |
+| T5a | One Surface: Observe and Select | shell, explorer, context |
+| T5b | One Surface: Operate and Verify | tool workspace, live event view — E3 |
 | T6 | Contracts for Uncontracted Daily Drivers | Ten contracts exist |
 | T7 | Chains | E7 |
 | T8 | Retire `apps/` | One extension shape, not two |
@@ -296,7 +297,45 @@ host paths from diagnostics.
 
 ---
 
-## T5 — One Surface
+## T5 — One Surface · SPLIT INTO T5a AND T5b
+
+**Why split.** Every tranche so far has been a handful of files. This one means
+unifying four Tk views into an explorer-first shell with explorer, context panel,
+tool workspace and event view — the actual product, and larger than T2, T3 and T4
+combined. An outsized tranche is where clean parking breaks down: the gate becomes a
+wish, scope creeps, and "mostly done" reappears.
+
+Two closable outcomes instead of one open-ended one. The split follows the product's
+own loop — **Observe → Select**, then **Operate → Verify**.
+
+### T5a — Observe and Select
+
+**Outcome.** A single shell opens a project, browses it, and inspects what is
+selected. Browse selection and operation inclusion are separate state domains, and
+clicking a file authorises nothing.
+
+**Gate.** One window; project-open flow; explorer populates; browse selection and
+inclusion are visibly distinct and independently maintained; context renders for a
+file and a folder; rescan; clean startup and shutdown; presence reflects the current
+selection so an agent can see what the operator is looking at.
+
+**Non-goals.** No tool execution. No event view.
+
+### T5b — Operate and Verify
+
+**Outcome.** Every tool and chain is reachable from that shell, and the live channel
+becomes visible. **E3.**
+
+**Gate.** Every registered tool and chain reachable from one surface; no capability
+needs a second window; operations show progress and can be cancelled from the UI;
+the event view renders ledger and presence live; a GUI action and an agent action are
+indistinguishable in that view except by their `client`.
+
+**Non-goals.** No new capability — only reaching what already exists.
+
+---
+
+## T5 — One Surface (superseded; see T5a and T5b)
 
 **Outcome.** A single Tkinter shell reaches every tool and every chain. **E3.**
 
