@@ -189,6 +189,16 @@ def check(r, root: Path) -> None:
         else:
             os.environ["SUITE_STATE_ROOT"] = env_backup
 
+    # --- 6b. structural cost, not timing ------------------------------------
+    # migrate() once ran on EVERY event: a PRAGMA plus two whole-table UPDATEs on a
+    # second connection, on the hot path of every governed action. A timing assertion
+    # would be flaky across machines; the deterministic form of the same defect is
+    # structural - one connection per event, not two.
+    ev_src = (root / "src" / "core" / "event_log.py").read_text(encoding="utf-8", errors="replace")
+    r.check("migration is not re-run on every event",
+            "_MIGRATED" in ev_src,
+            "record() must not pay for a schema check per event")
+
     # --- 7. the two channels stay separate ---------------------------------
     src = (root / "src" / "core" / "event_log.py").read_text(encoding="utf-8", errors="replace")
     r.check("no UI-state vocabulary leaked into the ledger",

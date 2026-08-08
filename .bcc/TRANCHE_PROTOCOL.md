@@ -91,6 +91,20 @@ python gates/run.py t03        # one
    the suite exits non-zero unless the skip is explicitly registered as accepted.
    A skipped check must never read as a pass.
 
+8. **Exercise at least one real entrance.** A gate must invoke the capability the
+   way a caller does — through `cli`, `mcp`, or the GUI — not only by calling its
+   functions directly.
+
+   This is not style. A check that only calls functions cannot see how they are
+   *composed*, and composition is where defects of assembly live. T2 parked green
+   with fourteen assertions, every one of them unit-level, while a real bug sat in
+   the wiring: `presence.clear()` behaved perfectly when called directly, and
+   destroyed the operator's context on every CLI invocation.
+
+   T0 and T1 both happened to assert through entrances — `cli tool-list` and a real
+   `sidecar_install`. T2 did not, and that difference is the whole explanation.
+   Written down here so it stops being an accident of style.
+
 ### 3.3 What a gate is not
 
 Not a unit test suite. Tests prove code behaves; a gate proves the *tranche
