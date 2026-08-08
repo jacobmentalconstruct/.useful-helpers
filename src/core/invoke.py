@@ -19,19 +19,117 @@ from __future__ import annotations
 
 import json
 import os
+import signal
 import subprocess
 import sys
+import threading
 import time
-from dataclasses import dataclass
+import uuid
+from dataclasses import dataclass, field
 
-from src.core import event_log, policy, registry
+from src.core import event_log, policy, presence, registry
 from src.core.config import Paths
-from src.lib.common import safe_json_dumps
+from src.lib.common import relativize_paths, safe_json_dumps
 from src.lib.logging_setup import get_logger
 
 log = get_logger("core.invoke")
 
 DEFAULT_TIMEOUT_S = 120
+
+# Cancellation is not failure. A distinct code so a deliberate stop is never confused
+# with a crash - in the ledger, in the UI, or by an agent reading either.
+CANCELLED_EXIT = -2
+
+# Operations currently in flight, so something outside the calling thread can stop
+# them. Process-lifetime by design: a cancel can only reach a child of THIS process.
+_RUNNING: dict[str, "_Running"] = {}
+_RUNNING_LOCK = threading.Lock()
+
+
+@dataclass
+class _Running:
+    """A dispatch in flight."""
+    proc: "subprocess.Popen"
+    tool_id: str
+    started: float
+    cancelled: bool = False
+    op_id: str = field(default_factory=lambda: uuid.uuid4().hex[:12])
+
+
+def _clean(paths: Paths, text: str) -> str:
+    """Strip host paths from anything handed back to a caller."""
+    try:
+        roots = [(str(paths.root), "<toolkit>")]
+        if getattr(paths, "project_root", None) is not None:
+            roots.insert(0, (str(paths.project_root), "<project>"))
+        return relativize_paths(str(text), roots=tuple(roots))
+    except Exception:
+        return str(text)
+
+
+def _terminate(proc: "subprocess.Popen") -> None:
+    """Stop a child and everything it spawned, then confirm it is gone.
+
+    Terminating only the direct child leaves grandchildren running. The escalation
+    matters too: ask politely, then insist - a tool mid-write deserves the chance to
+    finish the line, but not the right to ignore a cancel.
+    """
+    try:
+        if os.name == "nt":
+            proc.send_signal(signal.CTRL_BREAK_EVENT)
+        else:
+            os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+    except (OSError, ValueError, AttributeError):
+        proc.terminate()
+    try:
+        proc.wait(timeout=5)
+        return
+    except subprocess.TimeoutExpired:
+        pass
+    try:
+        if os.name == "nt":
+            subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                           capture_output=True, timeout=15)
+        else:
+            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+    except (OSError, ValueError, subprocess.SubprocessError):
+        proc.kill()
+
+
+def running() -> list[dict]:
+    """What is in flight right now, for a caller deciding what to cancel."""
+    with _RUNNING_LOCK:
+        return [{"op_id": h.op_id, "tool_id": h.tool_id,
+                 "elapsed_s": round(time.time() - h.started, 2)}
+                for h in _RUNNING.values()]
+
+
+def cancel(op_id: str) -> bool:
+    """Stop an operation in flight. True if one was found and signalled."""
+    with _RUNNING_LOCK:
+        handle = _RUNNING.get(op_id)
+    if handle is None:
+        return False
+    handle.cancelled = True
+    _terminate(handle.proc)
+    log.info("invoke CANCELLED op=%s tool=%s", op_id, handle.tool_id)
+    return True
+
+
+def _announce(paths: Paths, tool_id: str, op_id: str, phase: str, client: str) -> None:
+    """Publish a lifecycle phase so work is visible WHILE it runs.
+
+    Coarse by design. Tools emit one JSON envelope at completion, so per-tool
+    progress would need every tool changed and would break the stdout contract the
+    envelope depends on. Started/finished answers the real question - "is it stuck,
+    and can I stop it" - without touching 95 tools. A per-tool channel stays open as
+    an option if a long-running tool ever earns it.
+    """
+    try:
+        presence.update(paths, active_step=f"{tool_id}:{phase}",
+                        active_chain=op_id if phase == "started" else None)
+    except Exception:
+        pass    # visibility is an enrichment; it must never break a dispatch
 
 # Dirs never worth manifesting for the precept guard (regenerable / VCS / deps).
 _GUARD_SKIP = {".git", ".hg", ".svn", ".venv", "venv", "env", "node_modules", "__pycache__",
@@ -122,7 +220,8 @@ def _resolve_interpreter(paths: Paths, declared: str) -> str:
     return sys.executable
 
 
-def _dispatch(paths: Paths, tool, tool_id: str, args: dict) -> InvokeResult:
+def _dispatch(paths: Paths, tool, tool_id: str, args: dict,
+              timeout: int | None = None, client: str = "unknown") -> InvokeResult:
     """Resolve + run + capture. All the failure/success return paths live here."""
     if tool is None:
         log.warning("invoke: unknown tool %r", tool_id)
@@ -156,20 +255,64 @@ def _dispatch(paths: Paths, tool, tool_id: str, args: dict) -> InvokeResult:
     env["SUITE_HOME"] = str(paths.root)
     env["SUITE_PROJECT_ROOT"] = str(paths.project_root)
 
+    limit = DEFAULT_TIMEOUT_S if timeout is None else max(1, int(timeout))
+
+    # Popen rather than subprocess.run: run() gives back no handle, so nothing could
+    # stop a running tool and the only exit was to wait out the timeout. The envelope
+    # contract is unchanged - stdout is still read whole, once, at the end.
     try:
-        proc = subprocess.run(
-            cmd, capture_output=True, text=True, encoding="utf-8", errors="replace",
-            timeout=DEFAULT_TIMEOUT_S, cwd=str(paths.project_root), env=env,
+        proc = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+            encoding="utf-8", errors="replace",
+            cwd=str(paths.project_root), env=env,
+            # A new process GROUP so cancellation reaches grandchildren. Killing only
+            # the direct child leaves anything it spawned running, and an orphan is
+            # invisible to any check that merely confirms the call returned.
+            start_new_session=(os.name != "nt"),
+            creationflags=(subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0),
         )
-    except subprocess.TimeoutExpired:
-        return InvokeResult(False, tool_id, None, f"timeout after {DEFAULT_TIMEOUT_S}s", None)
     except OSError as e:
         return InvokeResult(False, tool_id, None, f"subprocess error: {e}", None)
 
-    if proc.returncode != 0:
-        err = (proc.stderr or "").strip() or (proc.stdout or "").strip() or f"exit code {proc.returncode}"
+    handle = _Running(proc=proc, tool_id=tool_id, started=time.time())
+    with _RUNNING_LOCK:
+        _RUNNING[handle.op_id] = handle
+    _announce(paths, tool_id, handle.op_id, "started", client)
+
+    try:
+        out, err_text = proc.communicate(timeout=limit)
+    except subprocess.TimeoutExpired:
+        _terminate(proc)
+        proc.communicate()
+        _announce(paths, tool_id, handle.op_id, "timeout", client)
+        return InvokeResult(False, tool_id, None,
+                            _clean(paths, f"timeout after {limit}s"), None)
+    finally:
+        with _RUNNING_LOCK:
+            _RUNNING.pop(handle.op_id, None)
+
+    if handle.cancelled:
+        # Cancellation is its OWN outcome. Reporting it as a generic failure would
+        # make a deliberate stop indistinguishable from a crash in the ledger.
+        _announce(paths, tool_id, handle.op_id, "cancelled", client)
+        return InvokeResult(False, tool_id, None, "cancelled", CANCELLED_EXIT)
+
+    _announce(paths, tool_id, handle.op_id, "finished", client)
+
+    class _P:            # keep the rest of this function unchanged in shape
+        stdout, stderr, returncode = out, err_text, proc.returncode
+    proc_result = _P()
+
+    if proc_result.returncode != 0:
+        err = ((proc_result.stderr or "").strip() or (proc_result.stdout or "").strip()
+               or f"exit code {proc_result.returncode}")
         log.warning("invoke tool=%s failed: %s", tool_id, err)
-        return InvokeResult(False, tool_id, None, err, proc.returncode)
+        # Scrubbed on the RETURN path, not only when writing the ledger. The audit
+        # trail was clean while the value handed to a GUI or an agent still carried
+        # absolute build-machine paths.
+        return InvokeResult(False, tool_id, None, _clean(paths, err),
+                            proc_result.returncode)
+    proc = proc_result
 
     try:
         output = json.loads(proc.stdout) if proc.stdout.strip() else {}
@@ -185,7 +328,8 @@ def _dispatch(paths: Paths, tool, tool_id: str, args: dict) -> InvokeResult:
 
 
 def invoke(paths: Paths, tool_id: str, args: dict, allow: str | None = None,
-           client: str = event_log.UNKNOWN_CLIENT) -> InvokeResult:
+           client: str = event_log.UNKNOWN_CLIENT,
+           timeout: int | None = None) -> InvokeResult:
     """Resolve, ENFORCE authority, run, capture, log + record one governance event. The single
     dispatch chokepoint. `allow` (Observe|Sandbox|Apply) can only tighten the policy ceiling."""
     started = time.monotonic()
@@ -204,7 +348,7 @@ def invoke(paths: Paths, tool_id: str, args: dict, allow: str | None = None,
         # the seam silently  -  it becomes a hard error the instant it occurs. See _design/PLAN.md
         # Phase 4 and _design/CHARTER.md sec 1.
         before, complete = _target_manifest(paths)
-        result = _dispatch(paths, tool, tool_id, args)
+        result = _dispatch(paths, tool, tool_id, args, timeout, client)
         if complete:
             after, _ = _target_manifest(paths)
             changed = _manifest_diff(before, after)
@@ -218,7 +362,7 @@ def invoke(paths: Paths, tool_id: str, args: dict, allow: str | None = None,
                     + (f" (+{len(changed) - 5} more)" if len(changed) > 5 else ""),
                     result.exit_code)
     else:
-        result = _dispatch(paths, tool, tool_id, args)
+        result = _dispatch(paths, tool, tool_id, args, timeout, client)
     duration_ms = int((time.monotonic() - started) * 1000)
     event_log.record(
         paths,
