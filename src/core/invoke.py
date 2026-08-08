@@ -351,25 +351,19 @@ def _dispatch(paths: Paths, tool, tool_id: str, args: dict,
 
     _announce(paths, tool_id, handle.op_id, "finished", client)
 
-    class _P:            # keep the rest of this function unchanged in shape
-        stdout, stderr, returncode = out, err_text, proc.returncode
-    proc_result = _P()
-
-    if proc_result.returncode != 0:
-        err = ((proc_result.stderr or "").strip() or (proc_result.stdout or "").strip()
-               or f"exit code {proc_result.returncode}")
+    if proc.returncode != 0:
+        err = ((err_text or "").strip() or (out or "").strip()
+               or f"exit code {proc.returncode}")
         log.warning("invoke tool=%s failed: %s", tool_id, err)
         # Scrubbed on the RETURN path, not only when writing the ledger. The audit
         # trail was clean while the value handed to a GUI or an agent still carried
         # absolute build-machine paths.
-        return InvokeResult(False, tool_id, None, _clean(paths, err),
-                            proc_result.returncode)
-    proc = proc_result
+        return InvokeResult(False, tool_id, None, _clean(paths, err), proc.returncode)
 
     try:
-        output = json.loads(proc.stdout) if proc.stdout.strip() else {}
+        output = json.loads(out) if out.strip() else {}
     except json.JSONDecodeError:
-        output = {"raw_stdout": proc.stdout}
+        output = {"raw_stdout": out}
     # A produced result is a successful *invocation*; business success is carried in
     # output["ok"] (payload preserved either way). Reflect it on InvokeResult.ok.
     ok = bool(output.get("ok", True)) if isinstance(output, dict) else True

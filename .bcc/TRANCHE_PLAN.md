@@ -541,11 +541,23 @@ cheapest check on that code is the one currently unavailable.
 
 | Item | Origin | Priority |
 | --- | --- | --- |
-| **`lint` tool** — see the capability gap above | Review pass, 2026-08-06 | **High** |
-| `command_profile` misses lint commands despite `ruff.toml` | Corollary 2 | High — smaller than the tool |
-| Lint enforcement lives only in the test suite and skips silently | Corollary 3 | High |
+| **`lint` tool** — see the capability gap above | Review pass, 2026-08-06 | Medium — see note |
 | `dependency_check` does not distinguish dev from runtime deps | Corollary 6 | Medium |
-| `VERSION` does not move when tools change | Charter §7.4 |
-| Precept-guard cost unmeasured on large targets | Charter §7.3 |
-| Windows behavior wholly unverified | Charter §7.5 |
-| `developer_cert.pfx` should leave the tree | Operator action |
+| `VERSION` does not move when tools change | Charter §7.4 | Medium — T9 owns it |
+| Precept-guard cost unmeasured on large targets | Charter §7.3 | Low — resolves at E9 |
+| `test_d1_p1` slow: `attach` re-maps ~18k files twice | 0004 | Low — resolves at E9 |
+| **CI workflow unverified** — first run is on the runner | Alignment, 2026-08-08 | **Confirm at next push** |
+| **Windows process-group kill unverified** — `taskkill /F /T` untested | T4 | **High before T5b** |
+| `developer_cert.pfx` should leave the tree | Operator action | Operator |
+| `_trash/` needs emptying (66 swept lock files) | Operator action | Operator |
+
+**Closed since last review**, removed rather than left to clutter the list:
+`command_profile` lint detection (T2); lint enforcement living only in the suite
+(now a gate assertion, and `ruff` is installed in the sandbox); presence
+read-modify-write (made unreachable by T3's single-writer decision).
+
+**On the `lint` tool's priority.** Downgraded from High to Medium — not because it
+matters less, but because the *hole* it was filling is closed. The command is
+reachable via `project_run`, lint is asserted at gate level, and CI runs it. What
+remains is ergonomics: structured findings, Observe authority, manifest-derived
+scope. Keeping it at High would have overstated the risk.
