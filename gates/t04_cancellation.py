@@ -87,12 +87,16 @@ def check(r, root: Path) -> None:
         return
 
     # --- a REAL long operation, cancelled -----------------------------------
-    tools = root / "tools" / "_t04_slow_probe"
+    # NOT underscore-prefixed: registry.discover() skips `_`-named directories
+    # (that is how tools/_template stays unregistered). A fixture named with a
+    # leading underscore is never registered, and the dispatch returns "unknown
+    # tool" instantly - which looks exactly like "the operation already finished".
+    tools = root / "tools" / "t04slowprobe"
     tools.mkdir(parents=True, exist_ok=True)
     (tools / "tool.json").write_text(
-        '{"id":"_t04_slow_probe","summary":"T4 fixture: sleeps.","category":"introspection",'
+        '{"id":"t04slowprobe","summary":"T4 fixture: sleeps.","category":"introspection",'
         '"authority":"Observe","operates_on":"project","writes":"none",'
-        '"invocation":{"interpreter":"","entry":"tools/_t04_slow_probe/cli.py"},'
+        '"invocation":{"interpreter":"","entry":"tools/t04slowprobe/cli.py"},'
         '"input_schema":{"type":"object","properties":{}}}', encoding="utf-8")
     (tools / "cli.py").write_text(
         "import json, time\n"
@@ -109,7 +113,7 @@ def check(r, root: Path) -> None:
         started = time.perf_counter()
         proc = subprocess.Popen(
             [sys.executable, "-m", "src.app", "cli", "tool-call",
-             "--tool", "_t04_slow_probe", "--args-json", "{}"],
+             "--tool", "t04slowprobe", "--args-json", "{}"],
             cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
         time.sleep(3)
 
@@ -131,7 +135,7 @@ def check(r, root: Path) -> None:
         # Killing the parent can leave a grandchild running. This is the failure that
         # anything checking only "the call returned" cannot see.
         leftover = subprocess.run(
-            ["pgrep", "-f", "_t04_slow_probe/cli.py"],
+            ["pgrep", "-f", "t04slowprobe/cli.py"],
             capture_output=True, text=True).stdout.strip()
         r.check("cancelling reaps the child, leaving no orphan",
                 not leftover, f"surviving pids: {leftover.splitlines()[:3]}")
