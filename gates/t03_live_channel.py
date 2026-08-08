@@ -139,6 +139,31 @@ def check(r, root: Path) -> None:
                 event_log.count(paths) == n_before and watch.cursor(paths) is not None,
                 "the ephemeral channel must not be able to damage the durable one")
 
+        # --- 5b. the channel survives its stores being reset -------------------
+        # A ledger can vanish underneath a live observer: a wiped state root, a
+        # cleanup tool, a fresh engagement. Two failures hid here, both silent.
+        #
+        # The observer held a position beyond the end of a shrunken ledger, so
+        # `total > seen` was never true again and it went permanently blind. And
+        # the migration memo outlived the file it described, so record() INSERTed
+        # into a missing table and swallowed the failure - LOGGING STOPPED with no
+        # error anywhere.
+        import os as _os
+        c_before = watch.cursor(paths)
+        _os.remove(event_log.db_path(paths))
+        for _ in range(3):
+            event_log.record(paths, tool_id="after_reset", authority="Observe",
+                             category="x", args={}, ok=True, exit_code=0,
+                             error=None, duration_ms=1, client="test")
+        r.check("recording recovers if the ledger is removed",
+                event_log.count(paths) == 3,
+                f"{event_log.count(paths)} rows after a wipe - a stale migration memo "
+                "makes logging stop silently")
+        _, recovered = watch.poll(paths, c_before)
+        r.check("an observer resynchronises after the ledger is reset",
+                any(e.get("tool_id") == "after_reset" for e in (recovered.get("events") or [])),
+                "a cursor beyond the end of a shrunken ledger must resync, not go blind")
+
         # --- 6. observation is READ-ONLY on the target ------------------------
         sig_before = sorted(p.name for p in target.rglob("*"))
         c = watch.cursor(paths)

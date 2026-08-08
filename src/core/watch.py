@@ -66,10 +66,20 @@ def poll(paths, since: Cursor) -> tuple[Cursor, dict]:
 
     total = event_log.count(paths)
     events: list[dict] = []
-    if total > since.events:
+    seen = since.events
+    if total < seen:
+        # The ledger SHRANK, so it is not the one this cursor was counting: a wiped
+        # state root, a fresh engagement, a rotated log. Without this the observer
+        # holds a position beyond the end forever, `total > seen` is never true
+        # again, and it goes permanently and silently blind.
+        #
+        # Resynchronise from the beginning rather than guessing which rows are new.
+        # Re-delivering a few is harmless; missing everything is not.
+        seen = 0
+    if total > seen:
         events = event_log.read(
-            paths, limit=min(total - since.events, MAX_EVENTS_PER_POLL),
-            offset=since.events)
+            paths, limit=min(total - seen, MAX_EVENTS_PER_POLL), offset=seen)
+    since = Cursor(events=seen, tick=since.tick)
 
     snap = presence.read(paths) or {}
     tick = int(snap.get("tick", 0))

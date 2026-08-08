@@ -90,8 +90,18 @@ def migrate(db: "Path | str", *, force: bool = False) -> None:
     audit trail that edits its own history is not an audit trail.
     """
     db = Path(db)
-    key = str(db.resolve()) if db.exists() else str(db)
-    if not force and key in _MIGRATED:
+    key = str(db)
+    # The memo is only valid while the file it describes still exists. A ledger can
+    # be removed underneath us - a wiped state root, a cleanup tool, a fresh
+    # engagement - and a memo that outlives its file makes migrate() a no-op against
+    # a database that is no longer there. record() then INSERTs into a missing table
+    # and swallows the failure, so LOGGING STOPS SILENTLY.
+    #
+    # That is a durability hole introduced by the performance fix in journal 0010:
+    # memoising to avoid re-migrating per event also memoised away the recovery.
+    if not db.exists():
+        _MIGRATED.discard(key)
+    elif not force and key in _MIGRATED:
         return
     db.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(db))
