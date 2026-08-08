@@ -12,6 +12,50 @@ written during declaration, before implementation.
 
 ---
 
+## End-State Scoreboard
+
+Which of the charter's twelve conditions actually hold. Kept here because "T2 is
+closed" and "the project is closer to done" are different claims, and only this
+table answers the second.
+
+| | Condition | Status |
+| --- | --- | --- |
+| E1 | Installs into an arbitrary directory, CPython only | partial — vend verified; fresh-machine install is T9 |
+| E2 | Maps any directory, across domains | partial — `attach` works; cross-domain unproven |
+| E3 | One GUI surface reaches every tool and chain | **not started** — T5 |
+| E4 | An agent reaches everything through MCP | partial — MCP entrance exists; parity unasserted |
+| E5 | Human and agent indistinguishable to the seam | **MET** — T2, one path, attributed by client |
+| E6a | Each sees the other **act**, live | **not started** — T3 |
+| E6b | Each can query the other's **context** | **MET** — T2 presence |
+| E7 | Daily-driver workflows exist as chains | **not started** — T7 |
+| E8 | Target never modified without authority | **MET** — precept guard, verified |
+| E9 | Parts bin deletable, everything still passes | **not started** — T10 |
+| E10 | Every documented claim is executable | partial — gates cover much, not all |
+| E11 | Vends fully blank | **MET** — T1, gated |
+| E12 | Installed sidecar removable without trace | partial — vend clean; removal untested |
+
+Four met, five partial, four not started.
+
+### Standing practices added since T0
+
+- **Verify from a fresh clone, not the working tree** (0007). A suite run against
+  the tree that developed it cannot see a missing build step.
+- **Gates must exercise a real entrance** (protocol rule 8, after T2's presence bug).
+- **Windows confirmation at each tranche close.** `tkinter` and `ollama` are absent
+  from the sandbox, so 8 tests skip here; Windows is the authority for a zero-skip
+  run. Two tranches closed without one and lint had a two-error backlog waiting.
+- **Hazards raised at declaration become gate assertions**, not scheduled work.
+
+### Where the `lint` tool sits
+
+Deliberately **unscheduled**, not forgotten. The raw command is now reachable via
+`project_run` and asserted at gate level, so the enforcement hole is closed; what
+the tool would add is ergonomics — structured findings, Observe authority,
+manifest-derived scope, honest unavailability. It earns a slot when a tranche
+needs it, rather than displacing product work now.
+
+---
+
 ## Sequence
 
 | # | Tranche | Proves |
@@ -182,24 +226,54 @@ distinct, attributable ledger event. Client attribution on every entry.
 
 ---
 
-## T3 — Live Channel
+## T3 — Live Channel · NARROWED
 
-**Outcome.** Each party sees the other act, live, and can query the other's
-context. **E6a and E6b.**
+**Scope corrected after T2.** This tranche originally claimed **E6a and E6b**.
+**E6b is already met**: presence answers "what is true now", survives a CLI call,
+and is readable cross-process through the state root. It landed with T2.
 
-**Work.** Settle the transport (charter §6.5). Publish ledger appends and
-presence changes to subscribers. Both an in-process GUI client and an
-out-of-process agent client.
+What remains is E6a alone, and it is one question, not four:
+
+> **How does a change announce itself?**
+
+**Outcome.** A client learns that the other party acted, without being told to
+look. **E6a.**
+
+**Work.** Publish ledger appends and presence changes such that a reader notices
+them. One in-process client and one out-of-process client, both observing the
+same events.
 
 **Gate — `gates/t03_live_channel.py`**
 
 - an action by client A is observed by client B without restart or manual refresh
-- a context query returns the other party's current target, selection and
-  inclusion set
-- a dropped subscriber does not block or corrupt the seam
+- an out-of-process observer sees an in-process action, and the reverse
+- a dropped or dead observer does not block, stall, or corrupt the seam
 - presence loss does not affect ledger integrity
+- observation adds no writes to the target
 
-**Non-goals.** No derived visible-state (deferred; charter §6.4 level 2).
+**Non-goals.** No GUI event view — that is T5, and building it here would smuggle
+UI work into a backend tranche. No derived visible-state (charter §6.4 level 2).
+No multi-writer presence.
+
+### The concurrency decision, made at declaration
+
+Recorded here rather than discovered later, per the practice that worked in T2.
+
+**Single-writer, polled reads.** Presence has exactly one writer — whoever owns
+the session — and readers poll a monotonic tick.
+
+This makes the read-modify-write race carried from T2 **unreachable rather than
+handled**: no lock, no daemon, no port, no lifecycle to supervise, and it works
+cross-process on any filesystem. The ledger is already append-only with SQLite
+managing concurrent appends.
+
+Honest costs, accepted: latency equals the poll interval, and it does not cross
+machines. Both are acceptable for a local sidecar, and a polled interface can sit
+unchanged in front of a socket if one is ever justified.
+
+**The interval will be measured, not guessed.** Presence read latency is to be
+timed against the real tree before a number is chosen — the same lesson as the
+per-event migration cost, which was invisible until measured.
 
 ---
 
