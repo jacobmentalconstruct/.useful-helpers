@@ -180,6 +180,27 @@ def check(r, root: Path) -> None:
     r.check("development dependencies are declared", dev.is_file(),
             "requirements-dev.txt should exist even if the suite is stdlib-only")
 
+    # --- lint, surfaced at gate level --------------------------------------
+    # This was reachable ONLY through the test suite, where it skipped silently when
+    # ruff was absent - which it was, in the development sandbox, for the whole life
+    # of the project. Every tranche since T0 shipped unlinted. The first time it ran
+    # it found two real defects, both introduced that same session.
+    #
+    # A capability whose only path is a test that can vanish is not enforced. Surfaced
+    # here so its absence is visible as a SKIP rather than invisible as a pass.
+    lint = subprocess.run([sys.executable, "-m", "ruff", "check", "."],
+                          cwd=root, capture_output=True, text=True,
+                          encoding="utf-8", errors="replace", timeout=300)
+    if lint.returncode == 0:
+        r.check("the payload lints clean", True)
+    elif "No module named" in (lint.stderr or ""):
+        r.skip("the payload lints clean",
+               "ruff is not installed here; it is declared in requirements-dev.txt. "
+               "A skip is not a pass - install it or run this gate on a host that has it")
+    else:
+        tail = (lint.stdout or lint.stderr).strip().splitlines()
+        r.check("the payload lints clean", False, " | ".join(tail[-3:]))
+
     # --- the test suite actually runs --------------------------------------
     # This gate previously asserted only that a runner was DECLARED, and then
     # pronounced the baseline sound. It could not, and did not, notice that a

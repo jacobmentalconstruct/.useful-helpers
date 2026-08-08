@@ -17,9 +17,8 @@ import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-from tools._toolkit import suite_home, tool_main
-
 from src.core import payload
+from tools._toolkit import suite_home, tool_main
 
 # Derived from the ONE ship manifest. These used to be literals here, in the
 # harness, in ruff.toml and twice in the test suite - five copies of one rule, free
