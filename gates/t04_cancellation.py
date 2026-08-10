@@ -23,9 +23,11 @@ from pathlib import Path
 
 OUTCOME = "long work is observable while it runs, and can be stopped cleanly"
 
-# Machine-visible, printed by gates/run.py beneath the verdict. Declared because a
-# green result here means less than it appears to on POSIX, and the mechanism that
-# makes it true on Windows has never executed anywhere.
+# Machine-visible, printed by gates/run.py beneath the verdict. Declared because one
+# assertion name covers two different mechanisms, so a green on one platform is not
+# evidence about the other. Kept CURRENT: an over-cautious stale limitation is still
+# a false statement - and so is a limitation that claims MORE verification than was
+# achieved. This block has now been corrected in both directions.
 KNOWN_LIMITATIONS = (
     {
         "assertion": "explicit cancel reaps the GRANDCHILD too",
@@ -43,16 +45,18 @@ KNOWN_LIMITATIONS = (
     {
         "assertion": "seam shutdown reaps the GRANDCHILD too",
         "coverage": "platform-partial",
-        "limitation": "the Windows mechanism - a Job Object with KILL_ON_JOB_CLOSE in "
-                      "src/core/proctree.py - HAS NEVER EXECUTED. It is written against "
-                      "the documented Win32 behaviour and reasoned from the failure "
-                      "Windows CI reported, not from a passing run. On POSIX this "
-                      "assertion exercises process groups, which is a different "
-                      "mechanism proving a different thing",
+        "limitation": "two DIFFERENT mechanisms wear one assertion name. POSIX proves "
+                      "process groups; Windows proves contain_self()'s kill-on-close "
+                      "job. A green on either platform says nothing about the other, "
+                      "so this needs BOTH to mean what it says. POSIX is verified. "
+                      "WINDOWS IS NOT: two runs reported this PASS while contain_self() "
+                      "was returning False - untyped ctypes truncated the 64-bit HANDLE, "
+                      "every job call failed, and honest degradation made it silent. "
+                      "Whatever reaped the grandchild on Windows, it was not this",
         "contributes_to_E11_completion": False,
-        "disposition": "unverified until the next Windows run; if the job object "
-                       "cannot be created, ProcessTree.durable is False and the path "
-                       "silently falls back to taskkill",
+        "disposition": "signatures now declared and containment ASSERTED rather than "
+                       "inferred, so a silent failure becomes a red. Windows result "
+                       "pending; until then the cause of the passing kill is unknown",
     },
 )
 
@@ -142,6 +146,22 @@ def check(r, root: Path) -> None:
         return
     if invoke is None or not hasattr(invoke, "cancel"):
         return
+
+    # --- containment is IN FORCE, not merely attempted -----------------------
+    # Asserted rather than inferred. Two Windows runs reported the grandchild reaped
+    # while `contain_self()` was silently returning False - the mechanism was
+    # credited with a result it had no part in, because a passing kill was read as
+    # evidence that the thing meant to cause it had worked.
+    #
+    # ctypes defaults restype to c_int; a 64-bit HANDLE was being truncated, so every
+    # job call failed and the module's honest degradation turned that into silence.
+    if os.name == "nt":
+        pt = _load(root, "src.core.proctree")
+        r.check("process containment is in force on Windows",
+                pt is not None and pt.contain_self(),
+                f"contain_self() says: {pt.containment_error() if pt else 'module missing'}"
+                " - without it nothing guarantees a tool dies with the seam, and the "
+                "orphan assertions below would be passing for some other reason")
 
     paths = _paths(root)
     if paths is None:

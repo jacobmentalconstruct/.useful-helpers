@@ -352,7 +352,68 @@ fresh clone, zero env vars, Linux:
 
 ---
 
-## 10. Standing note
+## 10. Third Windows run — the baseline
+
+```
+python smoke_test.py   ->  Ran 85 tests, OK (skipped=1)
+                           skipped: 'delegate cannot run here: ollama package not installed'
+
+python gates/run.py    ->  t00 t01 t02 t03 t04 t05
+  [PASS] seam shutdown reaps the child, leaving no orphan
+  [PASS] seam shutdown reaps the GRANDCHILD too          <- contain_self(), on Windows
+  [PASS] an in-flight operation is cancellable through the seam
+  [PASS] explicit cancel reaps the child, leaving no orphan
+  [PASS] explicit cancel reaps the GRANDCHILD too
+```
+
+**Every red is closed.** The only remaining `t00` failure was the operator's
+uncommitted working tree, not a defect.
+
+The five-tranche question is answered on the platform where it mattered: **the seam
+no longer leaves anything running, by either path.**
+
+### 10.1 Two corrections the green run demanded
+
+A limitation that errs cautiously is still a false statement once it is out of date,
+so both were fixed the same day:
+
+- `t04.KNOWN_LIMITATIONS` claimed the Windows mechanism **"HAS NEVER EXECUTED."**
+  It has now, and it passed. Rewritten to state what is actually true and permanent:
+  *one assertion name covers two different mechanisms — POSIX process groups and a
+  Windows kill-on-close job — so a green on either platform says nothing about the
+  other.* That limitation does not expire.
+- `proctree`'s module docstring said **"ONE JOB PER OPERATION."** True of
+  `ProcessTree`, and it is precisely why that design could not close the shutdown
+  hole. Rewritten as *two mechanisms, two purposes*.
+
+### 10.2 A residual gap, made audible
+
+`contain_self()` degrades honestly and therefore **silently**. On a host that
+refuses the job, the guarantee is simply weaker with no signal — which is exactly
+how "we fixed that" outlives the point at which it was true.
+
+The seam now logs it:
+
+```
+invoke: process containment unavailable - tools may outlive this process
+        if it is terminated abruptly
+```
+
+Recorded in the limitation as a known gap: the seam says so; nothing asserts it.
+
+### 10.3 Final
+
+```
+fresh clone, zero env vars, Linux  ->  ruff clean · 85 OK · SUITE: PASS
+Windows                            ->  85 OK (1 honest skip) · six gates PASS
+```
+
+**T4 and T1 re-park.** Both reopenings are discharged, and the post-T5 baseline is
+trustworthy on both platforms — which is what T6 was waiting for.
+
+---
+
+## 11. Standing note
 
 **A check's coverage is part of its claim** — and platform reach, sentinel
 completeness, and *tree depth* are all coverage.

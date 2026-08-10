@@ -26,14 +26,23 @@ NOTES:      Written for 0023, after the workflow's first Windows run showed a to
                the seam.
 
             A Job Object fixes both by inverting the relationship. Membership is
-            assigned at spawn and is inherited by descendants; KILL_ON_JOB_CLOSE means
+            inherited by descendants; KILL_ON_JOB_CLOSE means
             the OS destroys the tree when the last handle to the job closes - including
             when the owner is terminated abruptly, which no user-space handler can
             intercept.
 
-            ONE JOB PER OPERATION, matching invoke's `_RUNNING` map. A single job for
-            the whole seam would make cancelling one operation kill every other
-            operation in flight.
+            TWO MECHANISMS, TWO PURPOSES - and the first Windows run is what showed
+            they are not the same problem.
+
+            `ProcessTree` is ONE JOB PER OPERATION, matching invoke's `_RUNNING` map,
+            because cancelling one operation must not kill every other one in flight.
+            It cannot close the shutdown hole: job membership is not retroactive, and
+            a tool that spawns a child before the seam assigns it to the job leaves
+            that grandchild outside forever.
+
+            `contain_self()` puts the SEAM in a kill-on-close job at startup, before
+            any tool exists. Every descendant is enrolled automatically, at any depth,
+            with no window.
 
             AN HONEST ASYMMETRY: this makes Windows stronger than POSIX. Nothing can
             catch SIGKILL, so a POSIX seam killed with -9 still orphans its process
@@ -52,6 +61,7 @@ __all__ = ["spawn_kwargs", "ProcessTree", "contain_self",
 # Held for the process lifetime. If this handle is closed or garbage-collected the
 # job closes, and with KILL_ON_JOB_CLOSE that would kill our own descendants early.
 _SELF_JOB = None
+_CONTAIN_ERROR = "not attempted"
 
 _IS_WINDOWS = os.name == "nt"
 
@@ -69,6 +79,49 @@ def posix_sigkill_orphans_group() -> bool:
     path is strictly stronger.
     """
     return not _IS_WINDOWS
+
+
+def _kernel32():
+    """kernel32 with EXPLICIT signatures, and the reason that matters.
+
+    ctypes defaults every restype to `c_int` - 32 bits. A Win32 HANDLE on 64-bit
+    Windows is 64 bits, so an undeclared `CreateJobObjectW` silently TRUNCATES the
+    handle it returns. Every later call then receives a corrupted handle and fails,
+    and because this module degrades honestly rather than raising, the failure is a
+    quiet `False`.
+
+    That is exactly what happened: the job object never worked on Windows at all.
+    The first two runs reported the grandchild reaped anyway - for some other reason -
+    so the mechanism was credited with a result it had no part in. The warning log
+    is what exposed it, one run after being added.
+
+    Signatures are declared once, here, so no call site can forget.
+    """
+    import ctypes
+    from ctypes import wintypes
+
+    k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    k32.CreateJobObjectW.restype = wintypes.HANDLE
+    k32.CreateJobObjectW.argtypes = [wintypes.LPVOID, wintypes.LPCWSTR]
+    k32.SetInformationJobObject.restype = wintypes.BOOL
+    k32.SetInformationJobObject.argtypes = [wintypes.HANDLE, ctypes.c_int,
+                                            wintypes.LPVOID, wintypes.DWORD]
+    k32.AssignProcessToJobObject.restype = wintypes.BOOL
+    k32.AssignProcessToJobObject.argtypes = [wintypes.HANDLE, wintypes.HANDLE]
+    k32.TerminateJobObject.restype = wintypes.BOOL
+    k32.TerminateJobObject.argtypes = [wintypes.HANDLE, wintypes.UINT]
+    k32.GetCurrentProcess.restype = wintypes.HANDLE
+    k32.GetCurrentProcess.argtypes = []
+    k32.CloseHandle.restype = wintypes.BOOL
+    k32.CloseHandle.argtypes = [wintypes.HANDLE]
+    return k32
+
+
+def containment_error() -> str | None:
+    """Why containment is not in force, or None if it is. For diagnosis, not control."""
+    if not _IS_WINDOWS:
+        return "not applicable: POSIX uses process groups"
+    return None if _SELF_JOB is not None else _CONTAIN_ERROR
 
 
 def _extended_limit_struct():
@@ -135,28 +188,33 @@ def contain_self() -> bool:
     Returns True if containment is in force. Degrades honestly: a host that refuses
     nested jobs gets False and the weaker guarantee, never an exception.
     """
-    global _SELF_JOB
+    global _SELF_JOB, _CONTAIN_ERROR
     if not _IS_WINDOWS or _SELF_JOB is not None:
         return _SELF_JOB is not None
+    import ctypes
     try:
-        import ctypes
-        k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        k32 = _kernel32()
         job = k32.CreateJobObjectW(None, None)
         if not job:
+            _CONTAIN_ERROR = f"CreateJobObjectW failed (err={ctypes.get_last_error()})"
             return False
         info = _extended_limit_struct()
         info.BasicLimitInformation.LimitFlags = _JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
         if not k32.SetInformationJobObject(
                 job, _JobObjectExtendedLimitInformation,
                 ctypes.byref(info), ctypes.sizeof(info)):
+            _CONTAIN_ERROR = f"SetInformationJobObject failed (err={ctypes.get_last_error()})"
             k32.CloseHandle(job)
             return False
         if not k32.AssignProcessToJobObject(job, k32.GetCurrentProcess()):
+            _CONTAIN_ERROR = f"AssignProcessToJobObject failed (err={ctypes.get_last_error()})"
             k32.CloseHandle(job)
             return False
         _SELF_JOB = job
+        _CONTAIN_ERROR = None
         return True
-    except Exception:
+    except Exception as e:
+        _CONTAIN_ERROR = f"{type(e).__name__}: {e}"
         return False
 
 
@@ -198,7 +256,7 @@ class ProcessTree:
         import ctypes
 
         try:
-            k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+            k32 = _kernel32()
             job = k32.CreateJobObjectW(None, None)
             if not job:
                 return
@@ -254,8 +312,7 @@ class ProcessTree:
         if _IS_WINDOWS:
             if self._job is not None:
                 try:
-                    import ctypes
-                    ctypes.WinDLL("kernel32").TerminateJobObject(self._job, 1)
+                    _kernel32().TerminateJobObject(self._job, 1)
                     return
                 except Exception:
                     pass
@@ -285,8 +342,7 @@ class ProcessTree:
         """
         if self._job is not None:
             try:
-                import ctypes
-                ctypes.WinDLL("kernel32").CloseHandle(self._job)
+                _kernel32().CloseHandle(self._job)
             except Exception:
                 pass
             self._job = None

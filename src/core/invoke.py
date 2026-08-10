@@ -146,7 +146,14 @@ def install_shutdown_handlers() -> None:
     """
     # Windows first: containment must exist BEFORE any tool is launched, because job
     # membership is not retroactive. Signals are the POSIX half of the same job.
-    proctree.contain_self()
+    #
+    # Logged when it degrades. A silently weaker guarantee is how "we fixed that"
+    # survives past the point where it is true - and this whole repair exists because
+    # a lifecycle claim went four tranches without being exercised.
+    if os.name == "nt" and not proctree.contain_self():
+        log.warning("invoke: process containment unavailable (%s) - tools may outlive "
+                    "this process if it is terminated abruptly",
+                    proctree.containment_error())
 
     def _handler(signum, _frame):
         reap_all()
