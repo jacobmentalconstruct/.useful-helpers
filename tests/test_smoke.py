@@ -656,17 +656,41 @@ class SpineSmokeTest(unittest.TestCase):
                                    {"task": "x", "allow": ["project_run"], "allow_apply": True})
         self.assertTrue(opt_in.ok)            # deliberate opt-in is honoured
 
-        from tools import summarize_shared
-        summarize_shared._probe.update(available=None, model=None, error=None)
-        if not summarize_shared.available():
-            self.skipTest("no local model reachable; delegate loop not exercised")
+        # PRECONDITION BY THE REAL PATH, not by proxy. Two earlier versions of this
+        # guard were wrong in different ways, and each looked reasonable:
+        #
+        #   v1  guarded on summarize_shared.available() - the SUMMARIZER's default
+        #       model (qwen2.5:3b) while delegate requests qwen2.5:7b
+        #   v2  guarded on the right model, but still in the TEST's interpreter -
+        #       and `delegate` runs under ${ROOT_VENV_PYTHON}, a different one. The
+        #       test process could import `ollama`; the venv could not
+        #
+        # No in-process probe can establish what a tool running under another
+        # interpreter will find. So the tool is asked, and its own documented
+        # unavailability contract is what decides.
+        from tools.delegate import cli as delegate_cli
+        wanted = delegate_cli.DEFAULT_MODEL
 
         r = invoke_mod.invoke(self.paths, "delegate",
                               {"task": "How many files are in the tools directory? Use glob.",
                                "allow": ["glob"], "max_steps": 3, "apply": True})
-        self.assertTrue(r.output.get("ran"))
-        self.assertLessEqual(r.output.get("used_steps", 99), 3)      # budget honoured
-        steps = r.output.get("steps") or []
+        out = r.output or {}
+        # DEGRADES HONESTLY, or it ran. Anything else is a defect.
+        #
+        # `configure` is delegate's documented "I cannot run, and here is what to do"
+        # signal. Treating it as a skip keeps the environment out of the verdict;
+        # asserting its SHAPE keeps the skip from becoming a place defects hide -
+        # a delegate that always reported unavailable would still have to say so in
+        # the documented form, and would still be visible as a skip rather than a pass.
+        if not out.get("ran") and out.get("configure"):
+            self.assertFalse(r.ok)
+            self.assertTrue(out.get("error"), msg=f"unavailable without a reason: {out!r}")
+            self.skipTest(f"delegate cannot run here: {out.get('error')}")
+
+        self.assertTrue(out.get("ran"),
+                        msg=f"model={wanted!r} ok={r.ok} error={r.error!r} output={out!r}")
+        self.assertLessEqual(out.get("used_steps", 99), 3)      # budget honoured
+        steps = out.get("steps") or []
         self.assertTrue(all(s.get("tool", "glob") in ("glob", None) for s in steps))  # allowlist held
 
     def test_d2_g6_symbol_graph(self):
@@ -2089,11 +2113,20 @@ class SpineSmokeTest(unittest.TestCase):
             probe_root.destroy()
         except Exception as e:  # pragma: no cover - environment-dependent
             self.skipTest(f"tkinter unavailable: {e}")
-        import tempfile
 
         from src.ui import app_ui
 
-        rc = app_ui.run_installer_probe(self.paths, target=tempfile.mkdtemp())
+        # LEGACY/TRANSITIONAL SURFACE. `installer_view` is setup-application
+        # capability sitting in the installed runtime; the product's installation
+        # entrance is `packaging/installer/` (Charter SIDECAR:SETUP-DISTRIBUTION).
+        # This test proving it builds does NOT restore product authority to it.
+        # T6 rehomes the surface; until then the probe must at least be valid.
+        #
+        # _foreign_target(), not tempfile.mkdtemp(): setUpClass redirects tempfile
+        # INTO the tree, which sidecar_install correctly refuses. Three sibling call
+        # sites were repaired in 0014; this fourth one survived because it SKIPS in
+        # the sandbox for want of tkinter, and first executed on Windows in 0023.
+        rc = app_ui.run_installer_probe(self.paths, target=self._foreign_target())
         self.assertEqual(rc, 0)
 
     def test_docs_have_no_dangling_links(self):

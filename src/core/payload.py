@@ -27,6 +27,12 @@ from __future__ import annotations
 # not sidecar concerns; they are things nobody wants copied anywhere.
 
 REGENERABLE = frozenset({
+    "_projectmapper",                        # projectmapper's own output. Regenerable by
+                                             # `projectmapper` at any time; three copies were
+                                             # tracked and 8.4 MB of them shipped, carrying
+                                             # build-machine paths and filedumped predecessor
+                                             # content into the payload. Generated residue in
+                                             # the tree this toolkit exists to keep clean.
     "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache",
     ".venv", "venv", "env", "build", "dist", "node_modules",
     "_artifacts",           # disposable generated output

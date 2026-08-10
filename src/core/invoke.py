@@ -28,7 +28,7 @@ import time
 import uuid
 from dataclasses import dataclass, field
 
-from src.core import event_log, policy, presence, registry
+from src.core import event_log, policy, presence, proctree, registry
 from src.core.config import Paths
 from src.lib.common import relativize_paths, safe_json_dumps
 from src.lib.logging_setup import get_logger
@@ -49,10 +49,16 @@ _RUNNING_LOCK = threading.Lock()
 
 @dataclass
 class _Running:
-    """A dispatch in flight."""
+    """A dispatch in flight, and the process TREE it owns.
+
+    `tree` is the durable ownership handle (src/core/proctree.py). Holding it is what
+    lets the descendants be stopped as a unit, and - on Windows - what makes them die
+    with this process even when it is terminated abruptly.
+    """
     proc: "subprocess.Popen"
     tool_id: str
     started: float
+    tree: "proctree.ProcessTree | None" = None
     cancelled: bool = False
     op_id: str = field(default_factory=lambda: uuid.uuid4().hex[:12])
 
@@ -68,33 +74,15 @@ def _clean(paths: Paths, text: str) -> str:
         return str(text)
 
 
-def _terminate(proc: "subprocess.Popen") -> None:
+def _terminate(proc: "subprocess.Popen",
+               tree: "proctree.ProcessTree | None" = None) -> None:
     """Stop a child and everything it spawned, then confirm it is gone.
 
-    Terminating only the direct child leaves grandchildren running. The escalation
-    matters too: ask politely, then insist - a tool mid-write deserves the chance to
-    finish the line, but not the right to ignore a cancel.
+    Delegates to the process-tree handle when there is one. The escalation is
+    UNCONDITIONAL there: this function used to return as soon as the direct child
+    exited, which skipped tree teardown exactly when the child behaved well.
     """
-    try:
-        if os.name == "nt":
-            proc.send_signal(signal.CTRL_BREAK_EVENT)
-        else:
-            os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-    except (OSError, ValueError, AttributeError):
-        proc.terminate()
-    try:
-        proc.wait(timeout=5)
-        return
-    except subprocess.TimeoutExpired:
-        pass
-    try:
-        if os.name == "nt":
-            subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
-                           capture_output=True, timeout=15)
-        else:
-            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-    except (OSError, ValueError, subprocess.SubprocessError):
-        proc.kill()
+    (tree or proctree.ProcessTree(proc)).terminate()
 
 
 def running() -> list[dict]:
@@ -112,7 +100,7 @@ def cancel(op_id: str) -> bool:
     if handle is None:
         return False
     handle.cancelled = True
-    _terminate(handle.proc)
+    _terminate(handle.proc, handle.tree)
     log.info("invoke CANCELLED op=%s tool=%s", op_id, handle.tool_id)
     return True
 
@@ -135,7 +123,7 @@ def reap_all() -> int:
     for handle in handles:
         handle.cancelled = True
         try:
-            _terminate(handle.proc)
+            _terminate(handle.proc, handle.tree)
         except Exception:
             pass
     if handles:
@@ -156,6 +144,10 @@ def install_shutdown_handlers() -> None:
     handlers is a process-level decision, and a library that does it behind the
     caller's back will surprise anything embedding it.
     """
+    # Windows first: containment must exist BEFORE any tool is launched, because job
+    # membership is not retroactive. Signals are the POSIX half of the same job.
+    proctree.contain_self()
+
     def _handler(signum, _frame):
         reap_all()
         signal.signal(signum, signal.SIG_DFL)
@@ -317,16 +309,18 @@ def _dispatch(paths: Paths, tool, tool_id: str, args: dict,
             cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
             encoding="utf-8", errors="replace",
             cwd=str(paths.project_root), env=env,
-            # A new process GROUP so cancellation reaches grandchildren. Killing only
-            # the direct child leaves anything it spawned running, and an orphan is
-            # invisible to any check that merely confirms the call returned.
-            start_new_session=(os.name != "nt"),
-            creationflags=(subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0),
+            # Its own controllable tree, so cancellation reaches grandchildren.
+            # Killing only the direct child leaves anything it spawned running, and an
+            # orphan is invisible to any check that merely confirms the call returned.
+            **proctree.spawn_kwargs(),
         )
     except OSError as e:
         return InvokeResult(False, tool_id, None, f"subprocess error: {e}", None)
 
-    handle = _Running(proc=proc, tool_id=tool_id, started=time.time())
+    # Adopt BEFORE registering: a tree that is registered but unowned is exactly the
+    # window in which a cancel would fall back to reconstructing the tree at kill time.
+    handle = _Running(proc=proc, tool_id=tool_id, started=time.time(),
+                      tree=proctree.ProcessTree(proc))
     with _RUNNING_LOCK:
         _RUNNING[handle.op_id] = handle
     _announce(paths, tool_id, handle.op_id, "started", client)
@@ -342,6 +336,11 @@ def _dispatch(paths: Paths, tool, tool_id: str, args: dict,
     finally:
         with _RUNNING_LOCK:
             _RUNNING.pop(handle.op_id, None)
+        # Release the job handle. On Windows KILL_ON_JOB_CLOSE means this also ends
+        # any descendant the tool left behind - a tool that spawns a server and exits
+        # does not get to leave it holding a port.
+        if handle.tree is not None:
+            handle.tree.close()
 
     if handle.cancelled:
         # Cancellation is its OWN outcome. Reporting it as a generic failure would

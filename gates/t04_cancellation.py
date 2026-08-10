@@ -23,6 +23,39 @@ from pathlib import Path
 
 OUTCOME = "long work is observable while it runs, and can be stopped cleanly"
 
+# Machine-visible, printed by gates/run.py beneath the verdict. Declared because a
+# green result here means less than it appears to on POSIX, and the mechanism that
+# makes it true on Windows has never executed anywhere.
+KNOWN_LIMITATIONS = (
+    {
+        "assertion": "explicit cancel reaps the GRANDCHILD too",
+        "coverage": "platform-partial",
+        "limitation": "cannot discriminate on POSIX. terminate() signals the whole "
+                      "process group first, so the grandchild dies from that signal "
+                      "regardless of whether the tree escalation runs. Mutation-tested: "
+                      "restoring the old skipped-escalation defect leaves this PASSING "
+                      "on Linux. The defect it guards is Windows-only, because "
+                      "CTRL_BREAK_EVENT reaches only console-attached processes",
+        "contributes_to_E11_completion": False,
+        "disposition": "only a Windows run can prove this assertion; treat a Linux "
+                       "green as silence, not evidence",
+    },
+    {
+        "assertion": "seam shutdown reaps the GRANDCHILD too",
+        "coverage": "platform-partial",
+        "limitation": "the Windows mechanism - a Job Object with KILL_ON_JOB_CLOSE in "
+                      "src/core/proctree.py - HAS NEVER EXECUTED. It is written against "
+                      "the documented Win32 behaviour and reasoned from the failure "
+                      "Windows CI reported, not from a passing run. On POSIX this "
+                      "assertion exercises process groups, which is a different "
+                      "mechanism proving a different thing",
+        "contributes_to_E11_completion": False,
+        "disposition": "unverified until the next Windows run; if the job object "
+                       "cannot be created, ProcessTree.durable is False and the path "
+                       "silently falls back to taskkill",
+    },
+)
+
 
 def _load(root: Path, dotted: str):
     sys.path.insert(0, str(root))
@@ -132,10 +165,22 @@ def check(r, root: Path) -> None:
     # SUITE_STATE_ROOT at the same temp dir, so a fixture writing to the state
     # root would be writing to the BOUND TARGET - and the precept guard would
     # correctly flag an Observe tool mutating it. tools/ is the sidecar's own home.
+    # The fixture SPAWNS A GRANDCHILD and records both pids.
+    #
+    # An earlier revision slept in one process, so "leaving no orphan" asserted only
+    # that the direct child died - one level, not a tree. The defect it is named for
+    # is a DESCENDANT surviving, and that was untestable by construction: on POSIX a
+    # single killpg covers depth one trivially, so a mutation restoring the old
+    # skipped-escalation bug could not make it fail.
+    #
+    # The grandchild is what a real tool leaves behind - a dev server, a watcher, a
+    # worker holding a lock.
     (tools / "cli.py").write_text(
-        "import json, os, time\n"
+        "import json, os, subprocess, sys, time\n"
         "here = os.path.dirname(os.path.abspath(__file__))\n"
+        "kid = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(300)'])\n"
         "open(os.path.join(here, 'pid'), 'w').write(str(os.getpid()))\n"
+        "open(os.path.join(here, 'gpid'), 'w').write(str(kid.pid))\n"
         "time.sleep(120)\n"
         "print(json.dumps({'ok': True}))\n", encoding="utf-8")
     try:
@@ -184,12 +229,74 @@ def check(r, root: Path) -> None:
                 "run is absent rather than passing")
         if pidfile.is_file():
             child_pid = int(pidfile.read_text(encoding="utf-8").strip())
-            r.check("cancelling reaps the child, leaving no orphan",
+            r.check("seam shutdown reaps the child, leaving no orphan",
                     not _pid_alive(child_pid),
-                    f"pid {child_pid} survived the parent - a detached grandchild "
+                    f"pid {child_pid} survived the parent - a detached child "
                     "holding a lock or a port after the seam is gone")
+        gpidfile = tools / "gpid"
+        if gpidfile.is_file():
+            gp = int(gpidfile.read_text(encoding="utf-8").strip())
+            r.check("seam shutdown reaps the GRANDCHILD too", not _pid_alive(gp),
+                    f"pid {gp} survived - killing the direct child is not tearing "
+                    "down the tree; this is the failure the whole tranche is about")
+
+        # --- PATH 2: EXPLICIT CANCEL -----------------------------------------
+        # A DIFFERENT path from the one above, and it has to be asserted separately.
+        #
+        # Above, the seam process is killed from outside: on Windows that is
+        # TerminateProcess, which runs no handler and no atexit, so nothing in
+        # invoke.py executes. Here the seam stays alive and cancel() runs its own
+        # termination logic.
+        #
+        # Only this path reaches the escalation that used to be skipped: _terminate()
+        # returned as soon as the direct child exited, so `taskkill /T` never ran when
+        # the child behaved well. A gate asserting only the shutdown path would have
+        # reported PASS over that defect indefinitely - which is what happened.
+        pidfile.unlink(missing_ok=True)
+        (tools / "gpid").unlink(missing_ok=True)
+        driver = tools / "driver.py"
+        driver.write_text(
+            "import json, sys, threading, time\n"
+            "sys.path.insert(0, sys.argv[1])\n"
+            "from src.core.config import resolve_paths\n"
+            "from src.core import invoke as inv\n"
+            "from pathlib import Path\n"
+            "paths = resolve_paths(Path(sys.argv[1]))\n"
+            "def go():\n"
+            "    inv.invoke(paths, 't04slowprobe', {}, client='test')\n"
+            "t = threading.Thread(target=go, daemon=True); t.start()\n"
+            "time.sleep(4)\n"
+            "ops = inv.running()\n"
+            "ok = bool(ops) and inv.cancel(ops[0]['op_id'])\n"
+            "t.join(timeout=20)\n"
+            "print(json.dumps({'cancelled': ok}))\n", encoding="utf-8")
+        drv = subprocess.run(
+            [sys.executable, str(driver), str(root)],
+            cwd=root, capture_output=True, text=True, timeout=180,
+            env={**os.environ, "SUITE_STATE_ROOT": str(state),
+                 "SUITE_PROJECT_ROOT": str(state)})
+        r.check("an in-flight operation is cancellable through the seam",
+                '"cancelled": true' in (drv.stdout or "").lower(),
+                f"driver said {(drv.stdout or drv.stderr or '')[-200:]!r}")
+
+        if pidfile.is_file():
+            cancelled_pid = int(pidfile.read_text(encoding="utf-8").strip())
+            r.check("explicit cancel reaps the child, leaving no orphan",
+                    not _pid_alive(cancelled_pid),
+                    f"pid {cancelled_pid} survived cancel() - the tree escalation "
+                    "was skipped, or the tree was never owned")
+            g2 = tools / "gpid"
+            if g2.is_file():
+                gp2 = int(g2.read_text(encoding="utf-8").strip())
+                r.check("explicit cancel reaps the GRANDCHILD too", not _pid_alive(gp2),
+                        f"pid {gp2} survived cancel() - _terminate() used to return "
+                        "as soon as the direct child exited, skipping tree teardown "
+                        "exactly when the child behaved well")
+        else:
+            r.check("explicit cancel reaps the child, leaving no orphan", False,
+                    "the cancelled run never recorded a pid")
     finally:
-        for f in ("tool.json", "cli.py", "pid"):
+        for f in ("tool.json", "cli.py", "pid", "gpid", "driver.py"):
             try:
                 (tools / f).unlink()
             except OSError:

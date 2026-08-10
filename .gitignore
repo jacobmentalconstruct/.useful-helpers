@@ -45,6 +45,10 @@ env/
 _state/
 _artifacts/
 _exports/
+# projectmapper's own output. Regenerable at any time by `projectmapper`.
+# Three copies were tracked and 8.4 MB shipped in the payload, carrying
+# build-machine absolute paths and filedumped parts-bin content.
+_projectmapper/
 logs/
 
 # Derived from tools/*/tool.json via `cli registry-refresh`.
