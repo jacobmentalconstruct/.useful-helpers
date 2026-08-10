@@ -1,0 +1,83 @@
+"""
+SUPERSEDED ASSERTIONS — removed from the active cumulative proof set.
+
+ORIGIN            gates/t01_ship_manifest.py, section 8
+PROVEN            T1 — One Ship Manifest, parked 2026-08-07 (journal 0008)
+SUPERSEDED BY     T5 — Ownership and Distribution Model (journal 0019, 0020)
+AUTHORITY         operator decision, 2026-08-09: the deployment topology is
+                  source -> canonical payload -> setup application -> installed
+                  instance. An installed instance belongs to one target and does
+                  not reproduce itself.
+HISTORICAL RECORD _docs/AppJOURNAL/0008-t1-closed.md — immutable, not rewritten.
+                  T1's evidence stands as what was true when T1 closed.
+
+WHY THESE ARE RETIRED
+
+Both assertions rest on one premise: that a vended sidecar must be able to vend
+another sidecar. Under the corrected topology the payload is produced by a build in
+the source factory and delivered by a standalone setup application. `instance ->
+instance` is not a product requirement, so a proof that it works is proving
+something the product no longer promises.
+
+Left active, they would have forced the installed runtime to keep shipping
+`sidecar_install` and `payload.py` forever, and the active suite would have
+contradicted the Charter's SIDECAR:INSTANCE-OWNERSHIP within the same tranche that
+wrote it.
+
+REPLACEMENT INVARIANT
+
+Owed by the derived implementation tranche, not by T5:
+
+  - membership is declared by a positive install manifest
+    (Charter SIDECAR:INSTALLABLE-PAYLOAD)
+  - conformance is proven by inspecting the BUILT PAYLOAD produced by the payload
+    assembler, not by a runtime tool copying the source tree
+  - the setup application, not the runtime, owns installation
+    (Charter SIDECAR:SETUP-DISTRIBUTION)
+
+Until that tranche lands there is deliberately NO active assertion that the payload
+can reproduce itself, because it is no longer required to.
+
+WHAT WAS *NOT* RETIRED
+
+The census covered all 22 assertions in t01. Everything else remains active: the
+manifest exists and is the single source of truth; consumers derive from it rather
+than repeating it; the ship categories are declared; `packaging/` is INSTALLER_ONLY
+and intact; foreign code is distinguished from unshipped code; the vend succeeds and
+leaks no development zone, no installer, no nested instance, no `.git`; the payload
+ships its own minimal ignore file; the installer ships blank; and the file count
+stays within bound.
+
+Two of those survive with recorded weaknesses rather than cleanly — see journal 0020
+section on known-weak active assertions.
+
+--------------------------------------------------------------------------------
+THE EXACT CODE REMOVED, VERBATIM
+--------------------------------------------------------------------------------
+
+    # --- 8. the payload is SELF-HOSTING and the manifest is a fixed point ----
+    # A vended sidecar must be able to vend, which means the manifest itself has to
+    # ship - vendor_export imports it at module load, so a payload missing it would
+    # be silently unable to reproduce itself. And generation 2 must equal generation
+    # 1: if it grows, some path is being pulled in by the copy that the manifest did
+    # not account for; if it shrinks, the payload is eroding each time it is passed
+    # on. Either way the boundary is not a fixed point, and a sidecar that cannot
+    # reproduce itself exactly cannot be trusted to reproduce anything else.
+    r.check("the manifest itself ships", (sidecar / "src" / "core" / "payload.py").is_file(),
+            "vendor_export imports it at load; without it the payload cannot vend")
+
+    gen2_target = Path(tempfile.mkdtemp(prefix="t01-gen2-"))
+    subprocess.run(
+        [sys.executable, "-m", "src.app", "cli", "tool-call", "--tool",
+         "sidecar_install", "--args-json",
+         json.dumps({"target": str(gen2_target), "dry_run": False, "confirm": True})],
+        cwd=sidecar, capture_output=True, text=True, encoding="utf-8",
+        errors="replace", timeout=600,
+        env={**os.environ, "SUITE_PROJECT_ROOT": str(gen2_target)},
+    )
+    gen2 = gen2_target / ".useful-helpers"
+    gen2_count = sum(1 for p in gen2.rglob("*") if p.is_file()) if gen2.is_dir() else -1
+    r.check("the payload can reproduce itself exactly (self-hosting)",
+            gen2_count == count,
+            f"generation 1 = {count} files, generation 2 = {gen2_count}")
+"""

@@ -1,6 +1,6 @@
 # Charter — Useful Helpers Sidecar
 
-Status: **DRAFT for operator agreement.** Nothing is built against this yet.
+Status: **ACTIVE AUTHORITY.** T0-T4 parked and built against this document; T5 amended it.
 Date: 2026-08-06.
 Authority: this document, with `.bcc/BUILDER-CONSTRAINT-CONTRACT.md`, supersedes
 all prior framing. The former governing blueprint is retired to `_trash/`.
@@ -115,11 +115,32 @@ a passing check**, not asserted.
 | E6a | Each can see the other **act**, live | A GUI action appears to an agent, and an agent action appears in the GUI, without restart or manual refresh |
 | E6b | Each can query the other's current **context** | An agent asks what the human is working on and gets an accurate answer |
 | E7 | Daily-driver workflows exist as chains | Each retained daily driver is reachable as a chain and produces its documented output |
-| E8 | The target is never modified without authority | Precept guard passes; read-only mount prevention passes where the host supports it |
+| E8 | Sidecar lifecycle and self-management never silently mutate target-owned content; runtime target mutation requires an explicit governed operation whose authority and declared write scope permit it | Phase x authority matrix, §3.2. Install/update/uninstall/startup/verify/self-maintenance each leave target-owned content byte-identical; Observe reads only; Apply mutates only inside its declared write scope under the governed confirmation path; Sandbox only in its declared copy scope. Read-only mount prevention remains independent evidence where the host supports it |
 | E9 | The parts bin can be deleted and everything still passes | Delete the bin, run the full gate suite green |
 | E10 | Every claim in the docs is executable | No document asserts a behavior with no check behind it |
-| E11 | It vends fully blank | Vend to a scratch dir; assert no journal, event log, evidence, development document, git history, build-machine path, or predecessor reference survives |
+| E11 | The setup distribution and canonical payload carry product identity and required **self-knowledge**, but no development-instance history or lineage | Build the payload; assert it CONTAINS product name, instance manifest, reserved namespace, generic documentation, tool manifests, version/schema, self-verification rules and the generic contract seed - and CONTAINS NO journal, evidence, tranche history, source git history, builder identity, build-machine path, predecessor-project identity, parts-bin residue or accumulated runtime state. Lineage terms are derived from this project's own manifest, not hardcoded |
 | E12 | An installed sidecar is removable without trace | Vend, use, delete the sidecar folder; the target is byte-identical to before the vend |
+| E13 | The governance cartridge installs **optionally and blank** | Install with the toggle off: no contract, protocol or gate runner arrives. Install with it on: all three arrive, `BCC-CONFIG` values resolved for the **new** target, and no value, path, journal reference or tranche number from this build survives |
+
+### 3.2 The phase x authority matrix (E8)
+
+"The target is never modified" was never the product invariant. An Apply tool exists
+precisely to modify it. The real rule has two axes - **lifecycle phase** and
+**operation authority** - and neither alone is sufficient.
+
+| Phase / operation | May mutate | May not mutate |
+| --- | --- | --- |
+| setup **install** | creates `INSTANCE_ROOT` | target-owned content |
+| setup **update** | `INSTANCE_ROOT`; migrates instance state by explicit rules | target-owned content |
+| setup **uninstall** | removes `INSTANCE_ROOT`, and only that | target-owned content |
+| **startup / verify / self-maintenance** | sidecar-owned state | target-owned content |
+| **Observe** operation | nothing | the target is read-only |
+| **Apply** operation | target content **inside its declared write scope**, under the governed authorization and confirmation path | anything outside that scope |
+| **Sandbox** operation | its declared sandbox or copy scope | the target |
+
+The word doing the work is **silently**. Lifecycle and self-management never mutate
+target-owned content at all; runtime mutation is permitted, attributable, scoped and
+confirmed.
 
 ### 3.1 What is already true
 
@@ -188,24 +209,171 @@ A tranche that has parked is closed. Polish after parking is prohibited.
 
 ---
 
-## 5. Zones
+## 5. Ownership and Distribution Model
 
-| Zone | Role | Ships? |
-| --- | --- | --- |
-| `toolkit/` | **The sidecar.** The product. | **Yes** — this is the deliverable |
-| `_design/` | Charter, plan, audits governing the sidecar | No |
-| `_harness/` | Proving ground; installs the sidecar into targets and measures | No |
-| `.bcc/` | Builder contract, plan, evidence, this charter | No |
-| `_docs/` | Builder journal | No |
-| `.plans-and-parts_FOR-REFERENCE-ONLY/` | Parts bin — daily drivers and their contracts | No — deleted at E9 |
-| `_trash/` | Removal staging; the mount denies unlink | No |
+This section is the **owner** of this product's topology and ownership semantics.
+Every other surface cites these identifiers rather than restating them, per
+`BCC-ONE-AUTHORITY`.
 
-The repository root is a **factory**. It has no runtime of its own and must
-never acquire one. `harness.py` encodes this: `FACTORY = HERE.parent`,
-`TOOLKIT = FACTORY / "toolkit"`.
+```text
+[OWNS: SIDECAR:SOURCE-FACTORY]
+[OWNS: SIDECAR:SETUP-DISTRIBUTION]
+[OWNS: SIDECAR:INSTALLABLE-PAYLOAD]
+[OWNS: SIDECAR:INSTANCE-OWNERSHIP]
+[OWNS: SIDECAR:TARGET-OWNERSHIP]
+[OWNS: SIDECAR:EXTERNAL-CORPUS]
+```
 
-The toolkit stays nested because it depends on the factory for its verification,
-and the factory never travels with it.
+### 5.0 The topology
+
+```text
+PUBLIC SOURCE / DEVELOPMENT REPOSITORY
+        |  build / package
+        v
+OS-SPECIFIC SETUP APPLICATION  +  CANONICAL INSTALLABLE PAYLOAD
+        |  one explicit user-selected target
+        v
+TARGET_ROOT
+|-- target-owned content
+`-- INSTANCE_ROOT  (default `.useful-helpers/`)
+    `-- exactly ONE installed sidecar instance
+```
+
+A user receives a **setup application**, not the running product. They point it at
+exactly one location — an existing codebase, a folder of data to curate, an empty
+directory, a documents workspace, anything that is to become the one target. It
+creates one instance, permanently associated with that target.
+
+**There is no central sidecar that opens many projects.**
+
+### 5.1 The four roots
+
+One word was doing four jobs. `SIDECAR_ROOT` meant the BCC's governance root in the
+contract and the product's instance root in architecture prose, and those are not
+the same abstraction.
+
+| Term | Meaning |
+| --- | --- |
+| `TARGET_ROOT` | the directory the user selected; the sidecar's entire reality |
+| `INSTANCE_ROOT` | the installed sidecar's own home inside it — the **reserved namespace** |
+| `GOVERNANCE_ROOT` | where builder-control artefacts live (the BCC's `SIDECAR_ROOT`) |
+| `STATE_ROOT` | the instance's mutable runtime state |
+
+`INSTANCE_ROOT` and `GOVERNANCE_ROOT` are distinct concepts and must not share a
+name in prose, configuration, or code.
+
+### 5.2 SIDECAR:SOURCE-FACTORY
+
+The public development repository. It may legitimately contain development
+governance, tests, tranche gates, the harness, build machinery, CI, and packaging
+definitions.
+
+**Presence in the source repository is not evidence that something should be
+installed.** `.github/` in the source repository is correct; `.github/` in a payload
+is a packaging error.
+
+The root is a factory and has no runtime of its own.
+
+### 5.3 SIDECAR:SETUP-DISTRIBUTION
+
+The standalone OS-specific setup application. Its only job is to install, update,
+reinstall and uninstall an instance.
+
+**`packaging/installer/` is the product's installation entrance.** It is the
+authority for what installation means.
+
+`tools/sidecar_install` is a *runtime tool that installs another sidecar*. It is a
+**nonconformity** under this model, not the product's installer, and is scheduled
+for disposition.
+
+### 5.4 SIDECAR:INSTALLABLE-PAYLOAD
+
+The materialised sidecar content the setup application consumes — a real build
+artifact, independent of platform wrapping.
+
+Membership is declared by a **positive install manifest**: these components
+constitute an installable sidecar. Negative exclusion sets remain as
+defence-in-depth and are **not** what defines the product.
+
+```text
+positive inclusion  = authority
+negative exclusion  = safety net
+```
+
+Conformance is proven by inspecting the **built payload**, not by inferring
+cleanliness from the source tree.
+
+*Today's implementation inverts this — `src/core/payload.py` derives the payload by
+subtracting exclusions from the source tree. That is a recorded nonconformity, and
+`payload.py` is the current owner of concrete membership until the positive manifest
+replaces it.*
+
+### 5.5 SIDECAR:INSTANCE-OWNERSHIP
+
+One installed instance, belonging to one target.
+
+**It may know itself** — its own home, which files are its own, its manifests, its
+state, its contract, its bindings, its tool inventory, its exclusions, its health,
+and the reserved namespace it occupies. This is required behaviour, not
+contamination.
+
+**It does not vend additional instances.** The source factory knows how to build a
+sidecar; an installed instance has no business reproducing itself. The chain is
+`source → payload → setup → instance`, never `instance → instance`.
+
+The instance must have a **durable identity** resolved from its actual runtime
+location plus a recorded relative relationship to its target — not a basename guess,
+not an environment variable, and not a frozen absolute path that breaks when the
+target is moved.
+
+### 5.6 SIDECAR:TARGET-OWNERSHIP
+
+Everything in `TARGET_ROOT` outside `INSTANCE_ROOT`.
+
+```text
+TARGET_ROOT
+|-- INSTANCE_ROOT     sidecar may freely maintain this
+`-- target-owned      installation and self-maintenance may not mutate this
+```
+
+*The project knows nothing* does **not** mean the filesystem contains no sidecar. It
+means target-owned content has no dependency on the sidecar and is not made to
+participate in its existence. The installer may create the reserved namespace. The
+sidecar must exclude its own namespace when interpreting the target.
+
+Runtime work **may** modify target-owned content — that is what the product is for —
+but only as an explicit governed operation. See E8.
+
+### 5.7 SIDECAR:EXTERNAL-CORPUS
+
+Real predecessor and representative targets used for regression. **Not product
+source, not setup distribution, not payload.**
+
+Small sanitised deterministic fixtures may live with the source. The large
+real-world corpus is an external development resource, identified by a manifest with
+provenance and hashes so a regression run is reproducible. A missing corpus means
+*full regression not performed*; it must never read as *full regression passed*.
+
+*Today `_harness/targets/` holds 639 committed files duplicating seven parts-bin
+applications. That is a recorded nonconformity.*
+
+### 5.8 The governance cartridge
+
+The contract is one of the tools the sidecar carries, installable by an opt-in
+checkbox with the `BCC-CONFIG` values as editable fields. A target that wants
+tranche discipline can have it; a target that does not is never colonised by it.
+
+**Invariant:** enabling the cartridge does not expand sidecar ownership into
+target-owned content. Its `TARGET_PROJECT_ROOT` may name the real parent target, but
+its control artefacts — journal, evidence, plans — remain inside `INSTANCE_ROOT`.
+Enabling it must not create `TARGET_ROOT/_docs/AppJOURNAL/`. **E13.**
+
+### 5.9 Historical note
+
+Until 2026-08-06 the product lived at `toolkit/` inside the factory with charter and
+plan at `_design/`. The sidecar has since collapsed to the root: `TOOLKIT ==
+FACTORY`, and neither directory exists. A zone table here described the old shape for
+three tranches after the change, which is why this section now names its facts.
 
 ---
 

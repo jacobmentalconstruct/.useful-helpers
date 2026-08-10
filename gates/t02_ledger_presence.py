@@ -225,16 +225,6 @@ def check(r, root: Path) -> None:
             "_MIGRATED" in ev_src,
             "record() must not pay for a schema check per event")
 
-    # --- 6c. EVERY caller attributes itself ---------------------------------
-    # E5 says a human and an agent are indistinguishable to the seam - which is only
-    # true if both SAY who they are. Seven of eight GUI call sites passed no client
-    # at all, so most operator actions were recorded as "unknown" and E5 was met on
-    # exactly one code path while the scoreboard claimed it outright.
-    #
-    # Asserted structurally: an unattributed call site is invisible at runtime,
-    # because it produces a valid row that is merely wrong.
-    import re as _re
-    unattributed = []
     # --- 7. the two channels stay separate ---------------------------------
     src = (root / "src" / "core" / "event_log.py").read_text(encoding="utf-8", errors="replace")
     r.check("no UI-state vocabulary leaked into the ledger",

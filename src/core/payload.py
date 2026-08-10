@@ -46,11 +46,24 @@ EXCLUDE_SUFFIXES = frozenset({
 # Excluded when exporting THE SIDECAR ITSELF. These must NOT be applied to an
 # export of a user's project - a target may legitimately have its own `_docs/`
 # or `gates/`, and stripping them would be the sidecar editing the target's shape.
+#
+# DEFAULT-OFF, NOT FORBIDDEN. `.bcc` and `gates` are excluded by default but are
+# NOT unshippable: three files inside them form the OPTIONAL GOVERNANCE CARTRIDGE
+# below, which the installer may add back at the operator's request. Everything
+# else here is unshippable outright.
+#
+# This distinction was missing when the manifest was first written, and the whole
+# of `.bcc` was swept in as one directory. That silently dropped a requirement the
+# operator had already given - that the contract be installable via a checkbox in
+# the installer - because a name in this set is invisible everywhere else.
 
 NEVER_SHIP = frozenset({
-    ".bcc",                                  # builder contract, charter, plan, evidence
+    ".bcc",                                  # DEFAULT-OFF: charter, plan and evidence are
+                                             # never shippable; the contract and protocol are
+                                             # opt-in - see GOVERNANCE_CARTRIDGE
     "_docs",                                 # the sidecar's own journal; a target's record starts empty
-    "gates",                                 # tranche gates
+    "gates",                                 # DEFAULT-OFF: tranche gates are this build's;
+                                             # `gates/run.py` alone is opt-in
     "_trash",                                # removal staging
     "_harness",                              # proving ground; ALSO a recursion guard - its
                                              # targets live inside it, so vending the root
@@ -58,6 +71,40 @@ NEVER_SHIP = frozenset({
     ".plans-and-parts_FOR-REFERENCE-ONLY",   # parts bin: predecessor apps and their plans
     ".useful-helpers-test-tmp",              # suite scratch
     "requirements-dev.txt",                  # dev-only dependency declaration
+})
+
+# ------------------------------------------------- optional governance cartridge
+# The contract is not merely this build's governance - it is a TOOL the sidecar
+# carries. A target that wants tranche discipline can have it; a target that does
+# not is never colonised by it. Hence opt-in rather than always or never.
+#
+# Off by default, added back only when the operator enables it at install. Named as
+# RELATIVE PATHS, unlike the name-matched sets above, because the point is to carve
+# individual files out of directories that are otherwise excluded.
+#
+# BLANK ON ARRIVAL. The shipped contract must carry UNRESOLVED placeholders, or
+# values resolved for the NEW target - never this project's. A vended contract
+# still reading TARGET_PROJECT_ROOT="." and JOURNAL_PATH="_docs/AppJOURNAL" would
+# be exactly the unpurged history E11 forbids. The installer collects these, with
+# defaults shown and editable.
+#
+# WIRING BELONGS TO T9 (Install and Packaging). This declaration exists now so the
+# requirement lives in the one file that governs shipping, where it cannot be
+# dropped a second time.
+GOVERNANCE_CARTRIDGE = frozenset({
+    ".bcc/BUILDER-CONSTRAINT-CONTRACT.md",   # the contract itself, placeholders unresolved
+    ".bcc/TRANCHE_PROTOCOL.md",              # gate mechanism and the discovery pass
+    "gates/run.py",                          # the runner, so the discipline arrives
+                                             # executable rather than aspirational
+})
+
+# Never shippable, not even opt-in: this product's own definition and this build's
+# own record. Enumerated so the cartridge cannot be widened to include them by a
+# later hand that reads `.bcc` as one undifferentiated thing.
+CARTRIDGE_FORBIDDEN = frozenset({
+    ".bcc/CHARTER.md",                       # what THIS product is
+    ".bcc/TRANCHE_PLAN.md",                  # what THIS build is doing
+    ".bcc/evidence",                         # what THIS build measured
 })
 
 # Ships as DELIVERABLE #1, beside the payload, never inside it. Excluded for a
@@ -100,3 +147,18 @@ PAYLOAD_EXCLUDE = SIDECAR_STRIP | REGENERABLE | VCS
 # Regression signal. The payload is ~275 files; a leak once shipped 4,009. This is
 # the cheapest possible check that the boundary has not quietly widened again.
 MAX_PAYLOAD_FILES = 500
+
+# The cartridge adds three files when enabled, so the ceiling does not move.
+# Stated rather than assumed: an opt-in category is exactly the kind of thing that
+# grows quietly, and the point of the ceiling is to notice.
+MAX_CARTRIDGE_FILES = 8
+
+
+def cartridge_conflicts() -> set[str]:
+    """Paths claimed by both the cartridge and the forbidden set.
+
+    Always empty. It exists so the contradiction is detectable rather than
+    arguable: the two sets are written by hand, in the same file, by people who
+    will read `.bcc` as one thing unless something stops them.
+    """
+    return set(GOVERNANCE_CARTRIDGE) & set(CARTRIDGE_FORBIDDEN)

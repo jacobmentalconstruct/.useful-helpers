@@ -31,9 +31,19 @@ If no narrower target is supplied, enter through these anchors in order:
 1. `BCC-SPINE` - use this map and anchor syntax.
 2. `BCC-CONTRACT-USE` - establish the contract as the active authority.
 3. `BCC-WORKFLOW-REQUIRED-TRANCHE-LOOP` - run the required tranche loop.
-4. `BCC-PROJECT-MISSION` - preserve the product direction.
-5. `BCC-PROJECT-ROOT-BOUNDARY` - confirm write and reference boundaries.
-6. `BCC-REPORTING-CLOSEOUT` - close work with evidence and state updates.
+4. `BCC-ONE-AUTHORITY` - establish which surface owns each normative fact.
+5. `BCC-PROJECT-MISSION` - preserve the product direction.
+6. `BCC-PROJECT-ROOT-BOUNDARY` - confirm write and reference boundaries.
+7. `BCC-REPORTING-CLOSEOUT` - close work with evidence and state updates.
+
+**Then read the product authority.** This contract owns *generic builder
+governance*. It does not own any particular product's architecture. Where a project
+supplies a product charter, that charter owns the product's topology, ownership
+semantics and end-state conditions, and this contract defers to it on those facts.
+
+For this project the product authority is `CHARTER.md`, in the configured
+`SIDECAR_ROOT`. An entering agent reads it after the anchors above and before doing
+product work; its `[OWNS: ...]` declarations name the facts it is authoritative for.
 
 Authoritative anchor map:
 
@@ -41,6 +51,7 @@ Authoritative anchor map:
 - `BCC-CONTEXT-ENTRY`: default read path for an entering agent.
 - `BCC-BOOTSTRAP-SIDECAR`: portable install, side-car root, and placeholder rules.
 - `BCC-CONTRACT-USE`: contract authority and how it constrains work.
+- `BCC-ONE-AUTHORITY`: one normative authority per fact.
 - `BCC-WORKFLOW-DISCIPLINE`: tranche and phase discipline.
 - `BCC-WORKFLOW-REQUIRED-TRANCHE-LOOP`: mandatory workflow loop for every meaningful tranche.
 - `BCC-DOCS-JOURNAL-RULE`: documentation and journal requirements.
@@ -254,6 +265,69 @@ structural deviation.
 
 ---
 
+[ANCHOR: BCC-ONE-AUTHORITY]
+
+## 1a. One Normative Authority Per Fact
+
+For each normative fact, exactly one surface owns that fact. Other surfaces may
+**consume** it, **reference** it, be **mechanically generated** from it, or
+independently **verify** conformance to it.
+
+A second hand-maintained normative representation of the same fact is a defect
+**even when both copies currently agree.** Agreement today is not a property of the
+system; it is a coincidence with an expiry date.
+
+### 1a.1 The scope of "each fact"
+
+*Each fact*, not *each project*. This rule does not make one document authoritative
+over everything - that is a different defect, and a worse one. Different facts have
+different rightful owners, and the ownership map is itself a fact the project must
+state.
+
+### 1a.2 What is permitted
+
+A surface that does any of the following is **not** a competing authority:
+
+- **consumer** - reads the authority and acts on it
+- **generated** - produced mechanically from the authority, one direction, no hand-editing
+- **reference** - points at the authority instead of restating it
+- **verifier** - independently observes whether the authority is honoured
+
+The last one matters most and is the easiest to legislate away by accident. A gate,
+a test, or a harness that inspects the produced artifact is doing exactly what this
+rule wants: **independent observation is not duplication.** A rule written without
+this clause would forbid the project's own verification machinery.
+
+### 1a.3 Declaring ownership
+
+Ownership is declared, not inferred, so that it can be checked:
+
+```text
+[OWNS: <FACT-ID>]        in the owning surface, exactly once across the project
+```
+
+Subordinate surfaces cite `<FACT-ID>`. They never declare `[OWNS: ...]` for a fact
+they do not own.
+
+Mechanical checking is limited to **declared** ownership of **enumerated** facts.
+An accidental prose paraphrase that does not announce itself with the same
+identifier is beyond what a text search can decide, and remains the responsibility
+of critical review and the discovery pass. A gate must not claim to have proven the
+absence of semantic duplication.
+
+### 1a.4 Why this is a contract-level rule
+
+It was derived from five recorded instances of one defect in a single project: a
+workflow loop copied verbatim into a subordinate document; a contract maintained as
+two hand-edited files that diverged within a day; installation semantics
+reimplemented by a test harness alongside the real installer; a ship boundary stated
+both as code and as a prose table; and a check duplicated inside a single gate, with
+the copy left half-written.
+
+Each was correct in isolation. Each drifted, or would have.
+
+---
+
 [ANCHOR: BCC-WORKFLOW-DISCIPLINE]
 
 ## 2. Workflow Discipline
@@ -335,6 +409,9 @@ A park state should include:
 
 The park state must be easy for a future agent or the user to find.
 
+A tranche is parked only after the operator has approved it at step 12 of §2.8.
+Parking is a state the user grants, not one the builder declares.
+
 ### 2.7 Testable closure rule
 
 The builder shall not mark a role, tool, lifecycle, or autonomous behavior as
@@ -350,8 +427,17 @@ than claiming closure.
 
 Every meaningful tranche shall follow the required tranche workflow below.
 This is one workflow loop, not a separate implementation loop followed by an
-optional review loop. Review, repair, re-verification, documentation, evidence,
-current-state summary, and clean parking are required parts of tranche work.
+optional review loop. Declaration, review, repair, re-verification, operator
+approval, documentation, evidence, current-state summary, and clean parking are
+required parts of tranche work.
+
+The loop has four blocks and three terminal states.
+
+Blocks: **declare** (1-6), **execute** (7-11), **approve** (12-13), **close**
+(14-17).
+
+Terminal states: **parked**, **blocked**, and **awaiting approval**. There is no
+"mostly done", and the builder does not close its own work.
 
 Required workflow:
 
@@ -363,73 +449,130 @@ Required workflow:
      point, and completed work that should not be reopened casually.
 
 2. Declare the tranche.
-   - Record the tranche goal, scope, non-goals, expected completion point,
-     expected changed surfaces, planned checks/tools, and known risks.
+   - Record the tranche identifier and name, its goal in one sentence, and the
+     expected changed surfaces.
    - If the tranche boundary is unclear, clarify or infer conservatively before
      substantial implementation.
 
-3. Inspect current state.
+3. Declare current state.
    - Inspect relevant source, docs, tests, outputs, reference sources, current
      project tree, and cleanup candidates before editing.
-   - Record findings that affect scope, ownership, risk, or later decisions.
+   - State what is true now, as measured rather than as remembered. A declared
+     starting state that was assumed rather than observed makes every later
+     claim of change unverifiable.
 
-4. Implement narrowly.
+4. Declare non-goals.
+   - State plainly what this tranche is not for.
+   - Known non-goals are active constraints, not preferences. They are the only
+     defence against a tranche quietly becoming a different tranche.
+
+5. Declare the completion condition.
+   - State the expected outcome and the stop conditions: what must be true for
+     the tranche to be finished, and what would make it stop early.
+   - The completion condition shall be expressible as a check. If it cannot be,
+     the tranche is not defined well enough to begin.
+
+6. Declare the plan.
+   - State the ordered steps that will produce the declared outcome, including
+     the consolidation pass at step 8.
+   - The plan is what step 12 is reviewed against. Work performed that is not in
+     the plan is either a discovery to be recorded or scope creep to be refused.
+
+7. Record start.
+   - Open the journal entry before implementation, not after.
+   - A record written afterwards records the story the builder ended up telling,
+     not the one it set out with.
+
+8. Implement narrowly.
    - Make only changes required for the declared tranche.
    - Stay inside the project root unless explicitly approved.
    - Preserve reference-source boundaries, ownership rules, non-goals, and the
      declared phase separation.
 
-5. Verify and review critically.
-   - Run appropriate tests, compile/import checks, smoke checks, schema or
-     snapshot checks, manual UI checks, or artifact inspections.
-   - Review the result for bugs, frailties, contract misalignment, ownership
-     confusion, stale docs, hidden coupling, untested claims, generated debris,
-     poor parkability, and quick-win hardening opportunities.
-   - Classify each issue as immediate repair, mandatory safety gate, deferred
-     backlog, or not an issue after inspection.
+9. Consolidate.
+   - A named pass, not a habit: tidy, streamline, remove dead and duplicated
+     code, strengthen weak points, and squash defects found along the way.
+   - Residue left by a correct implementation is still residue. Leaving it for
+     "later" is how a project accumulates the debris it exists to prevent.
+   - Consolidation is inside the tranche. It is not the polish prohibited at
+     step 17, which concerns work already parked.
 
-6. Repair required issues.
-   - Repair issues that block or weaken the tranche's intended completion state
-     before parking.
-   - Keep repairs within tranche scope unless the user explicitly changes scope.
-   - Add or adjust tests and docs when behavior, ownership, provenance, or
-     verification changes.
-   - If a repair is unsafe or out of scope, record the reason and backlog it.
+10. Verify and review critically.
+    - Run appropriate tests, compile/import checks, smoke checks, schema or
+      snapshot checks, manual UI checks, or artifact inspections.
+    - Verification shall include an activity capable of revealing what the
+      builder was not looking for. Checks written by the builder can only fail
+      in ways the builder already imagined.
+    - Record the configuration verification ran under. A pass holds only under
+      the settings used, and the shipping default is the one that matters.
+    - Review the result for bugs, frailties, contract misalignment, ownership
+      confusion, stale docs, hidden coupling, untested claims, generated debris,
+      poor parkability, and quick-win hardening opportunities.
+    - Classify each issue as immediate repair, mandatory safety gate, deferred
+      backlog, or not an issue after inspection.
 
-7. Re-verify.
-   - Rerun the checks affected by implementation and repair.
-   - Record commands, results, failures and disposition, residual untested
-     behavior, and cleanup performed.
-   - Do not claim finality for untested behavior.
+11. Repair, then re-verify.
+    - Repair issues that block or weaken the tranche's intended completion state
+      before parking. Keep repairs within tranche scope unless the user
+      explicitly changes scope.
+    - Add or adjust tests and docs when behavior, ownership, provenance, or
+      verification changes. If a repair is unsafe or out of scope, record the
+      reason and backlog it.
+    - Rerun the checks affected by implementation and repair. Record commands,
+      results, failures and disposition, residual untested behavior, and cleanup
+      performed. Do not claim finality for untested behavior.
+    - Treat every repair as having a partner effect elsewhere until shown
+      otherwise. A change that is correct in isolation may be wrong in
+      composition, and the partner is rarely in the same file.
 
-8. Document fully.
-   - Update the journal and any docs materially affected by the tranche.
-   - Record what changed, why it changed, changed files, decisions, non-goals
-     preserved, checks performed, unresolved risks, deferred work, and next
-     recommended action.
-   - Avoid documentation theater; document to preserve continuity and safe
-     maintainability.
+12. Submit for operator review.
+    - Present the tranche to the user: what was declared, what was done, what
+      the checks show, what was found that was not expected, and what is
+      carried forward.
+    - **This is a hard stop.** The builder shall not document, park, or begin
+      the next tranche without the user's approval.
+    - Until approval is given the tranche is **awaiting approval**, which is
+      neither parked nor blocked.
 
-9. Capture evidence when useful.
-   - Attach or record evidence such as scan summaries, tool outputs,
-     verification outputs, diffs, screenshots, schema checks, file excerpts, or
-     provenance observations when they improve continuity.
-   - Record evidence identifiers in the journal when evidence is attached.
+13. Revise and resubmit.
+    - If the user does not approve, return to step 9 and address what was
+      raised, then submit again.
+    - Repeat until approved or until the tranche is declared blocked.
 
-10. Summarize current state.
-    - Update or confirm the current-state surface so the project can be resumed
-      without replaying the conversation.
-    - Include completed tranches, implemented runtime surface, verification
-      status, remaining risks, next tranche, and restart guidance.
+14. Document fully and capture evidence.
+    - Update the journal and any docs materially affected by the tranche.
+    - Record what changed, why it changed, changed files, decisions, non-goals
+      preserved, checks performed and their configuration, unresolved risks,
+      deferred work, and next recommended action.
+    - Attach evidence such as scan summaries, tool outputs, verification
+      outputs, diffs, screenshots, schema checks, file excerpts, or provenance
+      observations when they improve continuity, and record their identifiers.
+    - Avoid documentation theater; document to preserve continuity and safe
+      maintainability.
 
-11. Park cleanly.
+15. Resolve staleness.
+    - Sweep the project for statements that the tranche has made untrue:
+      superseded plans, competing numbering, outdated architecture notes,
+      shipped documentation describing a former shape, backlog items now closed,
+      and current-state surfaces describing a former state.
+    - Staleness resolved at each close is a paragraph. Staleness caught up on at
+      the end is a rewrite, and by then it is no longer trusted.
+
+16. Park cleanly, and declare the next tranche.
     - Park only when the intended stopping point is reached or the block is
       explicit, required repairs are done or dispositioned, checks are run or
       gaps are recorded, changed files are listed, docs are updated, generated
-      debris is cleaned, next action is clear, and the journal entry is closed
-      or explicitly parked.
+      debris is cleaned, and the journal entry is closed.
+    - Update or confirm the current-state surface so the project can be resumed
+      without replaying the conversation: completed tranches, implemented
+      runtime surface, verification status, remaining risks, and restart
+      guidance.
+    - Declare a synopsis of the next tranche - its outcome, its non-goals, and
+      why it comes next - so the following loop begins from a stated position
+      rather than a rediscovered one.
+    - The park state must be easy for a future agent or the user to find.
 
-12. Respect closure.
+17. Respect closure.
     - After parking, do not reopen the tranche or working components for
       low-value polish.
     - Start a new tranche for new scope.
@@ -442,18 +585,27 @@ The standard checklist form is:
 ```text
 read constraints
 declare tranche
-inspect current state
+declare current state
+declare non-goals
+declare completion condition
+declare plan
 record start
 implement narrowly
+consolidate
 verify and review critically
-repair required issues
-re-verify
-document fully
-capture evidence
-summarize current state
-park cleanly
+repair, then re-verify
+submit for operator review        <- hard stop
+revise and resubmit
+document fully and capture evidence
+resolve staleness
+park cleanly, declare next tranche
 respect closure
 ```
+
+The checklist and the numbered list shall agree. Where they disagree the builder
+will follow the checklist, so a step present in only one of them silently governs
+real work.
+
 ---
 
 [ANCHOR: BCC-DOCS-JOURNAL-RULE]
@@ -476,7 +628,8 @@ When applicable to the project state, the documentation set should include:
   - structural intent,
   - important ownership and dependency decisions.
 
-- `<sidecar-root>/_AppJOURNAL/` and/or `<sidecar-root>/_journalDB/app_journal.sqlite3`
+- the journal, at the configured `JOURNAL_PATH`, and/or
+  `<sidecar-root>/_journalDB/app_journal.sqlite3`
   - canonical development memory,
   - phase history,
   - tranche closeouts,

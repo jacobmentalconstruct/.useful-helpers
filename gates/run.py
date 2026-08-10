@@ -81,7 +81,11 @@ def main() -> int:
     ap.add_argument("tranche", nargs="?", help="e.g. t00; omit to run all")
     args = ap.parse_args()
 
-    files = sorted(GATES.glob("t[0-9][0-9]_*.py"))
+    # `t<NN>[<variant>]_<slug>.py`. The variant suffix matters: the pattern was
+    # `t[0-9][0-9]_*.py`, which cannot match `t05a_observe_select.py`. A split
+    # tranche's gate would have been silently absent from a suite still reporting
+    # PASS - a false green produced by a naming convention, not by any code.
+    files = sorted(GATES.glob("t[0-9][0-9]*_*.py"))
     if args.tranche:
         files = [f for f in files if f.stem.startswith(args.tranche.lower())]
         if not files:
@@ -89,6 +93,7 @@ def main() -> int:
             return 2
 
     overall_fail = False
+    limitations_found = False
     for f in files:
         mod = _load(f)
         res = Result(f.stem)
@@ -100,6 +105,21 @@ def main() -> int:
             if detail:
                 line += f"\n         {detail}"
             print(line)
+        # A PASS whose coverage is partial must say so at the point of reading.
+        # An assertion can be honest in its own text and still be misread when it
+        # appears in a column of green - so a gate declaring KNOWN_LIMITATIONS has
+        # them printed beneath its verdict, never folded away behind a flag.
+        limits = getattr(mod, "KNOWN_LIMITATIONS", ()) or ()
+        for lim in limits:
+            limitations_found = True
+            print(f"  [PARTIAL] {lim.get('assertion', '?')}")
+            print(f"            coverage: {lim.get('coverage', 'unknown')}")
+            print(f"            limitation: {lim.get('limitation', '')}")
+            if lim.get("contributes_to_E11_completion") is False:
+                print("            does NOT contribute to closing its end-state condition")
+            if lim.get("disposition"):
+                print(f"            disposition: {lim['disposition']}")
+
         if res.failed:
             overall_fail = True
             print(f"  => {res.tranche} BLOCKED")
@@ -114,6 +134,9 @@ def main() -> int:
         print("SUITE: FAIL - tranche is not parkable")
         return 1
     print("SUITE: PASS")
+    if limitations_found:
+        print("       - with declared PARTIAL coverage above. A green suite is not "
+              "evidence that every end-state condition is complete.")
     return 0
 
 

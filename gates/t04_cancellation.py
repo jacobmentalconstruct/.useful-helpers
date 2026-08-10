@@ -35,6 +35,35 @@ def _load(root: Path, dotted: str):
             sys.path.remove(str(root))
 
 
+def _pid_alive(pid: int) -> bool:
+    """Is this specific process still running? Cross-platform, no dependencies.
+
+    `os.kill(pid, 0)` is the POSIX idiom for "does this exist" and is DELIBERATELY
+    not used on Windows: CPython's os.kill there calls TerminateProcess for any
+    signal other than CTRL_C_EVENT/CTRL_BREAK_EVENT - including 0. Asking "is it
+    alive" would kill it, and the check would then pass by having caused the
+    condition it tests for.
+
+    Windows uses `tasklist /FI "PID eq N"`, the idiom already in
+    tools/dev_server_manager/cli.py - reused rather than reinvented.
+    """
+    if os.name == "nt":
+        try:
+            out = subprocess.run(
+                ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV", "/NH"],
+                capture_output=True, text=True, timeout=30).stdout
+        except (OSError, subprocess.SubprocessError):
+            return False
+        return f'"{pid}"' in out or f",{pid}," in out
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True          # exists, owned by someone else
+    return True
+
+
 def _paths(root: Path):
     sys.path.insert(0, str(root))
     try:
@@ -98,8 +127,15 @@ def check(r, root: Path) -> None:
         '"authority":"Observe","operates_on":"project","writes":"none",'
         '"invocation":{"interpreter":"","entry":"tools/t04slowprobe/cli.py"},'
         '"input_schema":{"type":"object","properties":{}}}', encoding="utf-8")
+    # The fixture records its own PID BESIDE ITSELF, resolved from __file__.
+    # Not into the state root: the gate points SUITE_PROJECT_ROOT and
+    # SUITE_STATE_ROOT at the same temp dir, so a fixture writing to the state
+    # root would be writing to the BOUND TARGET - and the precept guard would
+    # correctly flag an Observe tool mutating it. tools/ is the sidecar's own home.
     (tools / "cli.py").write_text(
-        "import json, time\n"
+        "import json, os, time\n"
+        "here = os.path.dirname(os.path.abspath(__file__))\n"
+        "open(os.path.join(here, 'pid'), 'w').write(str(os.getpid()))\n"
         "time.sleep(120)\n"
         "print(json.dumps({'ok': True}))\n", encoding="utf-8")
     try:
@@ -134,13 +170,26 @@ def check(r, root: Path) -> None:
         # --- nothing survives ------------------------------------------------
         # Killing the parent can leave a grandchild running. This is the failure that
         # anything checking only "the call returned" cannot see.
-        leftover = subprocess.run(
-            ["pgrep", "-f", "t04slowprobe/cli.py"],
-            capture_output=True, text=True).stdout.strip()
-        r.check("cancelling reaps the child, leaving no orphan",
-                not leftover, f"surviving pids: {leftover.splitlines()[:3]}")
+        #
+        # Asked as "is THIS process alive", not "does any command line mention the
+        # fixture". `pgrep -f` was POSIX-only and matched on command-line text, which
+        # has no stable Windows equivalent - tasklist filters image names, wmic is
+        # removed from current images, CIM is a third syntax. Porting the matching
+        # strategy would mean three implementations of one question. Recording the
+        # PID makes it one question with a two-line platform branch, and removes
+        # substring collisions on both platforms.
+        pidfile = tools / "pid"
+        r.check("the fixture recorded its pid", pidfile.is_file(),
+                "without it the orphan check cannot run, and a check that cannot "
+                "run is absent rather than passing")
+        if pidfile.is_file():
+            child_pid = int(pidfile.read_text(encoding="utf-8").strip())
+            r.check("cancelling reaps the child, leaving no orphan",
+                    not _pid_alive(child_pid),
+                    f"pid {child_pid} survived the parent - a detached grandchild "
+                    "holding a lock or a port after the seam is gone")
     finally:
-        for f in ("tool.json", "cli.py"):
+        for f in ("tool.json", "cli.py", "pid"):
             try:
                 (tools / f).unlink()
             except OSError:

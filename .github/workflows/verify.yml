@@ -47,10 +47,15 @@ jobs:
         run: python -m ruff check .
 
       - name: Suite
-        env:
-          # Keep scratch off the checkout: the suite redirects all temp I/O to its
-          # own directory, and on a slow filesystem that stalls the run.
-          SUITE_TEST_TMP: ${{ runner.temp }}\uh-test
+        # DELIBERATELY no SUITE_TEST_TMP. That variable moves the suite's scratch
+        # outside the checkout, and setting it here is how a real defect stayed
+        # invisible: the default scratch location sits inside the sidecar, which is
+        # precisely the target `sidecar_install` refuses, so three install tests
+        # failed on a default run while every configured path - operator, harness,
+        # and this workflow - passed.
+        #
+        # The variable remains available for slow network or FUSE checkouts. CI is
+        # on local disk and has no such excuse, so CI runs the shipping default.
         run: python smoke_test.py
 
       - name: Gates

@@ -19,7 +19,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-OUTCOME = "the sidecar vends only itself, and blank"
+OUTCOME = "one declared ship manifest, and a payload containing only the product"
 
 # The zones that must never reach a target. `_harness` is also a recursion guard:
 # harness targets live inside it, so vending the root without excluding it would
@@ -40,7 +40,48 @@ HISTORY_MARKERS = (
     "BUILDER-CONSTRAINT-CONTRACT.md", "event_log.sqlite3", "journal.sqlite3",
 )
 
-PREDECESSOR_NAMES = ("mindshard", "parts-bin", "uimapper", "appfoundry", "bdneural")
+# A TRIPWIRE, NOT A PROOF.
+#
+# This list is known incomplete: it does not contain this project's actual
+# predecessors (`_ProjectMAPPER`, `_TokenizingPATCHER`, `_MicroserviceLIBRARY`,
+# `_NoStringsPDF`, `_TempServerMAKER`, `_BDHyperNeuronEMITTER`, ...), and a scan of
+# the real payload for those found several present.
+#
+# So the check below may NOT claim "no predecessor lineage exists". It may only
+# claim "none of this known sentinel set is present" - which is still worth having,
+# because a tripwire that fires is information and a tripwire that is deleted is
+# nothing. What is not acceptable is a partial sentinel wearing the epistemic label
+# of a comprehensive proof.
+KNOWN_PREDECESSOR_SENTINELS = ("mindshard", "parts-bin", "uimapper", "appfoundry",
+                               "bdneural")
+
+# Machine-visible so a green suite cannot be misread as a complete proof. The runner
+# prints these beneath the gate's result; see gates/run.py.
+KNOWN_LIMITATIONS = (
+    {
+        "assertion": "no build-machine path or known predecessor sentinel ships",
+        "coverage": "partial",
+        "limitation": "KNOWN_PREDECESSOR_SENTINELS does not contain this project's "
+                      "actual predecessor names; a real payload scan found several "
+                      "that this set cannot detect",
+        "contributes_to_E11_completion": False,
+        "disposition": "strengthen or replace during the lineage/scrub tranche",
+    },
+    {
+        "assertion": "the payload fixture is produced",
+        "coverage": "transitional",
+        "limitation": "materialised by `tools/sidecar_install`, a legacy runtime "
+                      "tool. It is a TEST FIXTURE PRODUCER only, conferring "
+                      "no product authority, and proves nothing about canonical "
+                      "installation, installed-instance correctness, setup lifecycle, "
+                      "or runtime installation authority - the product's installation "
+                      "entrance is `packaging/installer/` (Charter "
+                      "SIDECAR:SETUP-DISTRIBUTION)",
+        "contributes_to_E11_completion": False,
+        "disposition": "eliminated by T6; payload assembly replaced by the positive "
+                       "manifest tranche",
+    },
+)
 
 
 def _manifest(root: Path):
@@ -114,7 +155,16 @@ def check(r, root: Path) -> None:
     r.check("ruff.toml excludes all foreign code", not missing,
             f"would lint code this project did not write: {missing}")
 
-    # --- 4. a REAL vend, inspected ------------------------------------------
+    # --- 4. materialise a payload FIXTURE, and inspect it --------------------
+    # NOT a vend, and deliberately no longer described as one. `sidecar_install` is a
+    # legacy runtime tool, not the product's installation entrance - that is
+    # `packaging/installer/` (Charter SIDECAR:SETUP-DISTRIBUTION). It is used here
+    # only as a transitional producer of something whose payload properties can then
+    # be checked, because nothing else materialises a payload yet.
+    #
+    # Its use confers no product authority. Nothing below may be read as evidence
+    # about canonical installation, installed-instance correctness, or setup
+    # lifecycle. See KNOWN_LIMITATIONS.
     if not r.filesystem_permits_unlink(root):
         r.skip("a vend contains only the sidecar",
                "this filesystem denies unlink, so a vend cannot be performed or "
@@ -131,14 +181,14 @@ def check(r, root: Path) -> None:
         env={**os.environ, "SUITE_PROJECT_ROOT": str(target)},
     )
     sidecar = target / ".useful-helpers"
-    r.check("the vend succeeds", sidecar.is_dir(),
+    r.check("the payload fixture is produced", sidecar.is_dir(),
             (out.stderr or out.stdout)[-200:])
     if not sidecar.is_dir():
         return
 
     top = {p.name for p in sidecar.iterdir()}
     leaked = sorted(top & set(MUST_NOT_SHIP))
-    r.check("no development zone reached the target", not leaked, f"leaked={leaked}")
+    r.check("no development zone is present in the payload", not leaked, f"leaked={leaked}")
 
     # Deliverable #1 must not be inside deliverable #2: a payload carrying its own
     # installer is circular and dead weight.
@@ -147,7 +197,7 @@ def check(r, root: Path) -> None:
             "packaging/ ships beside the payload, not within it")
 
     nested = [p for p in sidecar.rglob(".useful-helpers")]
-    r.check("the vend did not recurse", not nested, f"{nested[:2]}")
+    r.check("the payload contains no nested instance", not nested, f"{nested[:2]}")
 
     # --- 5. E11: it vends blank ---------------------------------------------
     found = []
@@ -155,10 +205,10 @@ def check(r, root: Path) -> None:
         hits = list(sidecar.rglob(marker))
         if hits:
             found.append(f"{marker} x{len(hits)}")
-    r.check("E11 - no history of this project survives the vend", not found,
+    r.check("no history of this project is present in the payload", not found,
             f"found: {found}")
 
-    r.check("no .git reached the target", not (sidecar / ".git").exists())
+    r.check("no .git is present in the payload", not (sidecar / ".git").exists())
 
     # a build-machine absolute path, or a predecessor project name, in shipped text
     bleed = []
@@ -171,11 +221,13 @@ def check(r, root: Path) -> None:
             continue
         if re.search(r"[A-Za-z]:\\\\?(Users|Jacob)\\", t) or "/sessions/" in t:
             bleed.append(f"{f.relative_to(sidecar)} (absolute path)")
-        for name in PREDECESSOR_NAMES:
+        for name in KNOWN_PREDECESSOR_SENTINELS:
             if name in t.lower():
                 bleed.append(f"{f.relative_to(sidecar)} ({name})")
                 break
-    r.check("no build-machine path or predecessor name ships", not bleed,
+    # NARROWED: asserts absence of a KNOWN SENTINEL SET, not absence of lineage.
+    # E11 is NOT MET and this check does not contribute to closing it.
+    r.check("no build-machine path or known predecessor sentinel ships", not bleed,
             f"{bleed[:4]}")
 
     # --- 6. the payload carries its OWN ignore file -------------------------
@@ -210,7 +262,7 @@ def check(r, root: Path) -> None:
                 continue
             if re.search(r"[A-Za-z]:\\\\?(Users|Jacob)\\", t) or "/sessions/" in t:
                 inst_bleed.append(f"{f.name} (absolute path)")
-            for name in PREDECESSOR_NAMES:
+            for name in KNOWN_PREDECESSOR_SENTINELS:
                 if name in t.lower():
                     inst_bleed.append(f"{f.name} ({name})")
                     break
@@ -218,7 +270,8 @@ def check(r, root: Path) -> None:
                 if marker in t:
                     inst_bleed.append(f"{f.name} ({marker})")
                     break
-    r.check("E11 - the installer ships blank as well", not inst_bleed,
+    r.check("the installer carries no known sentinel or build-machine path",
+            not inst_bleed,
             f"{inst_bleed[:4]}")
 
     # --- 7. the regression signal -------------------------------------------
@@ -227,28 +280,23 @@ def check(r, root: Path) -> None:
     r.check(f"vended file count is within bound ({bound})", count <= bound,
             f"{count} files - a leak once shipped 4,009 where 275 belong")
 
-    # --- 8. the payload is SELF-HOSTING and the manifest is a fixed point ----
-    # A vended sidecar must be able to vend, which means the manifest itself has to
-    # ship - vendor_export imports it at module load, so a payload missing it would
-    # be silently unable to reproduce itself. And generation 2 must equal generation
-    # 1: if it grows, some path is being pulled in by the copy that the manifest did
-    # not account for; if it shrinks, the payload is eroding each time it is passed
-    # on. Either way the boundary is not a fixed point, and a sidecar that cannot
-    # reproduce itself exactly cannot be trusted to reproduce anything else.
-    r.check("the manifest itself ships", (sidecar / "src" / "core" / "payload.py").is_file(),
-            "vendor_export imports it at load; without it the payload cannot vend")
-
-    gen2_target = Path(tempfile.mkdtemp(prefix="t01-gen2-"))
-    subprocess.run(
-        [sys.executable, "-m", "src.app", "cli", "tool-call", "--tool",
-         "sidecar_install", "--args-json",
-         json.dumps({"target": str(gen2_target), "dry_run": False, "confirm": True})],
-        cwd=sidecar, capture_output=True, text=True, encoding="utf-8",
-        errors="replace", timeout=600,
-        env={**os.environ, "SUITE_PROJECT_ROOT": str(gen2_target)},
-    )
-    gen2 = gen2_target / ".useful-helpers"
-    gen2_count = sum(1 for p in gen2.rglob("*") if p.is_file()) if gen2.is_dir() else -1
-    r.check("the payload can reproduce itself exactly (self-hosting)",
-            gen2_count == count,
-            f"generation 1 = {count} files, generation 2 = {gen2_count}")
+    # --- 8. SELF-HOSTING: SUPERSEDED BY T5 -----------------------------------
+    # Two assertions stood here - "the manifest itself ships" and "the payload can
+    # reproduce itself exactly (self-hosting)". Both rested on one premise: that a
+    # vended sidecar must be able to vend another sidecar.
+    #
+    # That premise was retired by operator decision on 2026-08-09. The topology is
+    # source -> canonical payload -> setup application -> installed instance; an
+    # instance belongs to one target and does not reproduce itself (Charter
+    # SIDECAR:INSTANCE-OWNERSHIP).
+    #
+    # Removed from the ACTIVE cumulative proof set under TRANCHE_PROTOCOL sec 5.1.
+    # T1's HISTORICAL evidence is untouched - journal 0008 still records what T1
+    # proved when it closed, and the exact retired code is preserved verbatim at
+    # gates/_superseded/t01_self_hosting.py.superseded.
+    #
+    # No replacement assertion stands here deliberately. The replacement is owed by
+    # the derived implementation tranche: a positive install manifest, a payload
+    # assembler, and conformance proven against the BUILT payload. Asserting a
+    # weaker version of the old rule in the meantime would be the silent disabling
+    # that sec 5.1 forbids.

@@ -1,8 +1,10 @@
 # Tranche Plan
 
-Status: **DRAFT for operator agreement.**
-Date: 2026-08-06.
+Status: **ACTIVE.** T0-T5 parked; T6 next.
+Date: 2026-08-06, amended 2026-08-09.
 Authority: subordinate to `CHARTER.md`; procedure defined by `TRANCHE_PROTOCOL.md`.
+This document owns **sequencing only**. Product topology and ownership semantics
+belong to the Charter - cite `SIDECAR:*` identifiers here, never restate them.
 
 Numbering starts at **T0** and is this project's only valid numbering. Every
 identifier in archived material belongs to a predecessor project.
@@ -14,37 +16,70 @@ written during declaration, before implementation.
 
 ## End-State Scoreboard
 
-Which of the charter's twelve conditions actually hold. Kept here because "T2 is
-closed" and "the project is closer to done" are different claims, and only this
+Which of the charter's **thirteen** conditions actually hold. Kept here because "T2
+is closed" and "the project is closer to done" are different claims, and only this
 table answers the second.
 
-| | Condition | Status |
-| --- | --- | --- |
-| E1 | Installs into an arbitrary directory, CPython only | partial — vend verified; fresh-machine install is T9 |
-| E2 | Maps any directory, across domains | partial — `attach` works; cross-domain unproven |
-| E3 | One GUI surface reaches every tool and chain | **not started** — T5 |
-| E4 | An agent reaches everything through MCP | partial — MCP entrance exists; parity unasserted |
-| E5 | Human and agent indistinguishable to the seam | **MET** — T2, one path, attributed by client |
-| E6a | Each sees the other **act**, live | **not started** — T3 |
-| E6b | Each can query the other's **context** | **MET** — T2 presence |
-| E7 | Daily-driver workflows exist as chains | **not started** — T7 |
-| E8 | Target never modified without authority | **MET** — precept guard, verified |
-| E9 | Parts bin deletable, everything still passes | **not started** — T10 |
-| E10 | Every documented claim is executable | partial — gates cover much, not all |
-| E11 | Vends fully blank | **MET** — T1, gated |
-| E12 | Installed sidecar removable without trace | partial — vend clean; removal untested |
+The **evidence** column is the point. A condition backed by "the mechanism exists"
+is not met; it is unfalsified. E5 was claimed outright while seven of eight call
+sites were unattributed, and the difference between those two states is exactly this
+column.
 
-Four met, five partial, four not started.
+| | Condition | Status | Evidence |
+| --- | --- | --- | --- |
+| E1 | Installs into an arbitrary directory, CPython only | partial | vend verified; fresh-machine install is T9 |
+| E2 | Maps any directory, across domains | partial | `attach` works; cross-domain unproven |
+| E3 | One GUI surface reaches every tool and chain | **not started** | One Surface, redeclared after T6 |
+| E4 | An agent reaches everything through MCP | partial | MCP entrance exists; parity unasserted |
+| E5 | Human and agent indistinguishable to the seam | **MET** | t02 gate: census over all of `src/`, every call site attributed |
+| E6a | Each sees the other **act**, live | **MET** | T3 — measured poll cost 0.29 ms; resync on shrunken ledger |
+| E6b | Each can query the other's **context** | **MET** | T2 presence; CLI no longer wipes it |
+| E7 | Daily-driver workflows exist as chains | **not started** | T7 |
+| E8 | Lifecycle never silently mutates target-owned content; runtime mutation is governed and scoped | **NOT MET** — restated by T5 | **Reclassified 2026-08-09.** The old claim was proven against the old wording. The phase x authority matrix (Charter §3.2) has **no** assertion behind install/update/uninstall/startup/self-maintenance, and `packaging/installer/install.py` — the product's install entrance — has never been exercised by any gate. Harness PRECEPT/ENFORCEMENT remain valid partial evidence; mount prevention is Linux-only |
+| E9 | Parts bin deletable, everything still passes | **not started** | T10 |
+| E10 | Every documented claim is executable | partial | gates cover much, not all |
+| E11 | Payload carries product identity and self-knowledge, no development history | **NOT MET** — restated by T5 | **Withdrawn 2026-08-09.** The claim rested on a lineage check searching for *another project's* vocabulary (`mindshard`, `appfoundry`, `bdneural`), in both `_harness` and `t01`. A scan of the real 280-file payload for this project's own terms found `_ProjectMAPPER`, `_UsefulHelperSCRIPTS`, `_NoStringsPDF` and a builder identity. Self-hosting evidence is superseded **Two retained `t01` assertions carry declared PARTIAL coverage** and are printed as `[PARTIAL]` by `gates/run.py`: (1) the predecessor sentinel set is incomplete and cannot detect this project's own predecessors; (2) the payload fixture is materialised by `tools/sidecar_install`, a legacy runtime tool that is a fixture producer only, conferring no product authority and proving nothing about canonical installation. Neither contributes to closing E11 |
+| E12 | Installed sidecar removable without trace | partial | vend clean; removal untested |
+| E13 | Governance cartridge installs optionally and blank | **not started** | Charter §5.8 states the invariant: enabling it must not expand ownership into target-owned content. Wiring is Install and Packaging |
+
+**Three met, four partial, six not started.** Down from five met, and the two losses
+are corrections rather than regressions: E8 and E11 were measured against wordings
+that did not describe the product. Neither was ever true in the sense now stated.
+
+**A green gate suite is not a complete scoreboard.** Two `t01` assertions are
+retained as useful tripwires with **declared partial coverage**; the runner prints
+them as `[PARTIAL]` beneath the verdict, and `gates/t05` asserts that it does. A
+tripwire that fires is information; a deleted tripwire is nothing; a partial sentinel
+wearing the label of a comprehensive proof is the false green this project keeps
+finding.
 
 ### Standing practices added since T0
 
 - **Verify from a fresh clone, not the working tree** (0007). A suite run against
   the tree that developed it cannot see a missing build step.
-- **Gates must exercise a real entrance** (protocol rule 8, after T2's presence bug).
+- **Gates must exercise a real consumer entrance** appropriate to the outcome
+  (protocol rule 8, after T2's presence bug; generalised at T5 to cover governance
+  surfaces, build artifacts and the setup application, so no tranche needs an
+  informal exception).
 - **Windows confirmation at each tranche close.** `tkinter` and `ollama` are absent
   from the sandbox, so 8 tests skip here; Windows is the authority for a zero-skip
   run. Two tranches closed without one and lint had a two-error backlog waiting.
 - **Hazards raised at declaration become gate assertions**, not scheduled work.
+- **The discovery pass runs at every close** (protocol §3.4, after 0014). The gate
+  answers *did this do what was claimed*; only the discovery pass answers *what else
+  is true*. Its first run found three tests failing in the default configuration.
+- **The operator approves; the builder does not close its own work** (BCC §2.8
+  step 12, after 0015). A tranche sits in **awaiting approval** until then. T1–T4
+  were closed on the builder's own account and nothing else.
+- **One authority per normative fact** (`BCC-ONE-AUTHORITY`, after T5). Consumers,
+  generated surfaces and verifiers are permitted; a second hand-maintained copy is
+  not, even when the copies agree.
+- **Historical evidence is immutable; active proof is current** (protocol §5.1).
+  A parked tranche's journal is never rewritten, but its live assertions may be
+  surgically retired by an operator-approved superseding tranche, with provenance.
+- **Verify in the default configuration, and record the configuration** (0014). A
+  green suite means the assertions passed *under the settings you used*. Every
+  verification path this project had was setting the one variable that hid the bug.
 
 ### Where the `lint` tool sits
 
@@ -61,21 +96,53 @@ needs it, rather than displacing product work now.
 | # | Tranche | Proves |
 | --- | --- | --- |
 | T0 | Foundation and Reset | **CLOSED** — a blank, unified project with one authority |
-| T1 | One Ship Manifest | The sidecar vends only itself, and blank |
+| T1 | One Ship Manifest | One declared ship manifest; a payload containing only the product. **Self-hosting assertions superseded by T5** |
 | T2 | Ledger and Presence | The seam contract exists in code |
 | T3 | Live Channel | E6a, E6b |
 | T4 | Cancellation and Progress | Long work is observable and stoppable |
-| T5a | One Surface: Observe and Select | shell, explorer, context |
-| T5b | One Surface: Operate and Verify | tool workspace, live event view — E3 |
-| T6 | Contracts for Uncontracted Daily Drivers | Ten contracts exist |
-| T7 | Chains | E7 |
-| T8 | Retire `apps/` | One extension shape, not two |
-| T9 | Install and Packaging | E1, E2, E4 |
-| T10 | Closure | E8, E9, E10 |
+| ~~T5a~~ | ~~One Surface: Observe and Select~~ | **WITHDRAWN** 2026-08-09 — see below |
+| T5 | Ownership and Distribution Model | **CLOSED 2026-08-09** — one authority per normative fact; a stated deployment topology |
+| T6 | Instance Identity and the Installation Core | *derived at T5 close; declaration pending operator review* |
+| — | *the sequence below is provisional and renumbers when T6 is declared* | |
+| P | One Surface (redeclared) | E3 — the operational surface of one installed instance on one bound target |
+| P | Contracts for Uncontracted Daily Drivers | Ten contracts exist |
+| P | Chains | E7 |
+| P | Retire `apps/` | One extension shape, not two |
+| P | Install and Packaging | E1, E2, E4, E13 |
+| P | Closure | E8, E9, E10 |
 
 Ordering rationale: safety before capability (T1 precedes everything that acts);
-the seam contract before the surface that displays it (T2–T4 precede T5); the
-surface before the chains that live in it (T5 precedes T7).
+the seam contract before the surface that displays it (T2-T4 precede any surface);
+**the ownership model before anything that depends on where a boundary falls** (T5
+precedes the rest).
+
+### T5a - withdrawn
+
+Declared in journal 0017, **withdrawn** the same day in 0019, never implemented. Not
+a §5.2 reopening: it was never parked.
+
+The operator's deployment-topology correction made two of its commitments wrong. It
+named `installer_view` in the runtime shell's regression set — setup UI belongs to
+`SIDECAR:SETUP-DISTRIBUTION` — and it inherited T5b's *"every registered tool
+reachable from the shell"*, which with `sidecar_install` registered would have forced
+the installed instance to expose *install another sidecar* as runtime capability.
+
+Its gate is preserved at `gates/_deferred/t05a_observe_select.py.deferred`, out of
+active discovery, with a README separating salvageable assertions from superseded
+assumptions. Most of it returns when One Surface is redeclared.
+
+### Superseded active proof
+
+Under `TRANCHE_PROTOCOL.md` §5.1. Historical evidence is immutable; active
+cumulative proof describes current architecture.
+
+| Old assertion | Why retired | Replacement | Superseded by | Evidence |
+| --- | --- | --- | --- | --- |
+| `t01` — *"the manifest itself ships"* | premise was that a vended sidecar must vend; `instance -> instance` is not a product requirement | positive install manifest owns membership (`SIDECAR:INSTALLABLE-PAYLOAD`) — **owed by T6** | T5, operator decision 2026-08-09 | `gates/_superseded/t01_self_hosting.py.superseded`; history in 0008 |
+| `t01` — *"the payload can reproduce itself exactly (**self-hosting**)"* | same premise | conformance proven against the **built payload** from the assembler, not a runtime tool copying the source tree — **owed by T6** | T5, operator decision 2026-08-09 | same |
+
+**Census:** all 22 `t01` assertions were examined; two were retired. Everything else
+remains active and unchanged.
 
 ---
 
@@ -333,27 +400,23 @@ indistinguishable in that view except by their `client`.
 
 **Non-goals.** No new capability — only reaching what already exists.
 
----
+### Shared material for both halves
 
-## T5 — One Surface (superseded; see T5a and T5b)
+**What is being unified.** `registry_view`, `mapper_view`, `planner_view` and
+`installer_view` become one shell: explorer, context, tool workspace, event view.
+The four are kept as a running regression reference until T5b retires them — a
+second implementation that still works is the cheapest differential available.
 
-**Outcome.** A single Tkinter shell reaches every tool and every chain. **E3.**
+**Already built.** `src/lib/theme.py`.
 
-**Work.** Unify `registry_view`, `mapper_view`, `planner_view` and
-`installer_view` into one shell: explorer, context, tool workspace, event view.
-Theme is already implemented in `src/lib/theme.py`. UX intent is supplied by the
-`_UsefulHelperScriptsMENU` filedump — `minsize(900, 600)`, double-click launch,
-mousewheel binding on all scrollables, non-truncating button rows.
+**UX intent**, from the `_UsefulHelperScriptsMENU` filedump: `minsize(900, 600)`,
+double-click to launch, mousewheel bound on every scrollable, non-truncating button
+rows.
 
-**Gate — `gates/t05_surface.py`**
-
-- every registered tool and chain is reachable from one shell
-- no capability requires a second command or window
-- the shell renders live ledger and presence
-- startup and clean shutdown succeed headlessly
-- browse selection and operation inclusion are separate state domains
-
-**Non-goals.** No new capability. No chains yet.
+**Controller extraction comes first.** All four views repeat one pattern — worker
+thread, queue, `after()` pump. Extracting that once, before any shell exists, keeps
+the Tk widgets thin enough to be testable and stops the pattern being copied a fifth
+time.
 
 ---
 
@@ -411,11 +474,20 @@ registry path.
 
 ## T9 — Install and Packaging
 
-**Outcome.** The sidecar installs into an arbitrary directory on a clean machine
-and is fully reachable by an agent. **E1, E2, E4.**
+**Outcome.** The sidecar installs into an arbitrary directory on a clean machine,
+is fully reachable by an agent, and carries its governance contract as an **optional
+cartridge**. **E1, E2, E4, E13.**
 
 **Work.** Install path, fresh-environment verification, offline behavior, MCP
-surface parity, Windows verification.
+surface parity, Windows verification, and the governance cartridge toggle.
+
+**The cartridge toggle.** A checkbox in the installer UI. When enabled, a set of
+fields appears carrying the `BCC-CONFIG` values as editable defaults —
+`TARGET_PROJECT_ROOT`, `SIDECAR_ROOT`, `CONTRACT_PATH`, `JOURNAL_PATH` — as text
+fields that accept a pasted path and are also settable by folder picker. Enabling it
+adds `.bcc/BUILDER-CONSTRAINT-CONTRACT.md`, `.bcc/TRANCHE_PROTOCOL.md` and
+`gates/run.py`, and nothing else. Membership is declared in `src/core/payload.py`
+as `GOVERNANCE_CARTRIDGE`; the installer reads it rather than restating it.
 
 **Gate — `gates/t09_install.py`**
 
@@ -424,6 +496,14 @@ surface parity, Windows verification.
 - the MCP tool list equals the registry
 - no network is required by any core capability
 - the target contains no sidecar artifact after uninstall
+- **toggle off:** no contract, protocol or gate runner is present in the target
+- **toggle on:** all three are present, and the installed contract's `BCC-CONFIG`
+  values resolve to the **new** target
+- **toggle on, blank:** the installed contract contains no value, path, journal
+  reference or tranche number belonging to this build. Asserted by content scan,
+  not by trusting the substitution — the substitution is the thing under test
+- `payload.cartridge_conflicts()` is empty, and the cartridge is at most
+  `MAX_CARTRIDGE_FILES`
 
 **Note.** Windows verification cannot be performed in the development sandbox
 and requires an operator-run check.
@@ -546,7 +626,9 @@ cheapest check on that code is the one currently unavailable.
 | `VERSION` does not move when tools change | Charter §7.4 | Medium — T9 owns it |
 | Precept-guard cost unmeasured on large targets | Charter §7.3 | Low — resolves at E9 |
 | `test_d1_p1` slow: `attach` re-maps ~18k files twice | 0004 | Low — resolves at E9 |
-| **CI workflow unverified** — first run is on the runner | Alignment, 2026-08-08 | **Confirm at next push** |
+| **CI workflow unverified** — first run is on the runner | Alignment, 2026-08-08 | **Confirm at next push** — now the only path exercising the default config on Windows |
+| **E8 may be a mechanism-exists claim** — re-derive with evidence | Alignment, 2026-08-08 | High — before T10 |
+| **Shipped contract must arrive blank** — our copy carries resolved `BCC-CONFIG` values and project-specific bootstrap notes | 0016 | **T9 owns it — E13** |
 | **Windows process-group kill unverified** — `taskkill /F /T` untested | T4 | **High before T5b** |
 | `developer_cert.pfx` should leave the tree | Operator action | Operator |
 | `_trash/` needs emptying (66 swept lock files) | Operator action | Operator |
@@ -554,7 +636,8 @@ cheapest check on that code is the one currently unavailable.
 **Closed since last review**, removed rather than left to clutter the list:
 `command_profile` lint detection (T2); lint enforcement living only in the suite
 (now a gate assertion, and `ruff` is installed in the sandbox); presence
-read-modify-write (made unreachable by T3's single-writer decision).
+read-modify-write (made unreachable by T3's single-writer decision); the suite
+failing three tests in its default configuration (0014).
 
 **On the `lint` tool's priority.** Downgraded from High to Medium — not because it
 matters less, but because the *hole* it was filling is closed. The command is

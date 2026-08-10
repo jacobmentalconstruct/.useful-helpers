@@ -1,0 +1,173 @@
+"""
+FILE:       gates/t05a_observe_select.py
+ROLE:       Gate for T5a - One Surface: Observe and Select.
+DOMAIN:     factory
+DOES:       Asserts one shell opens a project, browses it, inspects what is selected,
+            keeps browse selection and operation inclusion as separate state domains,
+            and publishes what the operator is looking at so an agent can see it.
+NOTES:      Written during tranche declaration, BEFORE implementation, per
+            .bcc/TRANCHE_PROTOCOL.md sec 3.2 rule 1.
+
+            Rule 8 governs the shape of this file. The defects T5a can produce -
+            selection that authorises, a shell that only works because the operator
+            drives it, presence that never reaches an agent - are all invisible to a
+            check that calls controller functions directly. So the behavioural
+            assertions run through `ui-shell-probe`, a real headless entrance that
+            builds the real widgets.
+
+            Two hazards are encoded here as assertions rather than left to be
+            discovered, per the standing practice from T2:
+
+            HAZARD 1 - selection authorises. The easy implementation gives the tool
+            workspace "the selected file". Then clicking a file in the explorer has
+            silently nominated it as an operand, and a later Apply acts on whatever
+            the operator last looked at. Browse and inclusion must be independent in
+            BOTH directions, and independence is asserted, not described.
+
+            HAZARD 2 - the fifth copy of the pattern. All four existing views repeat
+            worker-thread + queue + after(). A shell built by copying that makes it
+            five. The controller must be extracted and the shell must use it, so the
+            assertion is structural: no new view file may spawn its own thread.
+"""
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+OUTCOME = "one shell opens a project, browses it, and inspects what is selected"
+
+# The shell's own module. Named here so the gate fails loudly if the tranche
+# renames it without updating its own completion condition.
+SHELL = "src/ui/shell.py"
+CONTROLLER = "src/ui/controller.py"
+
+# Views that exist today. T5a keeps them as a working regression reference; T5b
+# retires them. If this list empties during T5a, scope has crept.
+LEGACY_VIEWS = ("registry_view.py", "mapper_view.py", "planner_view.py",
+                "installer_view.py")
+
+
+def _probe(root: Path, args: list[str], timeout: int = 180):
+    """Run a headless shell probe and return its parsed JSON verdict, or None."""
+    state = Path(tempfile.mkdtemp(prefix="t05a-"))
+    env = {**os.environ, "SUITE_STATE_ROOT": str(state)}
+    r = subprocess.run([sys.executable, "-m", "src.app", *args],
+                       cwd=root, capture_output=True, text=True,
+                       timeout=timeout, env=env)
+    for line in reversed((r.stdout or "").splitlines()):
+        line = line.strip()
+        if line.startswith("{"):
+            try:
+                return json.loads(line), r
+            except ValueError:
+                continue
+    return None, r
+
+
+def check(r, root: Path) -> None:
+    # ---- 1. the surface exists as its own module ---------------------------
+    shell = root / SHELL
+    ctrl = root / CONTROLLER
+    r.check("a single shell module exists", shell.is_file(),
+            f"expected {SHELL} - four separate view windows is not one surface")
+    r.check("the worker pattern is extracted into a controller", ctrl.is_file(),
+            f"expected {CONTROLLER} - all four existing views repeat "
+            "thread+queue+after; a fifth copy is the wrong direction")
+
+    # ---- 2. HAZARD 2, structurally ----------------------------------------
+    # A shell that spawns its own thread has copied the pattern rather than used
+    # the controller. Asserted on source because a correct-looking run cannot
+    # distinguish the two.
+    if shell.is_file():
+        body = shell.read_text(encoding="utf-8", errors="replace")
+        r.check("the shell does not spawn its own worker thread",
+                "threading.Thread" not in body and "Thread(" not in body,
+                "the shell must dispatch through the controller, not repeat the "
+                "worker-thread pattern a fifth time")
+        r.check("the shell reaches the seam only through the controller",
+                "invoke(" not in body or "controller" in body,
+                "a direct invoke() from widget code bypasses the one place "
+                "attribution, cancellation and progress are wired")
+
+    # ---- 3. the legacy views survive this tranche --------------------------
+    # They are the regression reference until T5b retires them deliberately.
+    missing = [v for v in LEGACY_VIEWS if not (root / "src" / "ui" / v).is_file()]
+    r.check("the legacy views are still present as a regression reference",
+            not missing,
+            f"removed during T5a: {missing} - retiring them is T5b, and doing it "
+            "here removes the only second implementation available to compare against")
+
+    # ---- 4. a real entrance, headless -------------------------------------
+    verdict, proc = _probe(root, ["ui-shell-probe"])
+    if verdict is None:
+        r.check("the shell builds and tears down headlessly", False,
+                f"no JSON verdict from `ui-shell-probe`; rc={proc.returncode} "
+                f"stderr={(proc.stderr or '')[-300:]}")
+        return
+
+    r.check("the shell builds and tears down headlessly",
+            bool(verdict.get("built")) and proc.returncode == 0,
+            f"verdict={verdict}")
+
+    # ---- 5. it opens a project and populates ------------------------------
+    r.check("opening a project populates the explorer",
+            int(verdict.get("entries", 0)) > 0,
+            f"explorer rendered {verdict.get('entries')} entries - an explorer that "
+            "opens empty has not actually bound a target")
+
+    r.check("the bound target is the one that was opened",
+            verdict.get("target_ok") is True,
+            f"target={verdict.get('target')!r} - the shell must bind the project it "
+            "was pointed at, not the directory it happens to run from")
+
+    # ---- 6. context renders for BOTH a file and a folder -------------------
+    # A folder is not a small file. The naive context panel reads the selection and
+    # fails, or silently shows nothing, on a directory.
+    r.check("context renders for a selected file",
+            bool(verdict.get("context_file")),
+            "selecting a file must produce context")
+    r.check("context renders for a selected folder",
+            bool(verdict.get("context_dir")),
+            "selecting a folder must produce context too - a folder is not a "
+            "small file, and returning nothing for it is the usual shape of this bug")
+
+    # ---- 7. HAZARD 1: the two state domains are independent ---------------
+    # Asserted in BOTH directions. One direction passing is the exact partial fix
+    # that makes the other look intentional.
+    r.check("browsing does not change what an operation would include",
+            verdict.get("browse_leaves_inclusion") is True,
+            "clicking a file in the explorer authorises nothing; inclusion must be "
+            "an explicit act, or a later Apply operates on whatever was last viewed")
+    r.check("changing inclusion does not move the browse selection",
+            verdict.get("inclusion_leaves_browse") is True,
+            "including an item must not drag the operator's view with it")
+
+    # ---- 8. rescan ---------------------------------------------------------
+    r.check("the explorer can rescan and pick up a change",
+            verdict.get("rescan_saw_change") is True,
+            "a file created after open must appear on rescan - an explorer that "
+            "cannot refresh is a snapshot, and the operator will trust it anyway")
+
+    # ---- 9. E6b: the agent can see what the operator is looking at ---------
+    # This is the tranche's actual product claim, and the only assertion here that
+    # a human staring at the window cannot make for themselves.
+    r.check("presence reports the operator's current browse selection",
+            verdict.get("presence_browse_matches") is True,
+            f"presence said {verdict.get('presence_browse')!r} while the shell had "
+            f"{verdict.get('browse')!r} - if these disagree, an agent asking what "
+            "the human is working on gets a confident wrong answer")
+
+    r.check("presence reports inclusion separately from browsing",
+            verdict.get("presence_inclusion_matches") is True,
+            "the two domains must stay distinct all the way out to the agent, "
+            "not merely inside the widget")
+
+    # ---- 10. clean shutdown ------------------------------------------------
+    r.check("shutdown leaves nothing running",
+            verdict.get("clean_shutdown") is True,
+            "a shell that leaves a worker or an after() timer alive will hang the "
+            "process on close, and the operator will report it as 'it froze'")

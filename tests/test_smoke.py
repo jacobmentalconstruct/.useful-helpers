@@ -133,6 +133,39 @@ class SpineSmokeTest(unittest.TestCase):
         self.addCleanup(shutil.rmtree, root, ignore_errors=True)
         return str(root / name)
 
+    def _foreign_target(self) -> str:
+        """A directory GENUINELY OUTSIDE the toolkit tree, for install tests.
+
+        setUpClass redirects `tempfile` into the sidecar's own home, which is right
+        for ordinary scratch - the sidecar writing only inside itself is the precept.
+        But `sidecar_install` refuses a target that overlaps its own source tree, and
+        rightly so: vending a copy of yourself into yourself is nonsense. So the
+        redirect made every install test's target illegal, and the three that install
+        a sidecar failed on a DEFAULT run.
+
+        Nobody saw it because every path used to verify this project - the operator's
+        command, the harness, and both CI jobs - sets SUITE_TEST_TMP to somewhere
+        outside the tree, which is exactly the condition that hides it.
+
+        These tests need the real OS temp. Both halves of the redirect have to be
+        undone for the call: the stashed pre-redirect `mkdtemp` still consults
+        `tempfile.tempdir`, which is also patched, so restoring only one of them
+        lands right back inside the tree.
+        """
+        import shutil
+        import tempfile as _tf
+
+        cls = type(self)
+        mk = getattr(cls, "_orig_mkdtemp", _tf.mkdtemp)
+        patched_dir = _tf.tempdir
+        _tf.tempdir = getattr(cls, "_orig_tempdir", None)
+        try:
+            target = mk(prefix="uh-foreign-")
+        finally:
+            _tf.tempdir = patched_dir
+        self.addCleanup(shutil.rmtree, target, ignore_errors=True)
+        return target
+
     # ----- registry -----
     def test_registry_discovers_ping(self):
         ids = [t.id for t in registry.list_tools(self.paths)]
@@ -1996,11 +2029,10 @@ class SpineSmokeTest(unittest.TestCase):
         # assertion that the installer drops a host-root AGENTS.md pointer: that "feature"
         # was the load-bearing precept violation, green in the suite for exactly this reason.
         import os
-        import tempfile
 
         from src.core import invoke as invoke_mod
 
-        target = tempfile.mkdtemp()
+        target = self._foreign_target()
         # A pre-existing host tree we will prove is left byte-for-byte untouched.
         with open(os.path.join(target, "README.md"), "w") as h:
             h.write("HOST OWNS THIS\n")
@@ -2620,7 +2652,6 @@ class SpineSmokeTest(unittest.TestCase):
         # real sidecar conditions and nowhere else. The end-to-end proof (a fixture tool actually
         # rejected) lives in the harness; this pins the decision + diff logic fast, in-suite.
         import os
-        import tempfile
         from dataclasses import replace
         from pathlib import Path
 
@@ -2628,7 +2659,7 @@ class SpineSmokeTest(unittest.TestCase):
         from src.core.config import resolve_paths
 
         # Sidecar conditions: target distinct from toolkit home.
-        target = tempfile.mkdtemp()
+        target = self._foreign_target()
         with open(os.path.join(target, "keep.txt"), "w") as h:
             h.write("host owns this\n")
         paths = replace(resolve_paths(), project_root=Path(target).resolve())
@@ -2675,11 +2706,10 @@ class SpineSmokeTest(unittest.TestCase):
         import os
         import subprocess
         import sys
-        import tempfile
 
         from src.core import invoke as invoke_mod
 
-        host = tempfile.mkdtemp()
+        host = self._foreign_target()
         os.makedirs(os.path.join(host, "src"))
         with open(os.path.join(host, "host_marker.txt"), "w") as h:
             h.write("HOST_ONLY_TOKEN_9Q\n")
@@ -2913,7 +2943,6 @@ class SpineSmokeTest(unittest.TestCase):
         # T-seam gate (F1): apply:true executes every gated Apply tool; each legacy flag still
         # works; previews and refusals state the exact flag via apply_with.
         import os
-        import tempfile
 
         from src.core import invoke as invoke_mod
 
@@ -2945,7 +2974,7 @@ class SpineSmokeTest(unittest.TestCase):
         self.assertFalse(r.output.get("written"))
         self.assertEqual(r.output.get("apply_with"), {"apply": True})
         # dry-run/confirm tool: preview hint + refusal hint
-        t = tempfile.mkdtemp()
+        t = self._foreign_target()
         r = invoke_mod.invoke(self.paths, "sidecar_install", {"target": t})
         self.assertTrue(r.output.get("dry_run"))
         self.assertEqual(r.output.get("apply_with"), {"apply": True})
