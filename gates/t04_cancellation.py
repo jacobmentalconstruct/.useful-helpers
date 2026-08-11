@@ -47,16 +47,18 @@ KNOWN_LIMITATIONS = (
         "coverage": "platform-partial",
         "limitation": "two DIFFERENT mechanisms wear one assertion name. POSIX proves "
                       "process groups; Windows proves contain_self()'s kill-on-close "
-                      "job. A green on either platform says nothing about the other, "
-                      "so this needs BOTH to mean what it says. POSIX is verified. "
-                      "WINDOWS IS NOT: two runs reported this PASS while contain_self() "
-                      "was returning False - untyped ctypes truncated the 64-bit HANDLE, "
-                      "every job call failed, and honest degradation made it silent. "
-                      "Whatever reaped the grandchild on Windows, it was not this",
+                      "job. A green on either platform is not evidence about the other, "
+                      "so this needs BOTH runs to mean what it says. That much does not "
+                      "expire - it is a property of the assertion, not of a defect",
         "contributes_to_E11_completion": False,
-        "disposition": "signatures now declared and containment ASSERTED rather than "
-                       "inferred, so a silent failure becomes a red. Windows result "
-                       "pending; until then the cause of the passing kill is unknown",
+        "disposition": "CAUSATION ESTABLISHED 2026-08-11. Verified in force on both "
+                       "platforms, and mutation-tested on Windows: with "
+                       "SUITE_DISABLE_CONTAINMENT=1 the grandchild survives (pid 7532) "
+                       "and this goes RED. Containment is what reaps the tree, not "
+                       "merely present while something else does. The same run left "
+                       "`explicit cancel reaps the GRANDCHILD too` GREEN, confirming "
+                       "the two mechanisms are independent as designed. Re-run the "
+                       "switch after any change to proctree",
     },
 )
 
@@ -253,12 +255,20 @@ def check(r, root: Path) -> None:
                     not _pid_alive(child_pid),
                     f"pid {child_pid} survived the parent - a detached child "
                     "holding a lock or a port after the seam is gone")
+        # AN ABSENT CHECK IS NOT A PASS. This branch had no `else`: if the fixture
+        # had not yet written `gpid`, the grandchild assertion simply did not run and
+        # nothing said so. The suite would report one fewer assertion and still print
+        # a clean verdict - the exact shape of a check that "passes" by vanishing.
         gpidfile = tools / "gpid"
         if gpidfile.is_file():
             gp = int(gpidfile.read_text(encoding="utf-8").strip())
             r.check("seam shutdown reaps the GRANDCHILD too", not _pid_alive(gp),
                     f"pid {gp} survived - killing the direct child is not tearing "
                     "down the tree; this is the failure the whole tranche is about")
+        else:
+            r.check("seam shutdown reaps the GRANDCHILD too", False,
+                    "the fixture never recorded a grandchild pid, so the tree was "
+                    "never tested to depth 2 - which reads identically to success")
 
         # --- PATH 2: EXPLICIT CANCEL -----------------------------------------
         # A DIFFERENT path from the one above, and it has to be asserted separately.

@@ -191,6 +191,19 @@ def contain_self() -> bool:
     global _SELF_JOB, _CONTAIN_ERROR
     if not _IS_WINDOWS or _SELF_JOB is not None:
         return _SELF_JOB is not None
+
+    # A KILL-SWITCH THAT EXISTS TO BE USED, following SUITE_LLM_DISABLE and
+    # SUITE_SUMMARY_DISABLE. Not a convenience: it is the only way to establish
+    # CAUSATION rather than correlation.
+    #
+    # This assertion passed on Windows in a run where containment was silently
+    # broken, so repeated greens prove the tree gets reaped - not that this is what
+    # reaps it. Turning containment off and requiring the assertion to go red is the
+    # difference. A permanent switch makes that experiment repeatable by anyone
+    # instead of a one-off patch nobody can rerun.
+    if os.environ.get("SUITE_DISABLE_CONTAINMENT") == "1":
+        _CONTAIN_ERROR = "disabled via SUITE_DISABLE_CONTAINMENT=1"
+        return False
     import ctypes
     try:
         k32 = _kernel32()

@@ -413,7 +413,82 @@ trustworthy on both platforms — which is what T6 was waiting for.
 
 ---
 
-## 11. Standing note
+## 11. Fourth and fifth Windows runs — the mechanism was never active
+
+### 11.1 A false green found by a log, one run after adding it
+
+Run 4 was fully green — and carried this, in a line nobody was reading:
+
+```
+[PASS] toolkit runs and registers its tools
+       stderr=invoke: process containment unavailable - tools may outlive this process
+```
+
+**`contain_self()` was returning False.** The job object had never worked on Windows
+at any point. So the two runs I reported as *"verified on Windows"* were a mechanism
+being credited with a result it had no part in — I read a passing kill as evidence
+that the thing meant to cause it had worked.
+
+**Root cause: ctypes defaults `restype` to `c_int`.** A Win32 `HANDLE` on 64-bit
+Windows is 64 bits, so `CreateJobObjectW` silently **truncated** the handle it
+returned; every later call got a corrupted handle and failed; and this module's
+honest degradation turned that into a quiet `False`.
+
+The warning that exposed it had been added **one run earlier**, for exactly this
+reason: *"a silently weaker guarantee is how 'we fixed that' survives past the point
+where it is true."*
+
+### 11.2 Repaired
+
+- **`_kernel32()`** declares `restype`/`argtypes` once for every job call, so no
+  site can forget. A binary contract written twice is the one-authority defect in a
+  form that corrupts memory rather than merely disagreeing.
+- **`containment_error()`** reports *why*, via `GetLastError()`, and the seam logs it.
+- **The gate asserts containment is in force** rather than inferring it from a
+  passing kill. A silent failure is now a red.
+- **A silent-skip hole in the gate itself:** the grandchild branch had no `else`. If
+  the fixture had not yet written `gpid`, the assertion simply did not run, and the
+  suite printed a clean verdict one assertion short. An absent check now fails
+  explicitly. **Third time in this entry that the failure mode was absence rather
+  than wrongness.**
+
+### 11.3 Causation, not correlation
+
+Stability was not enough. Three consecutive Windows runs passed — but the assertion
+had also passed in run 4 with the mechanism dead, so repeated greens proved the tree
+gets reaped, not that this is what reaps it.
+
+`SUITE_DISABLE_CONTAINMENT=1` was added as a permanent kill-switch, following the
+project's own `SUITE_LLM_DISABLE` / `SUITE_SUMMARY_DISABLE` idiom, so the experiment
+is repeatable by anyone rather than a patch nobody can rerun.
+
+```
+SUITE_DISABLE_CONTAINMENT=1  ->  [FAIL] process containment is in force on Windows
+                                 [FAIL] seam shutdown reaps the GRANDCHILD too
+                                        pid 7532 survived
+default                      ->  both PASS
+```
+
+**Containment is what reaps the tree.** Necessary, not merely present.
+
+And the same run left **`explicit cancel reaps the GRANDCHILD too` GREEN** — the
+switch disables only the seam-wide job, leaving the per-operation `ProcessTree`
+untouched. That confirms the *"two mechanisms, two purposes"* claim, which until this
+run was a design assertion with no evidence behind it.
+
+### 11.4 Final
+
+```
+Windows  ->  85 tests OK (1 honest skip) · six gates PASS · working tree clean
+Linux    ->  85 tests OK · six gates PASS · ruff clean
+             138 assertions + 4 declared PARTIAL
+```
+
+**T4 and T1 re-park.** The post-T5 baseline is trustworthy on both platforms.
+
+---
+
+## 12. Standing note
 
 **A check's coverage is part of its claim** — and platform reach, sentinel
 completeness, and *tree depth* are all coverage.
