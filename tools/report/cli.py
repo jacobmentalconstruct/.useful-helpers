@@ -14,7 +14,7 @@ import ast
 import os
 from pathlib import Path
 
-from tools._toolkit import tool_main, toolkit_home_names
+from tools._toolkit import is_instance_path, tool_main
 
 _IGNORES = {".git", ".venv", "venv", "__pycache__", "node_modules", "build", "dist"}
 
@@ -78,9 +78,11 @@ def run(args: dict) -> dict:
         return {"tool": "report", "kind": "file", "modules": [mod], "markdown": _md(mod)}
 
     mods: list[dict] = []
-    ignores = _IGNORES | toolkit_home_names()
+    ignores = set(_IGNORES)
     for dirpath, dirnames, filenames in os.walk(target):
-        dirnames[:] = sorted(d for d in dirnames if d not in ignores)
+        # Sidecar pruned by PATH, not by name - see _toolkit.is_instance_path.
+        dirnames[:] = sorted(d for d in dirnames if d not in ignores
+                             and not is_instance_path(Path(dirpath) / d))
         for f in sorted(filenames):
             if f.endswith(".py"):
                 fp = Path(dirpath) / f

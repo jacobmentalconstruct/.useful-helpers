@@ -20,7 +20,7 @@ from src.core.config import NoTargetBound, resolve_paths
 from src.interfaces import cli, mcp_server
 from src.lib import logging_setup
 
-USAGE = "usage: python -m src.app <cli|mcp|ui|map|install|plan|ui-probe|map-probe|install-probe|plan-probe> [options]"
+USAGE = "usage: python -m src.app <cli|mcp|ui|map|plan|ui-probe|map-probe|plan-probe> [options]"
 
 
 def main(argv: list[str]) -> int:
@@ -53,7 +53,7 @@ def main(argv: list[str]) -> int:
     # Clearing unconditionally here meant every `cli tool-call` wiped the operator's
     # context, so an agent working through the CLI destroyed the very state E6b
     # exists to expose - the exact opposite of the intent.
-    if mode in {"ui", "map", "install", "plan"}:
+    if mode in {"ui", "map", "plan"}:
         presence.clear(paths)
 
     # Children run in their own process group so a cancel reaches grandchildren.
@@ -76,9 +76,6 @@ def main(argv: list[str]) -> int:
     if mode == "map":
         from src.ui import app_ui
         return app_ui.run_mapper(paths)
-    if mode == "install":
-        from src.ui import app_ui
-        return app_ui.run_installer(paths)
     if mode == "plan":
         from src.ui import app_ui
         return app_ui.run_planner(paths)
@@ -95,10 +92,6 @@ def main(argv: list[str]) -> int:
         root_dir = rest[0] if rest else "."
         markdown = len(rest) > 1 and rest[1].lower() in ("1", "true", "md", "yes")
         return app_ui.run_mapper_probe(paths, root_dir=root_dir, markdown=markdown)
-    if mode == "install-probe":
-        from src.ui import app_ui
-        target = rest[0] if rest else "."
-        return app_ui.run_installer_probe(paths, target=target)
 
     sys.stderr.write(f"unknown mode: {mode}\n{USAGE}\n")
     return 2

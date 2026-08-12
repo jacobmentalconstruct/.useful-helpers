@@ -14,6 +14,8 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
+from src.core import instance
+
 
 @dataclass(frozen=True)
 class Paths:
@@ -51,8 +53,9 @@ def _resolve_project_root(sidecar_root: Path) -> Path | None:
        Previously this fell through silently and resolved to the parent while
        reporting success, so a typo in the target root was indistinguishable
        from a correct run.
-    3. A vended sidecar, proven by the `.suite_sidecar` marker   -> its parent.
-       An installed sidecar's parent genuinely is its whole reality.
+    3. A canonical installed instance, proven by its identity manifest -> the
+       target that manifest records, structurally. A malformed manifest RAISES;
+       it never degrades into case 4.
     4. Otherwise (a sidecar in development)                      -> None.
        No target. Callers must refuse rather than guess.
 
@@ -69,8 +72,16 @@ def _resolve_project_root(sidecar_root: Path) -> Path | None:
                 "Refusing to fall back to an inferred target."
             )
         return p
-    if (sidecar_root / ".suite_sidecar").exists():
-        return sidecar_root.parent
+    # Case 3, structurally. The `.suite_sidecar` marker is retired: it was written
+    # only by development paths, never by the product installer, and zero markers were
+    # ever tracked - so no supported installation can depend on it (journal 0026).
+    #
+    # `resolve()` RAISES on a malformed manifest rather than returning None. That
+    # propagates on purpose: an instance whose identity is broken must not fall
+    # through to case 4 and report "no target" as though it were merely uninstalled.
+    ctx = instance.resolve(sidecar_root)
+    if ctx is not None:
+        return ctx.target_root
     return None
 
 

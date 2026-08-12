@@ -108,6 +108,41 @@ def _ignore(_dir, names):
     return out
 
 
+def _instance_module(dest: Path):
+    """The identity authority, imported FROM THE PAYLOAD JUST INSTALLED.
+
+    Deliberately not from the installer's own tree: the installer is deliverable #1
+    and ships beside the payload, so the identity format that governs an instance is
+    the one that shipped WITH that instance - not whatever version the installer
+    happens to be.
+    """
+    import importlib.util
+    import sys
+    name = "_uh_instance"
+    spec = importlib.util.spec_from_file_location(
+        name, dest / "src" / "core" / "instance.py")
+    mod = importlib.util.module_from_spec(spec)
+    # REGISTERED BEFORE EXECUTION. `@dataclass` resolves its own module through
+    # `sys.modules[cls.__module__]`, so a module loaded by path but never registered
+    # raises AttributeError on the decorator - not at import, but inside dataclasses,
+    # which reads as a stdlib bug rather than a loader mistake.
+    sys.modules[name] = mod
+    try:
+        spec.loader.exec_module(mod)
+    except Exception:
+        sys.modules.pop(name, None)
+        raise
+    return mod
+
+
+def _read_identity(dest: Path) -> "str | None":
+    """The existing UUID, or None. Never invents one."""
+    try:
+        return _instance_module(dest).read_identity(dest)
+    except Exception:
+        return None
+
+
 def install(payload: Path, target: Path, mode: str) -> dict:
     """Do the install. mode: install (new) | reinstall (wipe) | update (keep memory).
     Writes exactly one directory: <target>/.useful-helpers."""
@@ -122,6 +157,21 @@ def install(payload: Path, target: Path, mode: str) -> dict:
                 "choose reinstall (wipe) or update (keep memory)", "status": "exists"}
     if not exists and mode in ("reinstall", "update"):
         mode = "install"  # nothing to replace; treat as a fresh install
+
+    # LIFECYCLE POLICY LIVES HERE, identity mechanics live in src/core/instance.py.
+    #
+    #   fresh install  -> a new identity
+    #   update         -> the SAME identity. An update is this instance with newer
+    #                     code; minting a new one would orphan every durable record
+    #                     keyed to the old, silently, on the first upgrade.
+    #   reinstall      -> a new identity. A clean reinstall is deliberately a
+    #                     different instance in the same place.
+    #
+    # Read BEFORE the tree is replaced, because that is the only moment the old
+    # manifest still exists.
+    carried_identity = None
+    if mode == "update" and exists:
+        carried_identity = _read_identity(dest)
 
     preserved = None
     try:
@@ -141,8 +191,14 @@ def install(payload: Path, target: Path, mode: str) -> dict:
         if preserved is not None:
             shutil.rmtree(preserved, ignore_errors=True)
 
+    # The instance is not installed until it knows what it is. Copying files and
+    # stopping here is what produced an instance with no target - the defect T6 was
+    # declared for, and the one every development install path masked.
+    ctx = _instance_module(dest).create(dest, target, identity=carried_identity)
+
     file_count = sum(1 for _ in dest.rglob("*") if _.is_file())
     return {"ok": True, "mode": mode, "sidecar": dest.as_posix(),
+            "instance": ctx.uuid, "target": ctx.target_root.as_posix(),
             "file_count": file_count,
             "memory_preserved": mode == "update",
             "next": f"cd {target}  ->  python .useful-helpers/src/app.py cli tool-list"}

@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 from tools import summarize_shared
-from tools._toolkit import output_root, project_root, state_root, suite_home, tool_main, toolkit_home_names
+from tools._toolkit import is_instance_path, output_root, project_root, state_root, suite_home, tool_main
 
 PRUNE = {
     ".git", ".hg", ".svn", ".venv", "venv", "env", "node_modules", "__pycache__",
@@ -89,7 +89,7 @@ def _probe(target: Path) -> dict:
     Never counts the instrument's own output (see _self_paths), so the map stays a description
     of the target rather than of the toolkit sitting on it.
     """
-    skip = PRUNE | toolkit_home_names()
+    skip = set(PRUNE)
     mine = _self_paths()
     ext_counts: dict[str, int] = {}
     top_dirs: dict[str, int] = {}
@@ -111,6 +111,7 @@ def _probe(target: Path) -> dict:
         dir_names[:] = sorted(
             d for d in dir_names
             if d not in skip and not d.startswith(".git") and (here / d) not in mine
+               and not is_instance_path(here / d)
         )
         rel_dir = here.relative_to(target)
         bucket = rel_dir.parts[0] if rel_dir.parts else ""

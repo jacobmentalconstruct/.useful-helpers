@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
-from tools._toolkit import toolkit_home_names
+from tools._toolkit import is_instance_path
 
 DEFAULT_SKIP_DIRS = {
     ".git",
@@ -86,10 +86,12 @@ def rel(root: Path, path: Path) -> str:
 
 
 def iter_python_files(root: Path, *, max_files: int = 500) -> list[Path]:
-    skip = set(DEFAULT_SKIP_DIRS) | toolkit_home_names()
+    skip = set(DEFAULT_SKIP_DIRS)
     out: list[Path] = []
     for current, dir_names, file_names in os.walk(root):
-        dir_names[:] = sorted(d for d in dir_names if d not in skip)
+        # Sidecar pruned by PATH, not by name - see _toolkit.is_instance_path.
+        dir_names[:] = sorted(d for d in dir_names if d not in skip
+                              and not is_instance_path(Path(current) / d))
         for name in sorted(file_names):
             if not name.endswith(".py"):
                 continue

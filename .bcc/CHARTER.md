@@ -122,6 +122,39 @@ a passing check**, not asserted.
 | E12 | An installed sidecar is removable without trace | Vend, use, delete the sidecar folder; the target is byte-identical to before the vend |
 | E13 | The governance cartridge installs **optionally and blank** | Install with the toggle off: no contract, protocol or gate runner arrives. Install with it on: all three arrive, `BCC-CONFIG` values resolved for the **new** target, and no value, path, journal reference or tranche number from this build survives |
 
+### 3.3 The prototype acceptance walk
+
+The end-state conditions E1-E13 are invariants. This is the **experience** they exist
+to make possible, and it is the thing to judge a tranche against.
+
+A completely new user can:
+
+```text
+ 1. obtain the setup application
+ 2. choose any folder - code, records, documents, mixed files, or empty
+ 3. install Useful Helpers into it
+ 4. launch it
+ 5. it identifies itself and its target
+ 6. it maps the target
+ 7. the user can inspect that map
+ 8. an agent connects over MCP and receives the SAME project awareness
+ 9. human or agent inspects the target through governed tools
+10. an authorized Apply operation deliberately modifies the target
+11. the modification is attributable and auditable
+12. project awareness refreshes to reflect the new reality
+13. restarting destroys neither identity nor durable awareness/state
+14. moving the target together with its sidecar does not break the relationship
+15. removing the sidecar does not damage target-owned content
+```
+
+**Every tranche states which of these fifteen becomes materially more true when it
+parks.** If that cannot be answered, the tranche is drifting.
+
+The sidecar does not need to know the target's domain before installation:
+**install first, observe second, interpret third, operate afterward.** Awareness is
+evidence-sensitive - a folder of PDFs and an empty directory are legitimate targets
+whose maps are legitimately thinner, not failures to force into a software ontology.
+
 ### 3.2 The phase x authority matrix (E8)
 
 "The target is never modified" was never the product invariant. An Apply tool exists

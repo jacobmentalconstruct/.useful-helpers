@@ -11,7 +11,7 @@ NOTES:      file_tree filters by kind/ext; this matches by PATTERN (`**/*.py`, `
 """
 from __future__ import annotations
 
-from tools._toolkit import resolve_within_roots, tool_main, toolkit_home_names
+from tools._toolkit import is_instance_path, resolve_within_roots, tool_main
 
 _PRUNE = {".git", ".hg", ".svn", ".venv", "venv", "env", "node_modules", "__pycache__",
           ".pytest_cache", ".mypy_cache", ".ruff_cache", "dist", "build", "_artifacts"}
@@ -30,7 +30,7 @@ def run(args: dict) -> dict:
 
     limit = max(1, min(int(args.get("limit", 1000)), 20000))
     include_all = bool(args.get("include_all", False))
-    skip = set() if include_all else (_PRUNE | toolkit_home_names())
+    skip = set() if include_all else set(_PRUNE)
 
     resolved_root = root.resolve()
     matches: list[str] = []
@@ -44,6 +44,8 @@ def run(args: dict) -> dict:
             continue
         if not rel.parts:
             continue  # the root itself (an escaping pattern can circle back to it)  -  not a match
+        if not include_all and is_instance_path(p):
+            continue
         if not include_all and (set(rel.parts) & skip):
             continue
         matches.append(rel.as_posix() + ("/" if p.is_dir() else ""))

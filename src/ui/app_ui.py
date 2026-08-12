@@ -85,27 +85,6 @@ def run_mapper(paths) -> int:
     return 0
 
 
-def _build_installer_root(paths):
-    import tkinter as tk
-
-    from src.lib import theme
-    from src.ui import installer_view
-
-    root = tk.Tk()
-    root.title("Useful Helpers  -  Install into a project")
-    root.geometry("660x600")
-    theme.apply_style(root)
-    view = installer_view.build(root, paths)
-    return root, view
-
-
-def run_installer(paths) -> int:
-    """Launch the one-click installer window (blocks in mainloop)."""
-    root, _view = _build_installer_root(paths)
-    root.mainloop()
-    return 0
-
-
 def _build_planner_root(paths):
     import tkinter as tk
 
@@ -141,22 +120,6 @@ def run_planner_probe(paths, cycles: int = 3) -> int:
         o = result.output or {}
         verdict = {"ok": bool(result.ok), "tool": "plan",
                    "proposed": bool(o.get("map")), "error": result.error}
-    finally:
-        root.destroy()
-    print(json.dumps(verdict))
-    return 0 if verdict["ok"] else 1
-
-
-def run_installer_probe(paths, target: str = ".", cycles: int = 3) -> int:
-    """Build the real installer window, run one dry-run plan through it, pump, tear down."""
-    root, view = _build_installer_root(paths)
-    try:
-        result = view.run_sync({"target": target, "dry_run": True})
-        for _ in range(max(1, cycles)):
-            root.update()
-        o = result.output or {}
-        verdict = {"ok": bool(result.ok), "tool": "sidecar_install",
-                   "file_count": o.get("file_count"), "error": result.error}
     finally:
         root.destroy()
     print(json.dumps(verdict))

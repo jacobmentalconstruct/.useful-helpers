@@ -15,7 +15,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from tools._toolkit import tool_main, toolkit_home_names
+from tools._toolkit import is_instance_path, tool_main
 
 _DEFAULT_IGNORES = {
     ".git", ".venv", "venv", "__pycache__", "node_modules",     "logs", ".mypy_cache", ".pytest_cache", "build", "dist", ".idea", ".vscode",
@@ -47,14 +47,17 @@ def run(args: dict) -> dict:
     ext = args.get("ext")
     norm_ext = (ext if ext.startswith(".") else f".{ext}") if ext else None
     limit = int(args.get("limit", 1000))
-    ignores = set(_DEFAULT_IGNORES) | toolkit_home_names()
+    ignores = set(_DEFAULT_IGNORES)
     extra = args.get("ignore")
     if isinstance(extra, list):
         ignores |= {str(x) for x in extra}
 
     entries: list[dict] = []
     for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = sorted(d for d in dirnames if d not in ignores)
+        # Prune the sidecar by PATH, never by name: the installed folder may have
+        # been renamed, and an unrelated target directory may share the default name.
+        dirnames[:] = sorted(d for d in dirnames if d not in ignores
+                             and not is_instance_path(Path(dirpath) / d))
         here = Path(dirpath)
         if kind_filter in (None, "directory"):
             for d in dirnames:

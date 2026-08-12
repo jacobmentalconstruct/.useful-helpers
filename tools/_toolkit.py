@@ -120,10 +120,48 @@ def tool_main(run: Callable[[dict], dict]) -> Callable[[dict], dict]:
 # six locations to answer "did the target change, or was that just me breathing?".
 
 
+class MissingRuntimeContext(RuntimeError):
+    """This tool was launched outside the governed seam, so it has no context.
+
+    Deliberately fatal. The predecessor of this module fell back to cwd, to a
+    basename, and to a hardcoded `.useful-helpers`, which meant a tool run from the
+    wrong directory silently operated on the wrong tree and reported success. Failing
+    clearly is worth more than a convenient direct invocation.
+    """
+
+
+def _required(name: str) -> Path:
+    """Read one TRANSPORTED root. Transport, never inference.
+
+    `invoke()` resolves the InstanceContext once and exports it. This reads what it
+    was given. It does not consult cwd, the folder name, or a default - if the value
+    is absent the caller is outside the supported execution architecture and should
+    be told so.
+    """
+    raw = os.environ.get(name)
+    if not raw or not raw.strip():
+        raise MissingRuntimeContext(
+            f"{name} was not supplied. Useful Helpers tools receive their canonical "
+            "instance and target roots from the governed seam; invoke this capability "
+            "through the registered seam (`python -m src.app cli tool-call ...`) or, "
+            "in a test, populate the runtime context explicitly.")
+    return Path(raw).resolve()
+
+
 def project_root() -> Path:
-    """The WORK TARGET  -  the project the toolkit operates on. The seam exports
-    SUITE_PROJECT_ROOT and runs tools with cwd = the work target, so cwd is the fallback."""
-    return Path(os.environ.get("SUITE_PROJECT_ROOT") or Path.cwd()).resolve()
+    """The WORK TARGET, as resolved by the runtime and transported to this process."""
+    return _required("SUITE_PROJECT_ROOT")
+
+
+def instance_root() -> Path:
+    """This sidecar's own home (INSTANCE_ROOT), as transported.
+
+    Replaces `toolkit_home_names()`, which returned a set of NAMES seeded with a
+    hardcoded `.useful-helpers`. A name is not an identity: rename the installed
+    folder and a name-based exclusion silently stops excluding the sidecar, so a
+    project scan starts reporting the sidecar's own internals as target content.
+    """
+    return _required("SUITE_HOME")
 
 
 def output_root() -> Path:
@@ -149,29 +187,39 @@ def state_root() -> Path:
 
 
 def suite_home() -> Path:
-    """The toolkit's own home (SUITE_HOME)  -  where it keeps state and generated artifacts so the
-    host project stays free of sidecar output. Default output paths anchor here; callers that pass
-    an explicit destination opt back into writing wherever they point (e.g. into the project).
-    Falls back to cwd when SUITE_HOME is unset (standalone/dev use, where the toolkit home and the
-    work target coincide)."""
-    return Path(os.environ.get("SUITE_HOME") or Path.cwd()).resolve()
+    """The instance's own home, where state and generated artifacts live so the target
+    stays free of sidecar output. Alias of instance_root(), kept for the many call
+    sites that read naturally as "the toolkit's home"."""
+    return instance_root()
 
 
-def toolkit_home_names() -> set[str]:
-    """Directory names of the toolkit's OWN home, to prune from project scans.
+def is_instance_path(path: "Path | str") -> bool:
+    """Is this path the sidecar's own home, or inside it?
 
-    As a sidecar, tools walk the WORK TARGET (the parent project) with cwd =
-    project_root, so the toolkit's own home appears as a child directory. Any
-    project-facing scan must skip it or the toolkit's internals drown the project
-    view (the mirror of a host project that forgets to ignore its `.useful-helpers`
-    sidecar). Derived from SUITE_HOME (exported by the invoke seam) so it is
-    install-name agnostic; falls back to the conventional `.useful-helpers`.
+    PATH-based, deliberately. `toolkit_home_names()` returned a set of directory
+    NAMES, so a walker pruned anything called `.useful-helpers` anywhere in the tree
+    - wrong twice over. It missed the real sidecar when the installed folder had been
+    renamed, and it pruned unrelated target content that happened to share the name.
+
+    The instance root is authoritative about which subtree is the sidecar.
     """
-    names = {".useful-helpers"}
-    home = os.environ.get("SUITE_HOME")
-    if home:
-        names.add(Path(home).name)
-    return names
+    try:
+        here = Path(path).resolve()
+        root = instance_root()
+    except (MissingRuntimeContext, OSError):
+        return False
+    return here == root or root in here.parents
+
+
+def excluded_from_target_view() -> set[Path]:
+    """Absolute paths inside the target that belong to the SIDECAR, not the project.
+
+    Returned as resolved PATHS, not names. That distinction is the whole point: a
+    name-based exclusion stops working the moment the installed folder is renamed,
+    and a project scan then reports the sidecar's own files as target content. The
+    instance root is authoritative about which subtree is the sidecar.
+    """
+    return {instance_root()}
 
 
 def attach_evidence(summary: str, body: str, kind: str = "tool_output") -> "str | None":
