@@ -432,32 +432,53 @@ def _probe_enforcement(sidecar: Path, target: Path) -> dict:
                        cwd=str(sidecar), capture_output=True, text=True)
 
 
-def install(target: Path, method: str) -> dict:
+def install(target: Path, method: str = "product") -> dict:
+    """Install through the PRODUCT'S setup application. The harness never installs.
+
+    T6 collapsed two harness-local installers into this. They were:
+
+      "copy"  - copytree plus a HAND-WRITTEN `.suite_sidecar` marker. That marker was
+                retired with the runtime installer, so this mode silently produced a
+                sidecar with no target: `attach` returned domain=None, zero tools
+                mounted, and the whole run went hollow while every gate stayed green.
+                Only the discovery pass saw it.
+      "tool"  - dispatched `sidecar_install`, a runtime tool deleted in T6.
+
+    The harness may STAGE fixtures - a payload, a target - but creating the instance
+    relationship is the setup application's job, and a verifier that reimplements the
+    thing it verifies is not observing it. `method` is kept for callers and ignored;
+    there is one installation path now.
+    """
     sidecar = target / SIDECAR_NAME
     if sidecar.exists():
         _rmtree(sidecar)
-    if method == "copy":
-        shutil.copytree(TOOLKIT, sidecar, ignore=shutil.ignore_patterns(
-            *_PAYLOAD_EXCLUDE))
-        # A vended sidecar is defined by its marker: that is the evidence it was
-        # installed, and the only thing binding it to its parent as its target.
-        # Copy mode deliberately skips the installer TOOL, but must still produce a
-        # faithfully installed sidecar - without the marker the copy has no target
-        # and every tool call correctly refuses. See src/core/config.py.
-        (sidecar / ".suite_sidecar").write_text(
-            "installed by _harness (copy mode)\n", encoding="utf-8")
-        return {"method": "copy", "ok": True}
-    # method == "tool": exercise the real installer. Expected to violate the precept today.
-    staging = FACTORY / "_harness" / ".staging"
-    if staging.exists():
-        _rmtree(staging)
-    shutil.copytree(TOOLKIT, staging, ignore=shutil.ignore_patterns(
-        *_PAYLOAD_EXCLUDE))
-    res = _call(staging, "sidecar_install",
-                {"target": str(target), "dry_run": False, "confirm": True}, timeout=300)
-    shutil.rmtree(staging, ignore_errors=True)
-    return {"method": "tool", "ok": res["ok"], "detail": res.get("error"),
-            "output": res.get("output")}
+
+    payload = Path(tempfile.mkdtemp(prefix="uh-harness-payload-")) / "toolkit"
+    try:
+        _payload_manifest().materialise(TOOLKIT, payload)
+        installer = TOOLKIT / "packaging" / "installer" / "install.py"
+        env = {k: v for k, v in os.environ.items() if not k.startswith("SUITE_")}
+        res = subprocess.run(
+            [sys.executable, str(installer), "--target", str(target),
+             "--payload", str(payload), "--mode", "install"],
+            capture_output=True, text=True, timeout=600, env=env)
+    finally:
+        shutil.rmtree(payload.parent, ignore_errors=True)
+
+    ok = res.returncode == 0 and sidecar.is_dir()
+    return {"method": "product-installer", "ok": ok,
+            "detail": None if ok else (res.stderr or res.stdout)[-400:]}
+
+
+def _payload_manifest():
+    """The ship-boundary authority, loaded from the toolkit under test."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "_uh_payload", TOOLKIT / "src" / "core" / "payload.py")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["_uh_payload"] = mod
+    spec.loader.exec_module(mod)
+    return mod
 
 
 # ---------------------------------------------------------------- scoring

@@ -180,10 +180,12 @@ def state_root() -> Path:
     disposable: an update-in-place must preserve it, and a clean must never touch it. That
     lifecycle difference is the whole reason it is its own root.
 
-    Overridable via SUITE_STATE_ROOT (tests isolate with it; it also lets an operator park
-    memory outside the sidecar so a re-vend cannot lose it)."""
+    TRANSPORTED, like the other roots. The runtime resolves it once - from canonical
+    instance identity where an instance exists - and exports it. This reads what it was
+    given and falls back to the instance's own `_state`, which is where an installed
+    instance's state always is. It does not decide."""
     override = os.environ.get("SUITE_STATE_ROOT")
-    return Path(override).resolve() if override else suite_home() / "_state"
+    return Path(override).resolve() if override else instance_root() / "_state"
 
 
 def suite_home() -> Path:

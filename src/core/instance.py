@@ -179,8 +179,12 @@ def _context(instance_root: Path, doc: dict,
     where = path or _manifest_path(instance_root)
 
     schema = doc.get("schema")
-    if not isinstance(schema, int):
+    if not isinstance(schema, int) or isinstance(schema, bool):
         raise InstanceError(f"identity schema is missing or not an integer: {where}")
+    if schema < 1:
+        raise InstanceError(
+            f"identity schema {schema} is not a valid version: {where}. Zero and "
+            "negative are not 'older'; they are malformed.")
     if schema > SCHEMA:
         raise InstanceError(
             f"identity schema {schema} is newer than this sidecar understands "
@@ -203,6 +207,20 @@ def _context(instance_root: Path, doc: dict,
         raise InstanceError(
             f"identity target does not resolve to a directory: {rel!r} -> {target} "
             f"(from {where})")
+
+    # THE RELATIONSHIP IS STRUCTURAL, NOT MERELY RESOLVABLE.
+    #
+    # Rejecting absolute paths is not enough: any relative path that happens to land
+    # on an existing directory could become TARGET_ROOT, so a tampered manifest could
+    # point at a grandparent or a sibling and be accepted. The setup application
+    # creates INSTANCE_ROOT as a DIRECT CHILD of TARGET_ROOT, so that is the shape an
+    # instance may claim.
+    if instance_root.parent != target:
+        raise InstanceError(
+            f"identity target {target} is not this instance's parent "
+            f"({instance_root.parent}), from {where}. An installed instance lives "
+            "directly inside the target it is bound to; a manifest claiming any "
+            "other relationship is malformed, not merely unusual.")
 
     return InstanceContext(
         instance_root=instance_root,

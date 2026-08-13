@@ -894,7 +894,40 @@ def _apply_scope(result: dict, scope: str) -> dict:
 @tool_main
 def run(args: dict) -> dict:
     home = suite_home()
-    target = Path(args["target"]).expanduser().resolve() if args.get("target") else project_root()
+    # ONE BOUND TARGET. `attach` used to prefer an arbitrary `target` argument over
+    # the canonical root, which made the agent's front door a SECOND target authority:
+    # an instance bound to A could be asked to attach to B. T6 ended that.
+    #
+    # The argument survives only as a redundant assertion of the same target - useful
+    # for a caller that wants to be explicit - and is refused when it disagrees. It
+    # cannot rebind the sidecar. Attaching elsewhere means installing an instance
+    # there (Charter SIDECAR:INSTANCE-OWNERSHIP).
+    # ONE BOUND TARGET - BUT SCOPE IS NOT REBINDING.
+    #
+    # `attach` used to prefer an arbitrary `target` argument over the canonical root,
+    # which made the agent's front door a SECOND target authority: an instance bound
+    # to A could be asked to attach to B. T6 ended that.
+    #
+    # The distinction that matters is identity-level vs scope-level. A path INSIDE the
+    # bound target is a narrower view of the same reality - `genesis` scaffolds a new
+    # project in a subdirectory and then orients on it, which is the product working on
+    # its target. A path OUTSIDE is a different reality, and asking for it is asking
+    # this instance to be a different instance.
+    #
+    # A first version required exact equality and broke genesis, which is how the
+    # difference surfaced: the rule is containment, not identity of the path.
+    bound = project_root()
+    target = bound
+    requested = args.get("target")
+    if requested:
+        asked = Path(requested).expanduser().resolve()
+        if asked != bound and bound not in asked.parents:
+            return {"ok": False, "tool": "attach",
+                    "error": f"this instance is bound to {bound}; it cannot attach to "
+                             f"{asked}, which lies outside that target. Install an "
+                             "instance into that target instead.",
+                    "bound_target": str(bound)}
+        target = asked
     if not target.is_dir():
         return {"ok": False, "error": f"target is not a directory: {target}"}
     scope = args.get("scope")

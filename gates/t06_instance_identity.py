@@ -147,6 +147,24 @@ def _code_only(body: str) -> str:
     return "".join(lines)
 
 
+def _target_digest(target: Path) -> dict:
+    """sha256 of every TARGET-OWNED file, keyed by relative path.
+
+    Excludes the instance namespace, which setup is allowed to create. Everything
+    else must be byte-identical across an install - measured, not sampled.
+    """
+    import hashlib
+    out = {}
+    for p in sorted(target.rglob("*")):
+        if not p.is_file():
+            continue
+        rel = p.relative_to(target).as_posix()
+        if rel.split("/", 1)[0] in (DEFAULT_HOME, ".uh-renamed"):
+            continue
+        out[rel] = hashlib.sha256(p.read_bytes()).hexdigest()
+    return out
+
+
 def _clean_env() -> dict:
     """No hints. Resolution must be structural or it is not resolution."""
     return {k: v for k, v in os.environ.items() if not k.startswith("SUITE_")}
@@ -179,8 +197,20 @@ def check(r, root: Path) -> None:
     #
     # Scanning both identically would turn "one authority" into "nobody may test the
     # file format", which is a different and worse rule.
+    # TEST SCOPE IS `tests/` ONLY.
+    #
+    # `_harness/` was in this set, and that is how it vanished from the census while
+    # still hand-writing a `.suite_sidecar` marker. Test scope only checks for
+    # producing `instance.json`; the harness produced the RETIRED marker instead, so
+    # it slipped both branches and the census reported a clean [].
+    #
+    # It disappeared because the census excluded it, not because it stopped
+    # manufacturing identity - which is the one outcome this assertion exists to
+    # distinguish. The harness is a VERIFIER: it may observe an installation, and it
+    # may stage fixtures, but a verifier that reimplements the thing it verifies is
+    # not observing it. It is held to the production invariant.
     def _is_test_scope(rel: str) -> bool:
-        return rel.startswith(("tests/", "_harness/"))
+        return rel.startswith("tests/")
 
     writers, test_producers, inferrers = [], [], []
     for rel, body in _ours(root):
@@ -263,6 +293,9 @@ def check(r, root: Path) -> None:
     (target / "README.md").write_text("HOST OWNS THIS\n", encoding="utf-8")
     (target / "src").mkdir()
     (target / "src" / "app.py").write_text("print('host')\n", encoding="utf-8")
+    (target / "src" / "deep").mkdir()
+    (target / "src" / "deep" / "notes.txt").write_text("keep me\n", encoding="utf-8")
+    before = _target_digest(target)
 
     proc = _install(root, target, payload)
     home = target / DEFAULT_HOME
@@ -320,16 +353,30 @@ def check(r, root: Path) -> None:
             "expected a small identity file inside the instance root")
     if manifest is not None:
         manifest.write_text("{ not valid json", encoding="utf-8")
-        r.check("malformed identity fails loudly rather than guessing",
-                _target_of(moved / DEFAULT_HOME) is None,
-                "a corrupt manifest must refuse, not fall back to the parent "
-                "directory and report success")
+        resolved = _target_of(moved / DEFAULT_HOME)
+        err = _LAST_ERR[0] if _LAST_ERR else None
+        r.check("malformed identity does not resolve to a target",
+                resolved is None,
+                f"a corrupt manifest resolved to {resolved} - it must refuse, not "
+                "fall back to the parent directory and report success")
+        r.check("malformed identity fails LOUDLY, not silently",
+                bool(err) and "InstanceError" in str(err),
+                f"resolution reported {err!r}. Absence and corruption must be "
+                "distinguishable: a silent None satisfies 'did not resolve' just as "
+                "well as a raised error, so the previous check proved the weaker half")
 
     # ---- 8. WALK STEP 15 -- target-owned content untouched ----------------
-    r.check("installation left target-owned content unchanged",
-            (moved / "README.md").read_text(encoding="utf-8") == "HOST OWNS THIS\n"
-            and (moved / "src" / "app.py").is_file(),
-            "Charter SIDECAR:TARGET-OWNERSHIP - setup may create the reserved "
+    # WHOLE-TARGET COMPARISON, not a spot check. The previous version read one file
+    # and asserted another existed, which cannot see a modified third file, a deleted
+    # one, or anything added outside the top level. E8's install row deserves the
+    # evidence it claims.
+    after = _target_digest(moved)
+    r.check("installation left target-owned content byte-identical",
+            before == after,
+            f"target-owned content changed: only in before={sorted(set(before) - set(after))[:4]} "
+            f"only in after={sorted(set(after) - set(before))[:4]} "
+            f"differing={[k for k in set(before) & set(after) if before[k] != after[k]][:4]} "
+            "- Charter SIDECAR:TARGET-OWNERSHIP: setup may create the reserved "
             "namespace and nothing else")
     r.check("installation created exactly one directory in the target",
             {p.name for p in moved.iterdir()} == {"README.md", "src", DEFAULT_HOME},
@@ -385,9 +432,22 @@ def _target_of(home: Path) -> "Path | None":
                          capture_output=True, text=True, timeout=180, env=_clean_env())
     for line in reversed((out.stdout or "").splitlines()):
         if line.strip().startswith("{"):
-            got = json.loads(line).get("t")
+            doc = json.loads(line)
+            got = doc.get("t")
+            _LAST_ERR.clear()
+            _LAST_ERR.append(doc.get("err"))
             return Path(got).resolve() if got else None
+    _LAST_ERR.clear()
+    _LAST_ERR.append("probe produced no verdict")
     return None
+
+
+# The probe's error text, kept because discarding it made an assertion prove less
+# than its name. "fails loudly" was checked as `_target_of(...) is None`, and a SILENT
+# None satisfies that exactly as well as a raised InstanceError does. Given this
+# project's record of assertions passing for the wrong reason, the distinction is now
+# carried out of the subprocess rather than thrown away at the boundary.
+_LAST_ERR: list = []
 
 
 def _manifest_path(home: Path) -> "Path | None":

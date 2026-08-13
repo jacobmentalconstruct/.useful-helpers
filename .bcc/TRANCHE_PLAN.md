@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **ACTIVE.** T0-T5 parked; T6 next.
+Status: **ACTIVE.** T0-T5 parked; T6 awaiting operator review.
 Date: 2026-08-06, amended 2026-08-09.
 Authority: subordinate to `CHARTER.md`; procedure defined by `TRANCHE_PROTOCOL.md`.
 This document owns **sequencing only**. Product topology and ownership semantics
@@ -29,7 +29,7 @@ column.
 | --- | --- | --- | --- |
 | E1 | Installs into an arbitrary directory, CPython only | partial | vend verified; fresh-machine install is T9 |
 | E2 | Maps any directory, across domains | partial | `attach` works; cross-domain unproven |
-| E3 | One GUI surface reaches every tool and chain | **not started** | One Surface, redeclared after T6 |
+| E3 | One GUI surface reaches every tool and chain | **not started** | One Surface, redeclared after the awareness tranche |
 | E4 | An agent reaches everything through MCP | partial | MCP entrance exists; parity unasserted |
 | E5 | Human and agent indistinguishable to the seam | **MET** | t02 gate: census over all of `src/`, every call site attributed |
 | E6a | Each sees the other **act**, live | **MET** | T3 — measured poll cost 0.29 ms; resync on shrunken ledger |
@@ -102,7 +102,7 @@ needs it, rather than displacing product work now.
 | T4 | Cancellation and Progress | Long work is observable and stoppable |
 | ~~T5a~~ | ~~One Surface: Observe and Select~~ | **WITHDRAWN** 2026-08-09 — see below |
 | T5 | Ownership and Distribution Model | **CLOSED 2026-08-09** — one authority per normative fact; a stated deployment topology |
-| T6 | Instance Identity and the Installation Core | *derived at T5 close; declaration pending operator review* |
+| T6 | Instance Identity and the Installation Core | **AWAITING APPROVAL** — one canonical instance identity, created by the standalone setup application, resolved structurally |
 | — | *the sequence below is provisional and renumbers when T6 is declared* | |
 | P | One Surface (redeclared) | E3 — the operational surface of one installed instance on one bound target |
 | P | Contracts for Uncontracted Daily Drivers | Ten contracts exist |
@@ -138,8 +138,8 @@ cumulative proof describes current architecture.
 
 | Old assertion | Why retired | Replacement | Superseded by | Evidence |
 | --- | --- | --- | --- | --- |
-| `t01` — *"the manifest itself ships"* | premise was that a vended sidecar must vend; `instance -> instance` is not a product requirement | positive install manifest owns membership (`SIDECAR:INSTALLABLE-PAYLOAD`) — **owed by T6** | T5, operator decision 2026-08-09 | `gates/_superseded/t01_self_hosting.py.superseded`; history in 0008 |
-| `t01` — *"the payload can reproduce itself exactly (**self-hosting**)"* | same premise | conformance proven against the **built payload** from the assembler, not a runtime tool copying the source tree — **owed by T6** | T5, operator decision 2026-08-09 | same |
+| `t01` — *"the manifest itself ships"* | premise was that a vended sidecar must vend; `instance -> instance` is not a product requirement | positive install manifest owns membership (`SIDECAR:INSTALLABLE-PAYLOAD`) — **owed by the payload tranche** | T5, operator decision 2026-08-09 | `gates/_superseded/t01_self_hosting.py.superseded`; history in 0008 |
+| `t01` — *"the payload can reproduce itself exactly (**self-hosting**)"* | same premise | conformance proven against the **built payload** from the assembler, not a runtime tool copying the source tree — **owed by the payload tranche** | T5, operator decision 2026-08-09 | same |
 
 **Census:** all 22 `t01` assertions were examined; two were retired. Everything else
 remains active and unchanged.
@@ -420,23 +420,6 @@ time.
 
 ---
 
-## T6 — Contracts for Uncontracted Daily Drivers
-
-**Outcome.** All ten retained daily drivers have contracts.
-
-**Work.** Write contracts for `_TempServerMAKER`, `_MicroserviceLIBRARY` and
-`_NoStringsPDF` from their filedumps and READMEs, in the shape of the existing
-twelve. Record measured toolkit coverage per capability.
-
-**Gate — `gates/t06_contracts.py`**
-
-- ten contracts exist, each naming capabilities, safety rules and non-goals
-- every capability maps to an existing tool, a named gap, or an explicit
-  out-of-scope decision
-
-**Non-goals.** No implementation.
-
----
 
 ## T7 — Chains
 

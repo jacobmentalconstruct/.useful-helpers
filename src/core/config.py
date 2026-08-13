@@ -63,6 +63,19 @@ def _resolve_project_root(sidecar_root: Path) -> Path | None:
     infer a target, which made this repository bind to its own parent staging
     folder purely because of how it is named.
     """
+    # CANONICAL IDENTITY OUTRANKS THE ENVIRONMENT.
+    #
+    # An installed instance belongs to ONE target (Charter SIDECAR:INSTANCE-OWNERSHIP),
+    # and that binding is structural. Reading the env var first meant an instance whose
+    # manifest says "I belong to A" could be started with SUITE_PROJECT_ROOT=B and would
+    # accept B - an environment variable silently rebinding installed identity, which is
+    # the whole class of defect T6 exists to end.
+    #
+    # The variable stays useful where there IS no canonical identity: development, and
+    # an uninstalled sidecar. Where identity exists, a CONFLICTING variable is an error
+    # rather than an override - refusing beats quietly obeying the weaker authority.
+    ctx = instance.resolve(sidecar_root)
+
     env = os.environ.get("SUITE_PROJECT_ROOT")
     if env is not None and env.strip() != "":
         p = Path(env).expanduser().resolve()
@@ -71,15 +84,23 @@ def _resolve_project_root(sidecar_root: Path) -> Path | None:
                 f"SUITE_PROJECT_ROOT does not name an existing directory: {p}. "
                 "Refusing to fall back to an inferred target."
             )
+        if ctx is not None and p != ctx.target_root:
+            raise NoTargetBound(
+                f"SUITE_PROJECT_ROOT={p} conflicts with this instance's canonical "
+                f"target {ctx.target_root} (identity {ctx.uuid}). An installed "
+                "instance is bound to one target; an environment variable does not "
+                "rebind it. Install a separate instance into that target instead."
+            )
         return p
-    # Case 3, structurally. The `.suite_sidecar` marker is retired: it was written
-    # only by development paths, never by the product installer, and zero markers were
-    # ever tracked - so no supported installation can depend on it (journal 0026).
+    # Case 3, structurally. The `.suite_sidecar` marker is retired: it was never part
+    # of the canonical setup-distribution contract, the product installer never wrote
+    # one, and no supported installed-product population is evidenced. T6 retires it
+    # rather than carrying permanent compatibility for the obsolete runtime-installer
+    # path (journal 0025).
     #
-    # `resolve()` RAISES on a malformed manifest rather than returning None. That
-    # propagates on purpose: an instance whose identity is broken must not fall
-    # through to case 4 and report "no target" as though it were merely uninstalled.
-    ctx = instance.resolve(sidecar_root)
+    # `resolve()` above RAISES on a malformed manifest rather than returning None,
+    # and that propagates on purpose: an instance whose identity is broken must not
+    # fall through to case 4 and report "no target" as though merely uninstalled.
     if ctx is not None:
         return ctx.target_root
     return None
@@ -97,7 +118,18 @@ def resolve_paths(root: Path | None = None) -> Paths:
         venv_python = root / ".venv" / "Scripts" / "python.exe"
     else:
         venv_python = root / ".venv" / "bin" / "python"
-    state_override = os.environ.get("SUITE_STATE_ROOT")
+    # STATE BELONGS TO THE INSTANCE.
+    #
+    # `InstanceContext` says an instance's state lives at INSTANCE_ROOT/_state - that
+    # is part of what an instance IS, not a detail of whoever writes to it. So where
+    # canonical identity exists it decides, and SUITE_STATE_ROOT is refused rather
+    # than allowed to silently redefine half of installed identity.
+    #
+    # The variable still governs where there is NO instance: development, and test
+    # isolation. That is the same rule as the target root above - environment governs
+    # the uninstalled case, identity governs the installed one.
+    bound = instance.resolve(root)
+    state_override = None if bound is not None else os.environ.get("SUITE_STATE_ROOT")
     return Paths(
         root=root,
         project_root=project_root,
@@ -110,6 +142,8 @@ def resolve_paths(root: Path | None = None) -> Paths:
         # that move, so paths.docs pointed at the journal directory.
         docs=root / "docs",
         logs=root / "logs",
-        state=Path(state_override).resolve() if state_override else root / "_state",
+        state=(bound.state_root if bound is not None
+               else (Path(state_override).resolve() if state_override
+                     else root / "_state")),
         venv_python=venv_python,
     )
