@@ -11,10 +11,7 @@ NOTES:      Written during tranche declaration, BEFORE implementation, per
 """
 from __future__ import annotations
 
-import json
-import os
 import re
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -70,16 +67,17 @@ KNOWN_LIMITATIONS = (
     {
         "assertion": "the payload fixture is produced",
         "coverage": "transitional",
-        "limitation": "materialised by `tools/sidecar_install`, a legacy runtime "
-                      "tool. It is a TEST FIXTURE PRODUCER only, conferring "
-                      "no product authority, and proves nothing about canonical "
-                      "installation, installed-instance correctness, setup lifecycle, "
-                      "or runtime installation authority - the product's installation "
-                      "entrance is `packaging/installer/` (Charter "
-                      "SIDECAR:SETUP-DISTRIBUTION)",
+        "limitation": "materialised by `payload.materialise()`, which SUBTRACTS "
+                      "exclusions from a source tree. That is a fixture producer, not "
+                      "the canonical positive assembler, so it proves payload "
+                      "membership and nothing about how a shipped payload is built. "
+                      "It confers no authority on any installation path - the "
+                      "product's installation entrance is `packaging/installer/` "
+                      "(Charter SIDECAR:SETUP-DISTRIBUTION). Its previous producer, "
+                      "the runtime tool `sidecar_install`, was deleted in T6",
         "contributes_to_E11_completion": False,
-        "disposition": "eliminated by T6; payload assembly replaced by the positive "
-                       "manifest tranche",
+        "disposition": "replaced by the canonical positive assembler in the payload "
+                       "tranche",
     },
 )
 
@@ -171,18 +169,19 @@ def check(r, root: Path) -> None:
                "cleaned up here - run on a host with normal delete semantics")
         return
 
+    # PAYLOAD FIXTURE from the manifest authority itself. Previously materialised by
+    # `tools/sidecar_install`, a runtime tool deleted in T6 - and `payload.materialise`
+    # is now the one producer, so the gate and the tests cannot drift apart about what
+    # a payload is. Still a FIXTURE: see KNOWN_LIMITATIONS.
     target = Path(tempfile.mkdtemp(prefix="t01-vend-"))
-    out = subprocess.run(
-        [sys.executable, "-m", "src.app", "cli", "tool-call", "--tool",
-         "sidecar_install", "--args-json",
-         json.dumps({"target": str(target), "dry_run": False, "confirm": True})],
-        cwd=root, capture_output=True, text=True, encoding="utf-8",
-        errors="replace", timeout=600,
-        env={**os.environ, "SUITE_PROJECT_ROOT": str(target)},
-    )
     sidecar = target / ".useful-helpers"
+    try:
+        mod.materialise(root, sidecar)
+    except Exception as e:
+        r.check("the payload fixture is produced", False, f"{type(e).__name__}: {e}")
+        return
     r.check("the payload fixture is produced", sidecar.is_dir(),
-            (out.stderr or out.stdout)[-200:])
+            f"payload.materialise() left nothing at {sidecar}")
     if not sidecar.is_dir():
         return
 

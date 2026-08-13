@@ -128,6 +128,16 @@ EXPORT_SUBSTITUTED = frozenset({
     "tools/vendor_export/clean_app_docs",
 })
 
+# WHAT replaces WHAT. The set above says "excluded verbatim"; this says where each
+# substitute lands. Two consumers previously carried their own copy of this mapping -
+# `vendor_export` and the deleted `sidecar_install` - which is why a payload produced
+# by a third route shipped the development ignore file. One authority, one mapping.
+EXPORT_SUBSTITUTIONS = {
+    "tools/vendor_export/clean_app_docs/README.md": "README.md",
+    "tools/vendor_export/clean_app_docs/ONBOARDING.md": "docs/ONBOARDING.md",
+    "tools/vendor_export/clean_app_docs/gitignore": ".gitignore",
+}
+
 # ------------------------------------------------------------- not ours
 # Code this project did not write and will not maintain. This is a DIFFERENT axis
 # from shipping: `gates/` and `_harness/` do not ship, but they are ours and should
@@ -158,6 +168,48 @@ MAX_PAYLOAD_FILES = 500
 # Stated rather than assumed: an opt-in category is exactly the kind of thing that
 # grows quietly, and the point of the ceiling is to notice.
 MAX_CARTRIDGE_FILES = 8
+
+
+def materialise(source: "object", dest: "object") -> "object":
+    """Copy exactly the payload from `source` to `dest`. Returns `dest`.
+
+    THE ONE PAYLOAD PRODUCER, so gates and tests do not each grow their own copy of
+    "what a payload is" - which is this module's whole reason to exist.
+
+    It is NOT the canonical positive assembler. That is a later tranche, and it will
+    build from a declared inclusion manifest rather than by subtracting exclusions
+    from a source tree. Until then this is how a real payload is produced for the
+    standalone setup application to install, and it inherits exactly the boundary
+    declared above.
+
+    Deliberately not a tool and not registered: producing a payload is a
+    source-factory activity (Charter SIDECAR:SOURCE-FACTORY), not something an
+    installed instance does.
+    """
+    import shutil
+    from pathlib import Path
+
+    src, dst = Path(source), Path(dest)
+    shutil.copytree(src, dst, ignore=shutil.ignore_patterns(*PAYLOAD_EXCLUDE))
+
+    # SUBSTITUTION IS PART OF THE BOUNDARY, not a courtesy.
+    #
+    # The development `.gitignore` names the parts bin, the harness, gates and trash -
+    # zones that do not exist in an installed instance, and whose names would tell a
+    # target about the build process. So the payload gets its own.
+    #
+    # This lived in `tools/sidecar_install` until T6 deleted it, and the first version
+    # of `materialise()` was a plain copytree that silently dropped the behaviour: the
+    # payload started shipping the development ignore file again. Which is the point -
+    # "what the payload contains" is this module's question, and answering half of it
+    # elsewhere is how it got lost.
+    for rel, target in EXPORT_SUBSTITUTIONS.items():
+        source_file = src / rel
+        if source_file.is_file():
+            out = dst / target
+            out.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source_file, out)
+    return dst
 
 
 def cartridge_conflicts() -> set[str]:

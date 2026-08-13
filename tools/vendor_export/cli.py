@@ -45,14 +45,13 @@ CLEAN_APP_STRIP = set(payload.SIDECAR_STRIP)
 # sidecar's own journal and is stripped from every export. This mapping still pointed
 # at the old location, so the substituted onboarding doc was being written into a
 # directory that does not ship.
-CLEAN_APP_DOC_OVERRIDES = {
-    "tools/vendor_export/clean_app_docs/README.md": "README.md",
-    "tools/vendor_export/clean_app_docs/ONBOARDING.md": "docs/ONBOARDING.md",
-    # The development .gitignore names the parts bin, harness, gates and trash -
-    # zones that do not exist in an installed sidecar, and whose names would tell a
-    # target about the build process. The payload gets its own.
-    "tools/vendor_export/clean_app_docs/gitignore": ".gitignore",
-}
+# CONSUMED, not restated. `src/core/payload.py` owns what the payload contains,
+# including which files are substituted on the way out - see EXPORT_SUBSTITUTIONS.
+# A second copy here is how a payload built by a different route shipped the
+# development ignore file (T6).
+def _overrides() -> dict:
+    from src.core.payload import EXPORT_SUBSTITUTIONS
+    return dict(EXPORT_SUBSTITUTIONS)
 
 
 def _inside(root: Path, path: Path) -> bool:
@@ -161,7 +160,7 @@ def run(args: dict) -> dict:
             shutil.copy2(src, dst)
             written.append(row["path"])
         if args.get("clean_app"):
-            for src_rel, dst_rel in CLEAN_APP_DOC_OVERRIDES.items():
+            for src_rel, dst_rel in _overrides().items():
                 tmpl = source / src_rel
                 if tmpl.is_file():
                     dst = export_dir / dst_rel

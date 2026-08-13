@@ -168,21 +168,49 @@ def check(r, root: Path) -> None:
     # The earlier draft censused only sites that WRITE a marker. `suite_home()` -
     # env-or-cwd - writes nothing, is used far more widely, and is the other half of
     # the same guess. Fixing one and passing would have left the defect half-alive.
-    writers, inferrers = [], []
+    # PRODUCTION SCOPE vs TEST SCOPE are different rules, deliberately.
+    #
+    #   production: no active product code outside the core may define, serialise or
+    #               interpret the identity format.
+    #   tests:      may INSPECT the persisted representation - that is what a
+    #               serialisation contract test IS - but must not become a second
+    #               PRODUCER by hand-writing an approximate manifest whenever they
+    #               need an instance. They create instances through the public API.
+    #
+    # Scanning both identically would turn "one authority" into "nobody may test the
+    # file format", which is a different and worse rule.
+    def _is_test_scope(rel: str) -> bool:
+        return rel.startswith(("tests/", "_harness/"))
+
+    writers, test_producers, inferrers = [], [], []
     for rel, body in _ours(root):
         if rel == IDENTITY_RESOLVER:
             continue
-        if re.search(r'["\']\.suite_sidecar["\']', body) or re.search(
-                r'instance\.json["\']', body):
-            writers.append(rel)
+        code = _code_only(body)          # docstrings are history, not behaviour
+        touches_format = bool(
+            re.search(r'["\']\.suite_sidecar["\']', code)
+            or re.search(r'instance\.json["\']', code))
+        if touches_format:
+            if _is_test_scope(rel):
+                # Producing, not inspecting: writing the manifest by hand.
+                if re.search(r'instance\.json["\'][^\n]*\)\s*\.write_text', code) \
+                        or re.search(r'write_text\([^)]*schema', code):
+                    test_producers.append(rel)
+            else:
+                writers.append(rel)
         # INFERENCE, not transport: a fallback chain for "where am I".
-        if re.search(r'environ\.get\(\s*["\']SUITE_HOME["\']\s*\)\s*or\b', body) \
-                or re.search(r'\{\s*["\']\.useful-helpers["\']\s*\}', body) \
-                or "toolkit_home_names" in body:
+        if re.search(r'environ\.get\(\s*["\']SUITE_HOME["\']\s*\)\s*or\b', code) \
+                or re.search(r'\{\s*["\']\.useful-helpers["\']\s*\}', code) \
+                or "toolkit_home_names" in code:
             inferrers.append(rel)
 
     r.check("only the instance core knows the identity format",
-            not writers, f"other sites still read or write identity directly: {writers}")
+            not writers,
+            f"active product code still defines or interprets identity: {writers}")
+    r.check("tests consume the identity API rather than producing identity",
+            not test_producers,
+            f"tests hand-writing a manifest: {test_producers} - a test may inspect "
+            "the persisted representation; it may not become a second producer of it")
     r.check("no component infers its own location",
             not inferrers,
             f"sites still guessing where they are: {inferrers} - transport is fine "

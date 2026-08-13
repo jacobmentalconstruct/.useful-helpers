@@ -5,7 +5,7 @@
 
 # Tools - the capability catalog
 
-95 tools, grouped by category. Generated from the registry; **what** each tool does is here, **how to drive them** (sequencing, flags, trust) is in [OPERATIONS.md](OPERATIONS.md).
+94 tools, grouped by category. Generated from the registry; **what** each tool does is here, **how to drive them** (sequencing, flags, trust) is in [OPERATIONS.md](OPERATIONS.md).
 
 Authority: `Observe` read-only | `Sandbox` temp/artifacts only | `Apply` writes for real. `writes` declares what a tool may touch (`none`/`toolkit`/`target`); the seam enforces it for Observe tools (see [ARCHITECTURE.md](ARCHITECTURE.md)).
 
@@ -57,7 +57,7 @@ Authority: `Observe` read-only | `Sandbox` temp/artifacts only | `Apply` writes 
 |---|---|---|---|---|---|
 | `provenance` | Apply | toolkit | project | action, subject, relation, object, origin, verb, participants, op_id, +5 more | Formation provenance: record WHY an artifact exists (typed relations with an enforced origin - discovered \| operational \| interpretive), including multi-participant activities, and TRACE any artifact back to the chain that formed it. |
 
-## packaging  (9)
+## packaging  (8)
 
 | tool | authority | writes | on | inputs | summary |
 |---|---|---|---|---|---|
@@ -65,7 +65,6 @@ Authority: `Observe` read-only | `Sandbox` temp/artifacts only | `Apply` writes 
 | `artifact_catalog` | Observe | none | toolkit | root, limit, hash, max_hash_bytes | Catalog generated workspace artifacts by path, kind, size, and optional hash. |
 | `codebase_bundle` | Apply | toolkit | project | root, out_dir, formats, include, exclude, max_bytes, include_binaries, limit, +3 more | Create AI-friendly codebase report, JSONL, and AST bundle artifacts. |
 | `scaffold_project` | Apply | target | project | action, archetype, map, root, overwrite, apply | Materialize a NEW project from a contract map: create the directories, write the files (boilerplate or documented stubs with FILE/ROLE/DOES headers), and emit PROJECT_PLAN.md. Preview-first; one apply for the whole batch. |
-| `sidecar_install` | Apply | toolkit | toolkit | **target**, folder, dry_run, confirm, overwrite, update | Dry-run-first installer: copy a clean-app view of the toolkit into an external project's .useful-helpers/ sidecar. Writes exactly one directory and nothing else  -  the target is never modified. |
 | `snapshot_diff` | Observe | none | toolkit | **left**, **right**, limit | Compare two ProjectMapper snapshots by captured file paths and content hashes. |
 | `snapshot_verify` | Observe | none | toolkit | **snapshot**, db, sha256, manifest | Verify a ProjectMapper SQLite snapshot, sidecar sha256, manifest JSON, schema, and row-count metadata. |
 | `tempserver` | Apply | toolkit | project | root, name, out_dir, port, include, exclude, max_bytes, limit, +3 more | Build a self-contained static project viewer and return a ready-to-run serve command. |
@@ -215,4 +214,4 @@ Authority: `Observe` read-only | `Sandbox` temp/artifacts only | `Apply` writes 
 | `write_file` | Apply | target | project | **path**, **content**, overwrite, write, apply | Create or overwrite a file (preview-first). The sanctioned, audited way to write into the work target. |
 
 ---
-_Generated 2026-07-25 from 95 manifests._
+_Generated 2026-08-13 from 94 manifests._

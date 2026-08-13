@@ -302,12 +302,14 @@ def check(r, root: Path) -> None:
             "a limitation recorded where only the gate's author reads it does not "
             "stop a green suite being misread as a complete proof")
 
-    for phrase in ("no product authority", "TEST FIXTURE PRODUCER"):
-        r.check(f"the legacy vend path is disclaimed ({phrase!r})",
+    for phrase in ("fixture producer", "no authority"):
+        r.check(f"the transitional payload producer is disclaimed ({phrase!r})",
                 phrase in t01,
-                "`sidecar_install` materialises the payload fixture because nothing "
-                "else does yet. Its use must confer no product authority and prove "
-                "nothing about canonical installation or setup lifecycle")
+                "the payload fixture is materialised by subtracting exclusions from a "
+                "source tree, which is not the canonical positive assembler. That "
+                "must confer no authority on any installation path and prove nothing "
+                "about how a shipped payload is built. (Its previous producer, the "
+                "runtime tool `sidecar_install`, was deleted in T6.)")
 
     # ---- 8. the audit is reclassified, on BOTH axes -----------------------
     r.check("audit findings carry an ownership domain",

@@ -133,6 +133,31 @@ class SpineSmokeTest(unittest.TestCase):
         self.addCleanup(shutil.rmtree, root, ignore_errors=True)
         return str(root / name)
 
+    def _install_product(self, target, mode: str = "install"):
+        """Install through the STANDALONE SETUP APPLICATION - the product's entrance.
+
+        Replaces four call sites that used `tools/sidecar_install`, a runtime tool
+        retired in T6. A test claiming something about installation must exercise the
+        implementation users actually get; every green install this project recorded
+        before T6 came from a path that was not the product's, and that path produced
+        an instance with no target.
+        """
+        import os
+        import subprocess
+        import sys
+        import tempfile
+        from pathlib import Path as _P
+
+        from src.core import payload as _payload
+
+        src_root = _P(self.paths.root)
+        pay = _payload.materialise(src_root, _P(tempfile.mkdtemp(prefix="uh-pay-")) / "tk")
+        env = {k: v for k, v in os.environ.items() if not k.startswith("SUITE_")}
+        return subprocess.run(
+            [sys.executable, str(src_root / "packaging" / "installer" / "install.py"),
+             "--target", str(target), "--payload", str(pay), "--mode", mode],
+            cwd=str(src_root), capture_output=True, text=True, timeout=900, env=env)
+
     def _foreign_target(self) -> str:
         """A directory GENUINELY OUTSIDE the toolkit tree, for install tests.
 
@@ -2007,11 +2032,31 @@ class SpineSmokeTest(unittest.TestCase):
         dotted = Path(tempfile.mkdtemp()) / ".useful-helpers"
         self.assertIsNone(_resolve_project_root(dotted))
 
-        # 3. the .suite_sidecar marker IS evidence of a vend -> bind to the parent
+        # 3. a canonical IDENTITY MANIFEST is evidence of an installed instance ->
+        #    bind to the target it records. The `.suite_sidecar` marker was retired in
+        #    T6: it was written only by development paths, never by the product
+        #    installer, and a name or a bare marker is not an identity.
+        from src.core import instance
         home = Path(tempfile.mkdtemp()) / "sidecar"
         home.mkdir()
-        (home / ".suite_sidecar").write_text("x", encoding="utf-8")
-        self.assertEqual(_resolve_project_root(home), home.parent)
+        instance.create(home, home.parent)
+        self.assertEqual(_resolve_project_root(home), home.parent.resolve())
+
+        # 3b. a bare legacy marker is NOT evidence any more - absence of canonical
+        #     identity means "not an installed instance", not "guess the parent".
+        legacy = Path(tempfile.mkdtemp()) / "old"
+        legacy.mkdir()
+        (legacy / ".suite_sidecar").write_text("x", encoding="utf-8")
+        self.assertIsNone(_resolve_project_root(legacy))
+
+        # 3c. MALFORMED canonical identity fails LOUDLY. It must never degrade into
+        #     "no target", which would read as merely uninstalled.
+        broken = Path(tempfile.mkdtemp()) / "broken"
+        broken.mkdir()
+        instance.create(broken, broken.parent)
+        (broken / instance.MANIFEST).write_text("{ not json", encoding="utf-8")
+        with self.assertRaises(instance.InstanceError):
+            _resolve_project_root(broken)
 
         # 4. an explicit valid override wins over everything
         override = tempfile.mkdtemp()
@@ -2054,7 +2099,6 @@ class SpineSmokeTest(unittest.TestCase):
         # was the load-bearing precept violation, green in the suite for exactly this reason.
         import os
 
-        from src.core import invoke as invoke_mod
 
         target = self._foreign_target()
         # A pre-existing host tree we will prove is left byte-for-byte untouched.
@@ -2065,13 +2109,11 @@ class SpineSmokeTest(unittest.TestCase):
             h.write("print('host')\n")
         before = _target_manifest(target, exclude=".useful-helpers")
 
-        plan = invoke_mod.invoke(self.paths, "sidecar_install", {"target": target, "dry_run": True})
-        self.assertTrue(plan.ok, msg=getattr(plan, "error", None))
-        self.assertGreater(plan.output.get("file_count", 0), 50)
-        done = invoke_mod.invoke(
-            self.paths, "sidecar_install", {"target": target, "dry_run": False, "confirm": True}
-        )
-        self.assertTrue(done.ok, msg=getattr(done, "error", None))
+        plan = self._install_product(target)
+        self.assertEqual(plan.returncode, 0, msg=(plan.stderr or plan.stdout)[-300:])
+
+        done = plan
+        self.assertEqual(done.returncode, 0, msg=(done.stderr or done.stdout)[-300:])
         sidecar = os.path.join(target, ".useful-helpers")
         self.assertTrue(os.path.exists(os.path.join(sidecar, "run.bat")))
         self.assertTrue(os.path.exists(os.path.join(sidecar, "src", "app.py")))
@@ -2084,50 +2126,31 @@ class SpineSmokeTest(unittest.TestCase):
         self.assertFalse(os.path.exists(os.path.join(target, ".gitignore")))
 
         # refuses to install into itself (self-overlap guard)
-        bad = invoke_mod.invoke(self.paths, "sidecar_install", {"target": ".", "dry_run": True})
-        self.assertFalse(bad.ok)
+        # RETIRED ASSERTION, not a fixed one. This used to check "refuses to install
+        # into itself", a guard that existed because the RUNTIME installer vended from
+        # its own running tree. The standalone setup application reads a materialised
+        # payload, so there is no self to overlap - and any folder is a legitimate
+        # target, including a source checkout.
+        #
+        # Asserting it anyway INSTALLED A REAL SIDECAR INTO THE SOURCE REPOSITORY.
+        # The surviving invariant is the one the installer actually holds:
+        bad = self._install_product(target, mode="install")
+        self.assertNotEqual(bad.returncode, 0,
+                            msg="a second plain install over an existing instance "
+                                "must be refused; update or reinstall are the "
+                                "explicit lifecycle choices")
         # update mode overlays code but preserves runtime memory (and refuses without a flag)
         mem = os.path.join(sidecar, "_state")
         os.makedirs(mem, exist_ok=True)
         with open(os.path.join(mem, "journal.sqlite3"), "w") as h:
             h.write("PRETEND-MEMORY")
-        blocked = invoke_mod.invoke(
-            self.paths, "sidecar_install", {"target": target, "dry_run": False, "confirm": True}
-        )
-        self.assertFalse(blocked.ok)  # exists, no update/overwrite -> refuse
-        upd = invoke_mod.invoke(
-            self.paths,
-            "sidecar_install",
-            {"target": target, "dry_run": False, "confirm": True, "update": True},
-        )
-        self.assertTrue(upd.ok, msg=getattr(upd, "error", None))
+        blocked = self._install_product(target)
+        self.assertNotEqual(blocked.returncode, 0)   # exists, plain install -> refuse
+        upd = self._install_product(target, mode="update")
+        self.assertEqual(upd.returncode, 0, msg=(upd.stderr or upd.stdout)[-300:])
         with open(os.path.join(mem, "journal.sqlite3")) as h:
             self.assertEqual(h.read(), "PRETEND-MEMORY")  # memory survived the update
         self.assertTrue(os.path.exists(os.path.join(sidecar, "run.bat")))  # code still present
-
-    def test_installer_probe_builds(self):
-        try:
-            import tkinter
-
-            probe_root = tkinter.Tk()
-            probe_root.destroy()
-        except Exception as e:  # pragma: no cover - environment-dependent
-            self.skipTest(f"tkinter unavailable: {e}")
-
-        from src.ui import app_ui
-
-        # LEGACY/TRANSITIONAL SURFACE. `installer_view` is setup-application
-        # capability sitting in the installed runtime; the product's installation
-        # entrance is `packaging/installer/` (Charter SIDECAR:SETUP-DISTRIBUTION).
-        # This test proving it builds does NOT restore product authority to it.
-        # T6 rehomes the surface; until then the probe must at least be valid.
-        #
-        # _foreign_target(), not tempfile.mkdtemp(): setUpClass redirects tempfile
-        # INTO the tree, which sidecar_install correctly refuses. Three sibling call
-        # sites were repaired in 0014; this fourth one survived because it SKIPS in
-        # the sandbox for want of tkinter, and first executed on Windows in 0023.
-        rc = app_ui.run_installer_probe(self.paths, target=self._foreign_target())
-        self.assertEqual(rc, 0)
 
     def test_docs_have_no_dangling_links(self):
         # Phase 5 REGENERATE: no shipped doc may contain a MARKDOWN LINK to a file that does not
@@ -2514,6 +2537,13 @@ class SpineSmokeTest(unittest.TestCase):
         payload = _Path(self._tmp_path("payload"))
         (payload / "src").mkdir(parents=True)
         (payload / "src" / "app.py").write_text("# entry\n", encoding="utf-8")
+        # The installer loads the identity authority FROM THE PAYLOAD, so a payload
+        # fixture must carry it - the format that governs an instance is the one that
+        # shipped with it, not whatever version the installer happens to be.
+        (payload / "src" / "core").mkdir(parents=True, exist_ok=True)
+        (payload / "src" / "core" / "instance.py").write_text(
+            (_Path(self.paths.root) / "src" / "core" / "instance.py").read_text(
+                encoding="utf-8"), encoding="utf-8")
         (payload / "run.bat").write_text("@echo off\n", encoding="utf-8")
 
         target = _Path(self._tmp_path("target"))
@@ -2562,7 +2592,10 @@ class SpineSmokeTest(unittest.TestCase):
         from tools.vendor_export import cli as ve
 
         root = self.paths.root
-        for src_rel, dst_rel in ve.CLEAN_APP_DOC_OVERRIDES.items():
+        # The mapping moved to the ship-boundary authority in T6; vendor_export
+        # consumes it rather than carrying a second copy.
+        from src.core.payload import EXPORT_SUBSTITUTIONS
+        for src_rel, dst_rel in EXPORT_SUBSTITUTIONS.items():
             src = root / src_rel
             self.assertTrue(src.is_file(), f"clean_app override template missing: {src_rel}")
             self.assertGreater(len(src.read_text(encoding="utf-8").strip()), 100,
@@ -2740,7 +2773,6 @@ class SpineSmokeTest(unittest.TestCase):
         import subprocess
         import sys
 
-        from src.core import invoke as invoke_mod
 
         host = self._foreign_target()
         os.makedirs(os.path.join(host, "src"))
@@ -2749,10 +2781,8 @@ class SpineSmokeTest(unittest.TestCase):
         with open(os.path.join(host, "src", "host_mod.py"), "w") as h:
             h.write("def host_fn():\n    return 'HOST_ONLY_TOKEN_9Q'\n")
 
-        done = invoke_mod.invoke(
-            self.paths, "sidecar_install", {"target": host, "dry_run": False, "confirm": True}
-        )
-        self.assertTrue(done.ok, msg=getattr(done, "error", None))
+        done = self._install_product(host)
+        self.assertEqual(done.returncode, 0, msg=(done.stderr or done.stdout)[-300:])
         sidecar = os.path.join(host, ".useful-helpers")
 
         def seam(tool, args):
@@ -2822,9 +2852,16 @@ class SpineSmokeTest(unittest.TestCase):
         # T-roots gate: every manifest declares a valid operates_on; the registry surfaces it;
         # the shared contract API exists (no tool re-derives roots ad hoc).
         import json as _json
+        import os
 
         from src.core import registry
-        from tools._toolkit import output_root, project_root, suite_home, toolkit_home_names
+        from tools._toolkit import (
+            MissingRuntimeContext,
+            instance_root,
+            output_root,
+            project_root,
+            suite_home,
+        )
 
         checked = 0
         for base in (self.paths.tools, self.paths.apps):
@@ -2841,10 +2878,31 @@ class SpineSmokeTest(unittest.TestCase):
         self.assertGreaterEqual(checked, 73)
         recs = registry.list_tools(self.paths)
         self.assertTrue(all(r.operates_on in ("project", "toolkit") for r in recs))
-        # contract API callable and coherent (standalone: all roots coincide)
+        # The roots contract is TRANSPORTED, not inferred. `toolkit_home_names()` is
+        # gone: it returned a NAME set seeded with a hardcoded ".useful-helpers", which
+        # missed a renamed instance and pruned unrelated target folders sharing the name.
+        # Transport supplied EXPLICITLY. Tools no longer infer their roots, so a
+        # test exercising the contract must play the seam's part rather than rely on
+        # a fallback that deliberately no longer exists.
+        os.environ.setdefault("SUITE_HOME", str(self.paths.root))
+        os.environ.setdefault("SUITE_PROJECT_ROOT", str(self.paths.project_root
+                                                        or self.paths.root))
         self.assertEqual(output_root(), suite_home() / "_artifacts")
+        self.assertEqual(instance_root(), suite_home())
         self.assertTrue(callable(project_root))
-        self.assertIn(".useful-helpers", toolkit_home_names())
+
+        # And the other half: WITHOUT transported context a tool child must FAIL rather
+        # than rediscover the project from cwd. Removing eight guesses is only half the
+        # repair if a ninth quietly reappears inside the adapter.
+        saved = {k: os.environ.pop(k) for k in ("SUITE_HOME", "SUITE_PROJECT_ROOT")
+                 if k in os.environ}
+        try:
+            with self.assertRaises(MissingRuntimeContext):
+                project_root()
+            with self.assertRaises(MissingRuntimeContext):
+                instance_root()
+        finally:
+            os.environ.update(saved)
 
     def test_path_scrubber(self):
         # T-roots gate: a failing call whose error echoes an absolute path is stored SCRUBBED
@@ -2975,7 +3033,6 @@ class SpineSmokeTest(unittest.TestCase):
     def test_seam_universal_apply(self):
         # T-seam gate (F1): apply:true executes every gated Apply tool; each legacy flag still
         # works; previews and refusals state the exact flag via apply_with.
-        import os
 
         from src.core import invoke as invoke_mod
 
@@ -3007,18 +3064,19 @@ class SpineSmokeTest(unittest.TestCase):
         self.assertFalse(r.output.get("written"))
         self.assertEqual(r.output.get("apply_with"), {"apply": True})
         # dry-run/confirm tool: preview hint + refusal hint
-        t = self._foreign_target()
-        r = invoke_mod.invoke(self.paths, "sidecar_install", {"target": t})
+        # A dry-run/confirm tool - previously `sidecar_install`, retired in T6. The
+        # INTENT here is the universal Apply seam (preview hint, refusal hint,
+        # apply:true executes), not installation, so any gated Apply tool serves.
+        r = invoke_mod.invoke(self.paths, "artifact_cleaner", {})
         self.assertTrue(r.output.get("dry_run"))
         self.assertEqual(r.output.get("apply_with"), {"apply": True})
         r = invoke_mod.invoke(self.paths, "vendor_export", {"dry_run": False})
         self.assertFalse(r.ok)
         self.assertEqual(r.output.get("apply_with"), {"apply": True})
         # apply:true on a dry_run/confirm tool executes for real
-        r = invoke_mod.invoke(self.paths, "sidecar_install", {"target": t, "apply": True})
+        r = invoke_mod.invoke(self.paths, "artifact_cleaner", {"apply": True})
         self.assertTrue(r.ok, msg=getattr(r, "error", None))
         self.assertFalse(r.output.get("dry_run"))
-        self.assertTrue(os.path.exists(os.path.join(t, ".useful-helpers", "run.bat")))
 
     def test_project_run(self):
         # T-operate gate (B1) + C2: dry-run plan, real execution with captured output + failure
@@ -3061,7 +3119,7 @@ class SpineSmokeTest(unittest.TestCase):
         r = invoke_mod.invoke(
             self.paths,
             "git_inspect",
-            {"action": "grep", "pattern": "toolkit_home_names", "path": "tools/_toolkit.py"},
+            {"action": "grep", "pattern": "instance_root", "path": "tools/_toolkit.py"},
         )
         self.assertGreaterEqual(int(r.output.get("count", 0)), 1)
 

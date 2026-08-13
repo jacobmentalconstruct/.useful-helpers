@@ -206,8 +206,24 @@ def is_instance_path(path: "Path | str") -> bool:
     try:
         here = Path(path).resolve()
         root = instance_root()
+        target = project_root()
     except (MissingRuntimeContext, OSError):
         return False
+
+    # WHEN THE ROOTS COINCIDE, NOTHING IS EXCLUDED.
+    #
+    # This exclusion exists because an installed sidecar sits INSIDE its target, so a
+    # project-facing walk would otherwise report the sidecar's own files as target
+    # content. In the source repository - and in any standalone/dev use - the
+    # instance root and the target root are the SAME directory, and "everything
+    # inside the instance" is then also "everything in the project".
+    #
+    # Without this, the predicate pruned the entire tree: `glob` returned zero
+    # matches, and every code-intel walk went silent. The name-based predecessor
+    # never hit this because a name can only ever match a CHILD directory.
+    if root == target:
+        return False
+
     return here == root or root in here.parents
 
 

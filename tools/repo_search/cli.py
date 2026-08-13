@@ -17,7 +17,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from tools._toolkit import tool_main, toolkit_home_names
+from tools._toolkit import is_instance_path, tool_main
 
 _PRUNE = {".git", ".venv", "node_modules", "__pycache__", "dist", "build"}
 
@@ -48,6 +48,10 @@ def _fallback(
     for path in root.rglob("*"):
         if len(rows) >= limit:
             break
+        # Sidecar excluded by PATH; the name set cannot express "this subtree",
+        # and stops working the moment the installed folder is renamed.
+        if is_instance_path(path):
+            continue
         if any(part in prune for part in path.relative_to(root).parts):
             continue
         if not path.is_file() or not fnmatch.fnmatch(path.name, glob) or not _textish(path):
@@ -81,11 +85,25 @@ def run(args: dict) -> dict:
     glob = str(args.get("glob") or "*")
     limit = max(1, min(int(args.get("limit", 50)), 500))
     case_sensitive = bool(args.get("case_sensitive", False))
-    prune = _PRUNE | toolkit_home_names()
+    prune = set(_PRUNE)
 
     rg = shutil.which("rg")
     if rg:
-        cmd = [rg, "--line-number", "--no-heading", "--color", "never", "--glob", f"!{{{','.join(sorted(prune))}}}/**"]
+        globs = [f"!{{{','.join(sorted(prune))}}}/**"]
+        # The instance is excluded by its ACTUAL location relative to the target,
+        # so a renamed sidecar is still excluded and a same-named target folder is not.
+        try:
+            import os as _os
+
+            from tools._toolkit import instance_root
+            rel = _os.path.relpath(instance_root(), root)
+            if not rel.startswith(".."):
+                globs.append(f"!{rel.replace(chr(92), '/')}/**")
+        except Exception:
+            pass
+        cmd = [rg, "--line-number", "--no-heading", "--color", "never"]
+        for g in globs:
+            cmd += ["--glob", g]
         if not case_sensitive:
             cmd.append("--ignore-case")
         if glob != "*":
