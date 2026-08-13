@@ -3067,16 +3067,30 @@ class SpineSmokeTest(unittest.TestCase):
         # A dry-run/confirm tool - previously `sidecar_install`, retired in T6. The
         # INTENT here is the universal Apply seam (preview hint, refusal hint,
         # apply:true executes), not installation, so any gated Apply tool serves.
-        r = invoke_mod.invoke(self.paths, "artifact_cleaner", {})
+        #
+        # SCOPED TO A DIRECTORY THIS TEST OWNS. The first substitution called
+        # `artifact_cleaner` with no root, which pointed a destructive cleanup at the
+        # LIVE REPOSITORY and ran it with apply:true. It happened to delete nothing.
+        # A test that proves a seam must not also be an unscoped Apply against the
+        # tree it is running in.
+        from pathlib import Path as _CleanPath
+        cleanable = _CleanPath(self._tmp_path("cleanable"))
+        cleanable.mkdir(parents=True, exist_ok=True)
+        (cleanable / "junk.log").write_text("disposable\n", encoding="utf-8")
+        clean_args = {"root": str(cleanable), "include_patterns": ["*.log"]}
+        r = invoke_mod.invoke(self.paths, "artifact_cleaner", dict(clean_args))
         self.assertTrue(r.output.get("dry_run"))
         self.assertEqual(r.output.get("apply_with"), {"apply": True})
         r = invoke_mod.invoke(self.paths, "vendor_export", {"dry_run": False})
         self.assertFalse(r.ok)
         self.assertEqual(r.output.get("apply_with"), {"apply": True})
         # apply:true on a dry_run/confirm tool executes for real
-        r = invoke_mod.invoke(self.paths, "artifact_cleaner", {"apply": True})
-        self.assertTrue(r.ok, msg=getattr(r, "error", None))
+        r = invoke_mod.invoke(self.paths, "artifact_cleaner",
+                              dict(clean_args, apply=True))
+        self.assertTrue(r.ok, msg=f"{r.error!r} {r.output!r}"[:400])
         self.assertFalse(r.output.get("dry_run"))
+        self.assertFalse((cleanable / "junk.log").exists(),
+                         "apply:true must actually execute, not merely report")
 
     def test_project_run(self):
         # T-operate gate (B1) + C2: dry-run plan, real execution with captured output + failure
