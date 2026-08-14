@@ -1,9 +1,13 @@
 # Charter — Useful Helpers Sidecar
 
-Status: **ACTIVE AUTHORITY.** T0-T4 parked and built against this document; T5 amended it.
-Date: 2026-08-06.
+Status: **ACTIVE AUTHORITY.** T0-T6 parked and built against this document; T5 amended it.
+Date: 2026-08-06, amended 2026-08-09 (T5), 2026-08-14 (convergence phase).
 Authority: this document, with `.bcc/BUILDER-CONSTRAINT-CONTRACT.md`, supersedes
 all prior framing. The former governing blueprint is retired to `_trash/`.
+
+**Development mode as of 2026-08-14: CONVERGENCE.** The project is no longer missing
+broad capability; see §1.3. Sequencing, the convergence rules and the prototype STOP
+are owned by `TRANCHE_PLAN.md`, not restated here.
 
 ---
 
@@ -17,8 +21,14 @@ The product is **an installer and a payload**, not one application.
 2. **The sidecar payload.** What gets installed, and what then operates on the
    bound target through its single surface.
 
-They have different lifetimes and different users. `installer_view` is the first;
-`registry_view` and the unified surface are the second. They do **not** merge.
+They have different lifetimes and different users. **The setup application is the
+first** — today `packaging/installer/install.py`, which carries its own Tkinter flow
+and runs on a bare machine with stdlib only. `registry_view` and the unified surface
+are the second. They do **not** merge.
+
+*Corrected 2026-08-14:* this sentence named `src/ui/installer_view.py`, which no
+longer exists. The runtime shell surfaces are `registry_view`, `mapper_view` and
+`planner_view`; setup is not among them, which is the boundary this section states.
 
 The sidecar can be deleted or archived at any time without affecting its target.
 The target stays ignorant of it throughout, so when the target ships to its own
@@ -68,6 +78,44 @@ The target never learns the sidecar exists. No pointer file, no `.gitignore`
 line, no config key. The sidecar reads the target and writes only its own home.
 
 Test: delete the sidecar folder. The target must not notice.
+
+**The precept governs the sidecar's own footprint, not the user's work.** A governed
+Apply operation may deliberately modify target-owned content — that is what the
+product is for. What it may never do is leave a trace of *itself*. The exact rule,
+by lifecycle phase and operation authority, is §3.2; the ownership boundary is §5.6.
+*Never writes to the target* is a misstatement of the precept, and where a surface
+says it plainly it is wrong.
+
+### 1.3 The prototype objective
+
+[OWNS: SIDECAR:PROTOTYPE-OBJECTIVE]
+
+Adopted 2026-08-14, after the `_theCELL` dogfood run showed the existing toolbox
+already understanding and operating on a real, unfamiliar target.
+
+> Install Useful Helpers into a target of nearly any kind; use local compute and
+> existing deterministic tools to understand that target deeply; expose **one compact
+> current understanding** to both human and agent; and let either safely inspect,
+> transform, verify and re-understand the target through the governed toolbox.
+
+Three consequences, each of which overturns an earlier framing:
+
+1. **The remaining gap is composition, not capability.** Ninety-four tools already
+   produce the evidence. What does not exist is one compact synthesis of it, one
+   shared presentation of that synthesis, and a closed change loop over it.
+2. **Existing tools remain evidence producers.** Awareness is their compact
+   composition, never their replacement. Project Mapper stays a snapshot compiler;
+   code-intel stays code-intel; SQLite inspection stays SQLite inspection. `attach`
+   becomes the front door that composes the appropriate evidence.
+3. **Local compute is cheap; model context is expensive.** Scan and analyse richly on
+   the user's machine, retain the evidence locally, and send the model only compact
+   summaries, canonical identifiers and requested drill-down. Measured basis: on
+   `_theCELL`, `report` plus `dead_code` returned ~49 KB of envelope to supply seven
+   summary integers of actual signal.
+
+The end-state conditions E1-E13 remain the invariants. §3.3 is the experience.
+`TRANCHE_PLAN.md` owns the convergence sequence and the point at which architectural
+development stops and dogfooding begins.
 
 ---
 
@@ -175,15 +223,21 @@ The word doing the work is **silently**. Lifecycle and self-management never mut
 target-owned content at all; runtime mutation is permitted, attributable, scoped and
 confirmed.
 
-### 3.1 What is already true
+### 3.5 What is already true
 
 Recorded so the remaining work is not overstated. All verified this session by
 execution, not inspection.
 
-- 95 registered tools; control plane is standard-library only; runs on Linux and
-  Windows.
+- **94 registered tools** (`config/registry.json`, live count 2026-08-14); control
+  plane is standard-library only; runs on Linux and Windows. *The figure read 95 from
+  2026-08-06 until this correction; the generated registry is the authority, and this
+  line is a dated observation of it, not a second one.*
 - One governed seam with authority ceiling, path containment, and audit log.
-- The GUI already crosses the seam (`installer_view.py:131`).
+- The GUI already crosses the seam. *The original citation was
+  `installer_view.py:131`; that file has since been deleted. The live evidence is
+  `src/ui/registry_view.py`, and `gates/t02` asserts the property by census over all
+  of `src/` rather than by pointing at one line — which is why deleting the cited
+  file did not cost the assertion.*
 - MCP entrance exists.
 - Domain cartridges exist for data-curation and records-research.
 - `THEME_SPEC.md` is fully implemented in `src/lib/theme.py` — five colours and
@@ -193,33 +247,34 @@ execution, not inspection.
 - 79 distinct tools were exercised against the real daily-driver tree on
   2026-07-18: 124 ok, 19 failed. Preserved in `.bcc/evidence/`.
 
-### 3.2 What is genuinely unbuilt
+### 3.6 What was genuinely unbuilt — dispositions
 
-Short list, deliberately.
+Written 2026-08-06 as the short list of missing substrate. Kept because the
+dispositions are the evidence for §1.3's claim that broad capability is no longer
+what is missing. **Superseded as a work list**; `TRANCHE_PLAN.md` owns what is next.
 
-1. **A live event channel.** `event_log.py` exposes only `record()`. There is no
-   read, tail, or subscribe. E6 has nothing under it today, and it constrains
-   the GUI's shape, chain progress reporting, and agent observation. **This is
-   the load-bearing gap.**
-2. **One surface.** Four views exist and are reached by four separate commands.
-   They must become one shell. Theme and UX intent are already supplied.
-3. **Chains for the daily drivers.** Three playbooks exist; the app-shaped ones
-   do not.
-4. **Cancellation and progress.** The seam blocks on `subprocess.run` with a
-   fixed 120 s timeout and no cancel path.
-5. ~~**Explicit-target install.**~~ **RESOLVED 2026-08-06.** Root resolution now
-   works by evidence only, in four cases with no fallthrough: an explicit valid
-   root binds to it; an explicit *invalid* root is a hard error; a `.suite_sidecar`
-   marker binds to the parent — correct, because an installed sidecar's parent
-   genuinely is its whole reality; and otherwise there is **no target** and calls
-   refuse rather than guess. The folder-name heuristic is removed: a dot-prefixed
-   name was making this repository bind to its own parent staging folder.
-   Verified end to end — vend into a scratch folder, the sidecar binds to it,
-   sees its files, and leaves no trace.
-
-6. **The vend manifest.** `_PAYLOAD_EXCLUDE` in the harness and
-   `CLEAN_APP_STRIP` in `vendor_export` both describe what ships. They must
-   become one declared manifest, and it must satisfy E11.
+1. ~~**A live event channel.**~~ **BUILT — T3.** Ledger read, tail and watch exist;
+   measured presence read cost 0.29 ms. E6a and E6b are MET.
+2. **One surface.** Still four views behind four commands. **Deliberately out of
+   scope for the convergence phase** — the prototype needs the *smallest* legible
+   human projection of shared awareness, not a redesigned shell. E3 is post-STOP.
+3. **Chains for the daily drivers.** Three playbooks exist; the app-shaped ones do
+   not. E7, post-STOP.
+4. ~~**Cancellation and progress.**~~ **BUILT — T4, hardened in 0023.** Cancellable
+   dispatch, per-call timeout, progress announcements, and Windows Job Object
+   containment of the whole process tree.
+5. ~~**Explicit-target install.**~~ **RESOLVED 2026-08-06, then SUPERSEDED by T6.**
+   The 2026-08-06 fix removed a folder-name heuristic and made a `.suite_sidecar`
+   marker bind to the parent. **That marker no longer exists.** T6 replaced all
+   marker, basename and environment inference with one canonical identity manifest
+   (`src/core/instance.py`); `resolve()` returns `None` when a directory is not an
+   instance and **raises** when it claims to be one and is broken. Any surface still
+   describing marker-based resolution is stale, not authoritative.
+6. **The vend manifest.** One declared manifest now exists (`src/core/payload.py`),
+   and every consumer derives from it — but it still defines the payload by
+   *subtracting exclusions from the source tree*. §5.4 requires a **positive install
+   manifest**. Recorded as deferred lifecycle/distribution work: the **canonical
+   payload assembler**. It is not carried by any convergence tranche.
 
 ---
 
@@ -315,9 +370,11 @@ reinstall and uninstall an instance.
 **`packaging/installer/` is the product's installation entrance.** It is the
 authority for what installation means.
 
-`tools/sidecar_install` is a *runtime tool that installs another sidecar*. It is a
-**nonconformity** under this model, not the product's installer, and is scheduled
-for disposition.
+~~`tools/sidecar_install` is a *runtime tool that installs another sidecar*.~~
+**DISPOSED — T6.** It was deleted, along with the harness's two private installers.
+Nine surfaces claiming installation authority were classified; one remains, and it is
+`packaging/installer/`. The installed runtime does not expose installing a sidecar as
+a product capability.
 
 ### 5.4 SIDECAR:INSTALLABLE-PAYLOAD
 
@@ -516,8 +573,10 @@ that builds the channel.
   `_UsefulHelperScriptsMENU` is the sample for the surface itself, not a chain.
   `_LoRA_TRAIN` is removed.
 - **`apps/` does not survive.** Chains are the app shape. `apps/projectmapper`
-  is retired into a chain; note the registry currently draws one registered tool
-  from `apps/`, so the count moves from 95 to 94 when it goes.
+  is retired into a chain. *The 2026-08-06 note predicted the count moving 95 → 94
+  when it goes; the live count is already 94 while `apps/` still contributes, so the
+  arithmetic is stale and the expected post-retirement figure must be re-derived from
+  the generated registry at the time `P-retire-apps` runs, not carried from here.*
 
 ---
 
@@ -543,7 +602,18 @@ Also verified: stdout is pure JSON and parses directly, logs go to stderr. The
 control plane is standard-library only, which is why it runs unmodified on Linux
 despite being a Windows product.
 
-### 7.2 The most dangerous defect
+### 7.2 The most dangerous defect — **HISTORICAL. SUPERSEDED BY T6.**
+
+> **This describes 2026-08-06 behaviour and no current mechanism.** Both halves of it
+> are gone. There is no `.suite_sidecar` marker, no dot-prefixed-name inference and no
+> parent fallthrough: an installed instance resolves its target from `instance.json`
+> structurally, and a manifest that is present but broken **raises** rather than
+> falling through to a guess. The "required mitigation" below was superseded by
+> something stronger than validation — the guess it was validating no longer exists.
+>
+> Retained unedited because the *class* of defect it names is the one this project
+> keeps rediscovering: **a wrong answer that is indistinguishable from a right one.**
+> Delete the account and the lesson goes with it.
 
 Pointing `SUITE_PROJECT_ROOT` at a path that does not exist **does not error.**
 It silently resolves to the sidecar's parent and reports `ok: true`. In this
@@ -595,6 +665,10 @@ Consequences:
 - **The development mount denies unlink.** Create, write, overwrite and rename
   all work; delete does not. Removals are staged in `_trash/` for the operator.
   Every git *write* strands a lock file that must be moved aside.
-- **All Windows-specific behavior is unverified**: `run.bat`, the Tk entrances,
-  venv interpreter resolution, Windows path handling. A Windows shell is required
-  and the development environment cannot supply one.
+- ~~**All Windows-specific behavior is unverified.**~~ **CORRECTED 2026-08-13.**
+  Windows is now the primary CI job (`.github/workflows/verify.yml`) and the
+  authority for a zero-skip run; `run.bat`, path handling and venv resolution are
+  exercised there. Two Windows-only defects were found and fixed that no Linux run
+  could see: `taskkill /T` skipped when the direct child exited cleanly, and
+  `CreateJobObjectW` silently truncating a 64-bit HANDLE because ctypes defaults
+  `restype` to `c_int`. What remains unverified is stated per tranche, not globally.

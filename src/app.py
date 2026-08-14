@@ -12,15 +12,32 @@ NOTES:      Composition-root pattern, rewritten lean: core.invoke() is the one g
 """
 from __future__ import annotations
 
+import os
 import sys
 
-from src.core import invoke as invoke_mod
-from src.core import presence, registry
-from src.core.config import NoTargetBound, resolve_paths
-from src.interfaces import cli, mcp_server
-from src.lib import logging_setup
+# RUNNABLE BY PATH, NOT ONLY AS A MODULE.
+#
+# `python .useful-helpers/src/app.py` puts `.../src` on sys.path, not the instance
+# root, so `from src.core import ...` fails with ModuleNotFoundError. That is the
+# exact command the installer printed as its next step, so a freshly installed
+# sidecar could not be started by following its own instructions.
+#
+# Nothing caught it: T6's gate proved identity resolution using a probe that did
+# `sys.path.insert(0, home)` itself, which proves resolution works WHEN THE CALLER
+# SETS UP THE ENVIRONMENT - not that the product starts. Three lines here make the
+# documented entrance real.
+_INSTANCE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _INSTANCE_ROOT not in sys.path:
+    sys.path.insert(0, _INSTANCE_ROOT)
 
-USAGE = "usage: python -m src.app <cli|mcp|ui|map|plan|ui-probe|map-probe|plan-probe> [options]"
+from src.core import invoke as invoke_mod  # noqa: E402  (after the path bootstrap)
+from src.core import presence, registry  # noqa: E402
+from src.core.config import NoTargetBound, resolve_paths  # noqa: E402
+from src.interfaces import cli, mcp_server  # noqa: E402
+from src.lib import logging_setup  # noqa: E402
+
+USAGE = ("usage: uh <cli|mcp|ui|map|plan|ui-probe|map-probe|plan-probe> [options]\n"
+         "   or: python <instance>/src/app.py <mode> [options]")
 
 
 def main(argv: list[str]) -> int:

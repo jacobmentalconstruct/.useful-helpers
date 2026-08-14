@@ -147,6 +147,29 @@ def _code_only(body: str) -> str:
     return "".join(lines)
 
 
+def _installer_next(stdout: str) -> "str | None":
+    """The runnable line from the installer's own `next` message.
+
+    Deliberately parsed from what the product PRINTS rather than reconstructed here.
+    A gate that builds its own launch command cannot notice the printed one is wrong -
+    which is exactly how a broken entrance survived a green suite.
+    """
+    import json as _json
+    for i, ch in enumerate(stdout):
+        if ch == "{":
+            try:
+                doc = _json.loads(stdout[i:])
+            except ValueError:
+                continue
+            for line in str(doc.get("next", "")).splitlines():
+                line = line.strip()
+                if line.startswith(("sh ", "run.bat", ".useful-helpers")) or (
+                        line and not line.startswith("cd ") and "run." in line):
+                    return line.split("(")[0].strip()
+            return None
+    return None
+
+
 def _target_digest(target: Path) -> dict:
     """sha256 of every TARGET-OWNED file, keyed by relative path.
 
@@ -303,6 +326,44 @@ def check(r, root: Path) -> None:
             f"rc={proc.returncode} {(proc.stderr or proc.stdout)[-300:]}")
     if not home.is_dir():
         return
+
+    # ---- WALK STEP 4: IT LAUNCHES, BY THE COMMAND IT PRINTS ---------------
+    # The single most embarrassing gap T6 had. Every other assertion here proved
+    # something about an instance that had never been STARTED - because the probe
+    # below does `sys.path.insert(0, home)` itself, which proves resolution works when
+    # the caller fixes the environment, not that the product runs.
+    #
+    # Meanwhile the installer's own success message named
+    # `python .useful-helpers/src/app.py cli tool-list`, which died with
+    # ModuleNotFoundError. A freshly installed sidecar could not be started by
+    # following its own instructions, and the suite was entirely green.
+    #
+    # So: take the command the installer PRINTS, and run it. No path help, no cwd
+    # convenience, nothing added. If the documented entrance does not work, the
+    # product does not work, whatever the other assertions say.
+    printed = _installer_next(proc.stdout or "")
+    r.check("the installer prints a launch command", bool(printed),
+            "an install that does not say how to start is not finished")
+    if printed:
+        launched = subprocess.run(printed, shell=True, cwd=str(target),
+                                  capture_output=True, text=True, timeout=300,
+                                  env=_clean_env())
+        r.check("the printed launch command actually runs",
+                launched.returncode == 0,
+                f"`{printed}` from {target} exited {launched.returncode}: "
+                f"{(launched.stderr or launched.stdout)[-300:]}")
+
+    # Run by PATH as well, because that is what anyone will type first and it is
+    # what the old message told them to do.
+    by_path = subprocess.run(
+        [sys.executable, str(home / "src" / "app.py"), "cli", "tool-list"],
+        cwd=str(target), capture_output=True, text=True, timeout=300,
+        env=_clean_env())
+    r.check("the instance runs when invoked by path",
+            by_path.returncode == 0,
+            f"python <instance>/src/app.py exited {by_path.returncode}: "
+            f"{(by_path.stderr or by_path.stdout)[-300:]} - running a file by path "
+            "puts its own directory on sys.path, not the instance root")
 
     # WALK STEP 5 - the sidecar identifies itself and its target.
     uuid_before = _identity(root, home)

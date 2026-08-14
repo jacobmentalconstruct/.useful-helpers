@@ -7,8 +7,16 @@ instrument. The target is the work.
 **Do this first. It is one call, and it is the whole onboarding:**
 
 ```
-python -m src.app cli tool-call --tool attach --args-json "{}"
+.useful-helpers\run.bat attach       :: Windows, from the target root
+sh .useful-helpers/run.sh attach     :: Linux / macOS, from the target root
+run.bat attach  /  sh run.sh attach  :: from inside the instance directory
 ```
+
+**Invoke the launcher by path.** It is not on `PATH`. Each launcher resolves its own
+directory and changes into it, so the working directory you start from does not matter
+ -  but the path you type has to reach the file. The raw form is
+`python -m src.app cli tool-call --tool attach --args-json "{}"`, which additionally
+requires the instance directory as the working directory  -  prefer the launcher.
 
 > **Starting something NEW from an idea, in an empty or near-empty folder?** Begin with `genesis`
 > instead - it records the project's intent and identity and seeds the first journal entry, no
@@ -37,6 +45,14 @@ You do not need to read a tool catalog to start. Read `next` and go.
 > `low` means its output is a **lead, not a verdict**  -  verify by hand before acting on it.
 > Tools have flagged live code as dead and correct architecture as broken. Deterministic
 > structural facts (file tree, imports, size, secrets) are objective; judgments are not.
+
+> **Use the identifier the tool gave you. Never reconstruct one from prose.**
+> These tools answer on exact identities  -  `src.backend::Backend`, a real table name, a real
+> relative path  -  and refuse politely when you invent something plausible instead. If a summary
+> says "the backend module is the hub", do not query `CellBackend` because the project is called
+> `_theCELL`; query the handle the summary carried. A tool that refuses a name you made up is
+> working correctly, and reading that refusal as a missing capability wastes a whole
+> investigation. When you are unsure of a handle, list before you query.
 
 ## You have hands  -  use them instead of your own
 
@@ -75,13 +91,26 @@ target. Trust it over your own read. Ask what local inference has cost with
 target; the target is totally ignorant of the sidecar. It can be exported, moved, or shipped at
 any moment without ever knowing it was instrumented.
 
-Concretely: **write nothing into the target.** No pointer file, no `.gitignore` line, no config
-key, not even a helpful one. If this toolkit needs to be invisible to the target's own tooling,
-**it hides itself**  -  it does not ask the target to accommodate it. Generated state and
-artifacts belong to the instrument and stay here. The only things that land in the target are
-deliverables you were explicitly asked to produce.
+Concretely: **leave no trace of the instrument.** No pointer file, no `.gitignore` line, no
+config key, not even a helpful one. If this toolkit needs to be invisible to the target's own
+tooling, **it hides itself**  -  it does not ask the target to accommodate it. Generated state and
+artifacts belong to the instrument and stay here.
 
-Test: *delete this folder. Does the target notice?* The answer must be no.
+**This is not "never write to the target."** A governed Apply operation modifies target content
+deliberately  -  that is what `write_file`, `edit`, `fs_op` and the rest are *for*. The rule is
+about *whose* content it is:
+
+| | May be written | |
+|---|---|---|
+| the instrument's own state, artifacts, journal, evidence | **here**, inside this folder | always |
+| the work you were asked to do | **the target** | only through a governed Apply, inside its declared write scope, preview-first, recorded in the ledger |
+| a trace of the instrument's existence | **nowhere in the target** | never, under any authority |
+
+Installation, update, uninstall, startup and self-maintenance never touch target-owned content
+at all. Runtime Apply may, and is audited when it does.
+
+Test: *delete this folder. Does the target notice?* The answer must be no  -  aside from the
+deliverables you were explicitly asked to produce, which are the user's, not the sidecar's.
 
 ## The three roots
 
@@ -96,24 +125,39 @@ Each `tool.json` declares `operates_on: project | toolkit`.
 
 ### How the work target is decided
 
-By evidence only. There are four cases and **no fallthrough** - the sidecar never
-guesses which project it is pointed at:
+**By canonical identity, structurally.** An installed instance carries an
+`instance.json` manifest naming its own schema, a durable UUID, and the target's
+path *relative to the instance*. Nothing absolute is written down, so moving the
+target and its sidecar together keeps the relationship intact.
 
 | Situation | Evidence | Target |
 |---|---|---|
-| Installed into a project | a `.suite_sidecar` marker beside this file | the parent directory |
-| An explicit root, valid | `SUITE_PROJECT_ROOT` names a real directory | that directory |
-| An explicit root, invalid | `SUITE_PROJECT_ROOT` names nothing | **hard error** |
-| Not installed anywhere | neither of the above | **no target - every call refuses** |
+| Installed instance | `instance.json` present and valid | the recorded relative target (the instance's parent) |
+| Installed, manifest broken | `instance.json` present and invalid | **hard error** - never a fallback guess |
+| Not installed, explicit root | `SUITE_PROJECT_ROOT` names a real directory | that directory |
+| Not installed, invalid root | `SUITE_PROJECT_ROOT` names nothing | **hard error** |
+| Neither | no manifest, no variable | **no target - every call refuses** |
 
-If you are working in the sidecar's own source repository rather than in an
-installed copy, there is no target and tool calls will refuse with
-`no work target bound`. That is correct behaviour, not a fault. Supply an
-explicit `SUITE_PROJECT_ROOT`, or work in an installed sidecar.
+Two rules do the work here. **Absent is not malformed:** no manifest means "this is
+not a canonical instance", which is an answer, not a failure. **Identity outranks
+the environment:** where an instance exists, a conflicting `SUITE_PROJECT_ROOT`
+raises and names the instance UUID rather than silently rebinding it. The variable
+governs only the uninstalled case.
 
-An invalid explicit root is never quietly replaced with a guess. That mattered:
-it used to resolve to the parent and report success, so a typo in a target path
-was indistinguishable from a correct run.
+There is **no marker file and no basename inference**. Earlier builds bound to the
+parent on sight of a `.suite_sidecar` marker or a dot-prefixed folder name; both are
+gone. If you find a surface still describing them, it is stale.
+
+If you are working in the sidecar's own source repository rather than in an installed
+copy, there is no target and tool calls refuse with `no work target bound`. That is
+correct behaviour, not a fault. Supply an explicit `SUITE_PROJECT_ROOT`, or work in an
+installed sidecar.
+
+### Scope is not rebinding
+
+Passing a `target` argument narrower than the bound target is a **narrower view of
+the same reality** and is allowed. Passing one outside it is asking this instance to
+be a different instance, and is refused. The rule is containment, not equality.
 
 ## Running anything else
 

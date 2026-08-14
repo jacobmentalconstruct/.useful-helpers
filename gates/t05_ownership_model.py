@@ -50,6 +50,12 @@ REQUIRED_ANCHORS = (
     "SIDECAR:INSTANCE-OWNERSHIP",
     "SIDECAR:TARGET-OWNERSHIP",
     "SIDECAR:EXTERNAL-CORPUS",
+    # Added 2026-08-14 with the convergence phase. Not a boundary like the six above
+    # but the same KIND of fact: one normative statement of what the product is for,
+    # cited by the Plan rather than restated. Enumerated here because this gate's own
+    # message is "a fact worth owning is worth enumerating" - it caught the anchor the
+    # hour it was written, which is the registry working.
+    "SIDECAR:PROTOTYPE-OBJECTIVE",
 )
 
 # The four roots that must stop sharing one word. `SIDECAR_ROOT` means the BCC's

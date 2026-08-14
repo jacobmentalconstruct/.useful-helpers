@@ -21,6 +21,11 @@ if /I "%~1"=="docs" (
 )
 if /I "%~1"=="list" (
     "%PYTHON_EXE%" -m src.app cli tool-list
+    goto :eof
+)
+if /i "%~1"=="attach" (
+    REM The first question anyone asks: what is this target, and what next.
+    "%PYTHON_EXE%" -m src.app cli tool-call --tool attach --args-json "{}"
     exit /b %ERRORLEVEL%
 )
 if /I "%~1"=="refresh" (

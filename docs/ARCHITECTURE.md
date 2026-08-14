@@ -12,9 +12,15 @@ the factory's charter (not shipped); this file is the shipped, accurate map.
 ## 1. The precept (the one rule)
 
 **The sidecar is omni-aware of the target; the target stays totally ignorant of the sidecar.**
-Awareness flows one direction only. The toolkit writes nothing into the target  -  no pointer
-file, no `.gitignore` line, nothing. Delete the sidecar folder and the target does not notice;
-move the target and it still runs. This is enforced, not merely intended (see sec 5).
+Awareness flows one direction only. The toolkit writes no trace of *itself* into the target  -  no
+pointer file, no `.gitignore` line, nothing. Delete the sidecar folder and the target does not
+notice; move the pair together and it still runs. This is enforced, not merely intended (sec 5).
+
+**The precept is about the instrument's footprint, not about your work.** A governed Apply
+operation modifies target content on purpose  -  preview-first, inside a declared write scope, and
+recorded in the ledger. Lifecycle phases (install, update, uninstall, startup, self-maintenance)
+never touch target-owned content at all; Observe operations never write; Apply may, and is
+audited when it does. *"Never writes to the target"* is a misstatement of this rule.
 
 ## 2. Four layers
 
@@ -81,9 +87,17 @@ declares: `id`, `summary`, `category`, `authority`, `operates_on`, `writes`, `in
 `input_schema`, `output_shape`. The full catalog is generated into
 [TOOLS.md](TOOLS.md) (`docs-refresh`); how to drive the tools is in [OPERATIONS.md](OPERATIONS.md).
 
-## 4. The four roots (the contract that keeps the target clean)
+## 4. The four runtime roots (the contract that keeps the target clean)
 
-`tools/_toolkit.py` is the shared API; no tool re-derives roots ad hoc.
+**These are the four *runtime accessors*, not the product's four ownership roots.** The
+product's `TARGET_ROOT` / `INSTANCE_ROOT` / `GOVERNANCE_ROOT` / `STATE_ROOT` are defined once, in
+the factory's charter, and are not restated here. This table names what a *tool* calls to get a
+path. Two of the names correspond; two do not, and conflating them is how one word came to do
+four jobs.
+
+`tools/_toolkit.py` is the shared API; no tool re-derives roots ad hoc, and it **transports**
+resolved values rather than deciding them  -  a tool that read an environment variable and then
+fell back to the working directory would be inferring, which is the defect this replaced.
 
 | Root | What it is | Default for |
 |---|---|---|
@@ -96,7 +110,15 @@ The rule: **inputs read from the work target; state and output write to the tool
 explicit path always overrides.** Installed as a sidecar, the work target is the parent project,
 so analysis tools default to the whole project while the toolkit's own home is auto-pruned from
 scans and its state stays inside the sidecar. Standalone (no install), the work target and
-toolkit home coincide.
+toolkit home coincide  -  which is why "everything inside the instance" and "everything in the
+project" are the same set in a development checkout, and any exclusion written as if they differ
+will prune the entire tree.
+
+**Where the roots come from.** An installed instance resolves them from its own `instance.json`:
+schema, a durable UUID, and the target recorded *relative* to the instance. Uninstalled, they
+come from `SUITE_PROJECT_ROOT` / `SUITE_HOME` / `SUITE_STATE_ROOT`. Where an instance exists,
+identity wins and a conflicting variable raises rather than rebinding. There is no marker file
+and no basename inference.
 
 ## 5. Governance and the precept guard
 

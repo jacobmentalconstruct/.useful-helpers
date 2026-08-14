@@ -19,6 +19,7 @@ NOTES:      Self-contained BY DESIGN: it runs on a fresh machine with only stdli
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import sys
 import tempfile
@@ -143,6 +144,24 @@ def _read_identity(dest: Path) -> "str | None":
         return None
 
 
+def _next_steps(target: Path, dest: Path) -> str:
+    """What to actually type. Verified to run - it used to name a command that could not.
+
+    The old message said `python .useful-helpers/src/app.py cli tool-list`, which put
+    `.../src` on sys.path instead of the instance root and died with
+    ModuleNotFoundError. A freshly installed sidecar could not be started by following
+    its own success message.
+    """
+    rel = dest.name
+    if os.name == "nt":
+        return (f"cd {target}\n"
+                f"  {rel}\\run.bat attach     (what is this target, and what next)\n"
+                f"  {rel}\\run.bat list       (every tool available here)")
+    return (f"cd {target}\n"
+            f"  sh {rel}/run.sh attach     (what is this target, and what next)\n"
+            f"  sh {rel}/run.sh list       (every tool available here)")
+
+
 def install(payload: Path, target: Path, mode: str) -> dict:
     """Do the install. mode: install (new) | reinstall (wipe) | update (keep memory).
     Writes exactly one directory: <target>/.useful-helpers."""
@@ -201,7 +220,7 @@ def install(payload: Path, target: Path, mode: str) -> dict:
             "instance": ctx.uuid, "target": ctx.target_root.as_posix(),
             "file_count": file_count,
             "memory_preserved": mode == "update",
-            "next": f"cd {target}  ->  python .useful-helpers/src/app.py cli tool-list"}
+            "next": _next_steps(target, dest)}
 
 
 # ---------------------------------------------------------------- GUI (Tkinter)
