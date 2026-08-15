@@ -56,6 +56,11 @@ REQUIRED_ANCHORS = (
     # message is "a fact worth owning is worth enumerating" - it caught the anchor the
     # hour it was written, which is the registry working.
     "SIDECAR:PROTOTYPE-OBJECTIVE",
+    # Added 2026-08-14. The layering the product converges to - tools, chains, one
+    # governed runtime, projections - and the statement that `apps/` is transitional.
+    # Enumerated for the same reason as the line above: an anchor nobody registered is
+    # a fact with no registry entry, which is how a second authority starts.
+    "SIDECAR:PRODUCT-SHAPE",
 )
 
 # The four roots that must stop sharing one word. `SIDECAR_ROOT` means the BCC's

@@ -28,9 +28,15 @@ audited when it does. *"Never writes to the target"* is a misstatement of this r
    Domain- and tool-agnostic: it resolves the tool, enforces the authority ceiling, runs the
    tool as a subprocess, records a governance event, and enforces the precept guard. It never
    imports tool code.
-2. **The adapters** (`tools/*/`, `apps/*/`)  -  each is a `tool.json` manifest + a `cli.py`
-   exposing one `run(args) -> dict`. Tools never import each other. They are interchangeable,
+2. **The adapters** (`tools/*/`)  -  each is a `tool.json` manifest + a `cli.py` exposing one
+   `run(args) -> dict`. Tools never import each other. They are interchangeable,
    manifest-described capabilities.
+
+   `apps/*/` holds the same contract but is a **transitional layer**, not an enduring one.
+   The intended shape is *tools → chains → seam → projections*, never
+   *tools → applications → projections*: an application's useful behaviour is absorbed into
+   primitives and reusable chains, and the shell is retired once the bench reproduces it.
+   Today `apps/` has exactly one member, `projectmapper`.
 3. **The cartridges** (`config/cartridges/*.json`)  -  domain knowledge: which tools to mount for
    a kind of target, and what each tool's output is worth there (policy + confidence). Adding a
    domain is adding a JSON file  -  no code.
@@ -160,10 +166,10 @@ path-tokened (`<project>`, `<toolkit>`), never raw absolute paths.
 |  |- ui/                        registry-driven GUI (human entrance)
 |  `- lib/                       logging - theme - common
 |- tools/                        the adapters (one dir each) + _toolkit + _template
-|- apps/                         larger adapters (projectmapper)
+|- apps/                         TRANSITIONAL - one member (projectmapper), to be absorbed
 |- config/                       registry.json (derived) - cartridges/ (domain knowledge)
-|- playbooks/                    reusable tool chains (data)
-|- _docs/                        this doc - TOOLS.md (generated) - OPERATIONS.md - ONBOARDING.md
+|- playbooks/                    reusable tool chains (data) - run by src/core/playbook.py
+|- docs/                         this doc - TOOLS.md (generated) - OPERATIONS.md - ONBOARDING.md
 |- _state/                       durable memory (journal/evidence/event-log/workbench,
 |                                 policy_overrides.json, llm_usage.jsonl)  -  gitignored
 |- _artifacts/                   disposable generated output  -  gitignored

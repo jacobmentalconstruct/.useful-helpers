@@ -137,11 +137,19 @@ def _instance_module(dest: Path):
 
 
 def _read_identity(dest: Path) -> "str | None":
-    """The existing UUID, or None. Never invents one."""
-    try:
-        return _instance_module(dest).read_identity(dest)
-    except Exception:
-        return None
+    """The existing UUID, or None if this is not a canonical instance.
+
+    RAISES if the manifest is PRESENT and BROKEN. That is the whole contract, and it
+    used to be inverted here: this function caught `Exception` and returned None, which
+    `create(identity=None)` then read as "no identity supplied" and answered by minting
+    a fresh UUID. `instance.read_identity()` raises `InstanceError` precisely so that
+    cannot happen - and its caller was converting the authority's loud failure into a
+    silent success, orphaning every durable record keyed to the old identity on the
+    first upgrade over a corrupt manifest. Journal 0028, defect 1.
+
+    Absent is still not an error: no manifest returns None, and the caller decides.
+    """
+    return _instance_module(dest).read_identity(dest)
 
 
 def _next_steps(target: Path, dest: Path) -> str:
@@ -190,36 +198,74 @@ def install(payload: Path, target: Path, mode: str) -> dict:
     # manifest still exists.
     carried_identity = None
     if mode == "update" and exists:
-        carried_identity = _read_identity(dest)
+        try:
+            carried_identity = _read_identity(dest)
+        except Exception as e:
+            # A manifest that is PRESENT and INVALID stops the update. The alternative
+            # - continue with identity=None - is how continuity breaks silently.
+            return {"ok": False, "status": "identity-broken", "sidecar": dest.as_posix(),
+                    "error": f"refusing to update: the installed instance's identity is "
+                             f"unreadable ({type(e).__name__}: {e}). Nothing has been "
+                             f"changed. Choose reinstall to install a clean copy, "
+                             f"accepting that it is a NEW instance and durable records "
+                             f"keyed to the old identity will not be associated with it."}
 
-    preserved = None
+    # BUILD BESIDE, THEN SWAP. Journal 0028, defect 2.
+    #
+    # The standard is RECOVERABILITY, not "do not lose _state": a failed update must
+    # not leave the instance less recoverable than it was before the update began.
+    # Keeping the journal beside an unstartable instance still fails that.
+    #
+    # The old shape moved `_state` to a system temp directory, deleted the instance
+    # root, copied, moved `_state` back - and cleaned the temp directory in a `finally`
+    # that could not tell "cleanup after success" from "this is the last copy". Any
+    # failure inside the copy destroyed the instance AND its durable memory together.
+    #
+    # Now nothing is destroyed until the replacement is complete. Every failure below
+    # returns with the ORIGINAL instance still in place and still startable.
+    staging = target / f"{SIDECAR_DIR}.staging"
+    backup = target / f"{SIDECAR_DIR}.old"
+    shutil.rmtree(staging, ignore_errors=True)
+    shutil.rmtree(backup, ignore_errors=True)
     try:
+        shutil.copytree(payload, staging, ignore=_ignore)
+        # Durable memory is COPIED forward, never moved out of the tree that owns it.
         if mode == "update" and (dest / _STATE).is_dir():
-            preserved = Path(tempfile.mkdtemp(prefix="uh-state-"))
-            shutil.move(str(dest / _STATE), str(preserved / _STATE))
-        if exists and mode in ("reinstall", "update"):
-            shutil.rmtree(dest, ignore_errors=True)
+            shutil.copytree(dest / _STATE, staging / _STATE, dirs_exist_ok=True)
+        # Identity is written into the staged tree before it becomes the instance, so
+        # a half-installed directory is never left claiming to be one.
+        ctx = _instance_module(staging).create(staging, target, identity=carried_identity)
+    except Exception as e:
+        shutil.rmtree(staging, ignore_errors=True)
+        return {"ok": False, "status": "update-failed", "sidecar": dest.as_posix(),
+                "memory_preserved": (dest / _STATE).is_dir(),
+                "error": f"{mode} failed while preparing the new copy "
+                         f"({type(e).__name__}: {e}). The existing instance was not "
+                         f"modified."}
 
-        shutil.copytree(payload, dest, ignore=_ignore)
-
-        if preserved is not None:
-            if (dest / _STATE).exists():
-                shutil.rmtree(dest / _STATE, ignore_errors=True)
-            shutil.move(str(preserved / _STATE), str(dest / _STATE))
-    finally:
-        if preserved is not None:
-            shutil.rmtree(preserved, ignore_errors=True)
-
-    # The instance is not installed until it knows what it is. Copying files and
-    # stopping here is what produced an instance with no target - the defect T6 was
-    # declared for, and the one every development install path masked.
-    ctx = _instance_module(dest).create(dest, target, identity=carried_identity)
+    try:
+        if exists:
+            shutil.move(str(dest), str(backup))
+        shutil.move(str(staging), str(dest))
+    except OSError as e:
+        # The swap is the only irreversible moment, and it is two renames on one
+        # filesystem. If it still fails, say exactly where the old instance is rather
+        # than cleaning it away.
+        return {"ok": False, "status": "swap-failed",
+                "error": f"{mode} failed during the final swap ({type(e).__name__}: {e}). "
+                         f"The previous instance is intact at {backup.as_posix()} and "
+                         f"the new copy at {staging.as_posix()}; move one into place.",
+                "previous_instance": backup.as_posix() if backup.is_dir() else None}
+    shutil.rmtree(backup, ignore_errors=True)
 
     file_count = sum(1 for _ in dest.rglob("*") if _.is_file())
     return {"ok": True, "mode": mode, "sidecar": dest.as_posix(),
             "instance": ctx.uuid, "target": ctx.target_root.as_posix(),
             "file_count": file_count,
-            "memory_preserved": mode == "update",
+            # OBSERVED, not declared. This used to read `mode == "update"`, which
+            # restates the request: it reported true when there was no state to keep,
+            # and would have reported true on the run that lost it.
+            "memory_preserved": (dest / _STATE).is_dir(),
             "next": _next_steps(target, dest)}
 
 

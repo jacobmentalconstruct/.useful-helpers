@@ -117,6 +117,70 @@ The end-state conditions E1-E13 remain the invariants. §3.3 is the experience.
 `TRANCHE_PLAN.md` owns the convergence sequence and the point at which architectural
 development stops and dogfooding begins.
 
+### 1.4 The enduring product shape
+
+[OWNS: SIDECAR:PRODUCT-SHAPE]
+
+Declared 2026-08-14. This is the layering the product converges to, and the thing
+§2's ten prohibitions were always circling without naming.
+
+```text
+    mechanical tools  ->  governed tool chains  ->  common runtime/seam  ->  human + agent
+```
+
+**not**
+
+```text
+    mechanical tools  ->  specialised applications  ->  human + agent
+```
+
+| Layer | What lives there | Test |
+| --- | --- | --- |
+| **primitive tools** | small capabilities, narrow contracts: filesystem inspection, read/search, AST/symbol/import analysis, SQLite inspection, diff/edit/patch, run/test, snapshot, PDF and data operations, provenance/audit, local inference | independently useful and directly callable |
+| **tool chains** | reusable compositions that accomplish a user-level job: orient, capture, build awareness, inspect impact, preview/review/change, verify, refresh | coordinates tools; **never becomes an application** |
+| **common governed runtime** | registry → policy → `invoke()` → tools and chains | one seam, no second path (§1.1) |
+| **projections** | CLI, MCP, the shared GUI shell | render the *same* underlying state; never construct competing models |
+
+**`apps/` is a transitional layer.** Its members are re-homed implementations kept as
+reference and as parity oracles. The *behaviours* they embody are valuable and must be
+preserved; their *structure* is not part of the intended prototype. An application is
+retired when the bench reproduces its behaviour — never merely because a plan says the
+directory should disappear. §2.2 already refused twelve apps behind twelve buttons;
+this states the positive form of the same rule.
+
+#### A large tool is not an application
+
+The distinction is **ownership, not size.** Line count is not the smell and must never
+be cited as one.
+
+| | |
+| --- | --- |
+| **acceptable** | a 1,000-line deterministic snapshot compiler with **one narrow contract** — target in, canonical artifact out |
+| **not acceptable** | a 300-line "tool" that owns a private project model, its own parser suite, its own state store and its own workflow |
+
+The test is whether a surface has taken **private ownership of capabilities, state or
+workflows that belong to the common bench.** A big honest primitive is fine. A small
+surface with its own ontology is the defect.
+
+Two corollaries follow, and both cut against reflexive decomposition:
+
+- **Location is not architecture.** A normal registered tool that happens to live in
+  `apps/` is a *classification* defect. Re-homing it satisfies this section; the
+  directory does not have to become empty for its own sake.
+- **Removal of duplicated ownership is the goal, not maximum decomposition.** Do not
+  split a coherent atomic operation into six tools and a playbook to satisfy an
+  abstract preference for chains.
+
+The governing design test, applied to any proposed structure:
+
+> **Is this something a tool does, something a chain of tools accomplishes, shared
+> state the whole bench needs, or a projection for a human or agent?**
+>
+> If it cannot be justified as one of those four, it does not belong in the prototype.
+
+The finished product is **one governed box of capable hands**, not a launcher for a
+collection of mini-products.
+
 ---
 
 ## 2. What This Will Never Be

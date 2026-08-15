@@ -1,10 +1,11 @@
 # Tranche Plan
 
-Status: **ACTIVE.** T0-T5 parked. **T6 REOPENED** 2026-08-14 (journal 0028) for two
-updater correctness defects, bounded — identity continuity across update, and durable
-memory surviving a failed update. Development mode: **CONVERGENCE** (see below).
-**T7 is sketched, not declared, and is not declared while T6 is open.**
-Date: 2026-08-06, amended 2026-08-09, mode changed 2026-08-14, T6 reopened 2026-08-14.
+Status: **ACTIVE.** T0-T6 parked. T6 was reopened 2026-08-14 (0028) for two updater
+correctness defects and re-parked the same day (0031) with both discharged, red before
+green. Development mode: **CONVERGENCE**. **Next: C1b, the Application Absorption
+Audit — diagnostic only. T7 is sketched and is declared from C1b's evidence.**
+Date: 2026-08-06, amended 2026-08-09, mode changed 2026-08-14, T6 reopened and
+re-parked 2026-08-14.
 Authority: subordinate to `CHARTER.md`; procedure defined by `TRANCHE_PROTOCOL.md`.
 This document owns **sequencing, the convergence rules and the prototype STOP**.
 Product topology, ownership semantics and the prototype objective belong to the
@@ -26,8 +27,8 @@ written during declaration, before implementation.
 
 ## The Convergence Phase
 
-Adopted 2026-08-14, on the evidence of the `_theCELL` dogfood run. **It begins when T6
-re-parks** (0028): the rules and the sequence below are settled, and no convergence
+Adopted 2026-08-14, on the evidence of the `_theCELL` dogfood run. **T6 re-parked 2026-08-14 (0031), so it
+begins now** — at C1b. The rules and sequence below are settled, and no convergence
 tranche is declared while an earlier one is open. The question this plan answers has
 changed:
 
@@ -62,6 +63,167 @@ already spent a tranche on the temptation it names.
 
 A rule may be discharged only by an operator-approved amendment recorded in the
 journal, citing the end-to-end attempt that demonstrated the need.
+
+### C1a. Anti-regression: no new application layer
+
+Charter §1.4 (`SIDECAR:PRODUCT-SHAPE`) states the layering. These are its enforcement
+rules for the convergence phase.
+
+1. **No new standalone application may be added.** Not one.
+2. **The private-backend tripwire.** If a proposed feature starts acquiring its own
+   private backend, project model, state store, tool orchestration, mapping
+   representation, or workflow engine — **stop** and re-decide which of the four it is:
+   a primitive tool, a tool chain, shared core state, or a projection over shared
+   state.
+3. **`attach` must not become an application disguised as a tool.** It may coordinate
+   existing capabilities. It may not reinvent scanners, parsers, code intelligence,
+   snapshot machinery, semantic stores, or a second project ontology.
+   *This is not hypothetical — see the preliminary finding below.*
+
+   **The measure is private ownership, not size** (Charter §1.4). A large primitive
+   with one narrow contract is acceptable; a surface of any size that owns its own
+   project model, parser suite, state store or workflow is not. Where a line count
+   appears in this plan it is a proxy for how much was inspected, never the charge.
+4. **No second chain engine, and no speculative enlargement of the first.**
+   `src/core/playbook.py` already runs `[{id, tool, args}]` through `invoke()` and
+   binds a later step's argument to an earlier step's output field via
+   `@<id>.<dotted.path>`. That is exactly *tool A → select fields → tool B → compose*.
+
+   Its limitations — whole-value references, no fan-out, fail-fast — **remain
+   limitations until a real T7 or T8 acceptance path cannot be expressed without one
+   of them.** Do not improve the engine because T7 *might* need richer orchestration.
+   Let the prototype force the minimum extension, if any, and make it to that owner.
+5. **No new tool because an app once had a function with that name.** Demonstrate the
+   primitive capability is genuinely missing first (C1 rule 1 already, restated here
+   because absorption is where the temptation lands).
+
+**Preserve useful behaviour, not application structure.** If 80% of an application's
+behaviour already exists in tools, compose those tools rather than transplanting its
+backend.
+
+### C1b. Application Absorption Audit — a declared step, not a tranche
+
+**Runs after T6 re-parks and before T7 is declared.** Diagnostic only: it implements
+nothing, refactors nothing, and creates no framework.
+
+**The one narrow question it exists to answer:**
+
+> How much of the useful prototype already exists as canonical tools, and exactly what
+> duplicated or private logic must be removed or relocated so those tools behave as one
+> bench?
+
+**That answer determines T7's implementation size.** Nothing is coded until it is in
+hand.
+
+The expected finding is *not* "build replacements." It is *"most of this already
+exists in the bench; compose it, prove parity, remove the shell."*
+
+#### Part 1 — application surfaces
+
+One row per live application surface:
+
+| application | useful behaviour | existing primitive tool(s) already providing it | chain/core component that should own composition | genuinely missing primitive, if any | persisted format worth preserving | retirable after parity? |
+
+Plus: any private state or model duplicated by an app, the safest retirement order,
+and **whether T7 can be completed without depending on any live app.**
+
+**The atomicity test — apply it before proposing any decomposition:**
+
+> Is this one coherent deterministic operation with a useful independent contract, or
+> is it merely an orchestration of independently useful existing primitives?
+
+If it is **genuinely atomic from the caller's perspective** — target in, canonical
+artifact out — it may remain **one tool**, and the correct action is to **re-home it**.
+If its internals duplicate canonical primitives, compose those instead.
+
+*Applied to `projectmapper`:* Finding 1 below shows it has no private backend and no
+app-framework dependency, so sitting in `apps/` is partly a **classification defect,
+not necessarily an architectural one.** Splitting snapshot compilation into six tools
+and a playbook to satisfy a preference for chains would be ceremony. **The goal is
+removal of duplicated ownership, not maximum decomposition.**
+
+#### Part 2 — `attach`, and this is the high-value half
+
+One row per substantial internal responsibility:
+
+| responsibility | current owner | existing canonical equivalent? | verdict | **T7 touches it?** |
+| --- | --- | --- | --- | --- |
+| tree probe | `attach` | `file_tree` / other? | replace / retain | yes / no |
+| AST docstring read | `attach` | a code-intel tool? | replace / retain | yes / no |
+| manifest parsing (YAML / TOML / `go.work`) | `attach` | an existing parser tool? | replace / retain | yes / no |
+| cartridge scoring | `attach` | possibly unique | keep / move | yes / no |
+| workbench persistence | `attach` | shared-state candidate | move | yes |
+| next-step presentation | `attach` | front-door presentation | keep | yes |
+
+*(illustrative rows — the audit fills them from the code, and adds the ones this sketch
+does not anticipate.)*
+
+The five verdicts:
+
+| verdict | meaning |
+| --- | --- |
+| **keep** | legitimate front-door orchestration |
+| **replace** | duplicates an **already-registered** tool; name it |
+| **move** | belongs to shared state/core because multiple consumers need it — awareness persistence, instance association, revision identity |
+| **presentation** | human-readable summary and next-step rendering |
+| **retain (for now)** | no existing equivalent **demonstrated**; retained explicitly, not by default |
+
+**`T7 touches it?` is the column that governs the work.** A `replace` verdict is
+discharged only where T7 actually needs that responsibility. If T7 needs the tree probe
+and a canonical tool already provides it, the duplication goes. If T7 never touches
+some parser buried in `attach`, **it is left alone** — and dogfooding decides whether it
+ever mattered.
+
+Without that column, convergence becomes *"clean up all of `attach` before
+continuing,"* which is how a reduction pass turns into a rewrite and the STOP recedes.
+
+The output that matters is one sentence of the form:
+
+> *Of `attach`'s current responsibilities, N are legitimate front-door logic, N
+> duplicate canonical tools, N belong to shared awareness state, and N are
+> presentation.*
+
+**Refactor none of them during the audit.** The verdict is the deliverable.
+`replace` verdicts are discharged **only where T7 actually touches that
+responsibility** — T7 is partly a reduction pass, never a 1051-line rewrite.
+
+#### Preliminary reading, taken 2026-08-14 while writing this section
+
+Three facts, cheap to establish, recorded so the plan is not aspirational. **This is
+not the audit** — it is what made the audit's shape obvious.
+
+1. **`apps/` contains exactly one application: `projectmapper`** — one registered tool
+   (`Apply`, `writes: toolkit`, entry `apps/projectmapper/cli.py`). It already
+   satisfies the tool contract and depends only on `_toolkit` and stdlib. So "the
+   Project Mapper application" is, in the live tree, **one tool in the wrong
+   directory** plus a GUI (`src/ui/mapper_view.py`) and a `run.bat map` verb. The
+   absorption is far smaller than the phrase suggests, and the real question the audit
+   must answer is whether its capture behaviour should become a **chain** over
+   existing primitives or remain **one primitive** that is simply re-homed.
+2. **The chain machinery already exists and already passes the C1a.4 test.**
+   `playbooks/ground_report.json` demonstrates it today: `report` → bind
+   `@report.markdown` → `evidence attach` → bind `@ground.evidence_id` → `evidence
+   verify`. Known limits, to be named rather than worked around: whole-string
+   references only (no transform of the referenced value), no fan-out or map, and
+   stop-on-first-failure.
+3. **`attach` is already the C1a.3 hazard, measured.** 1051 lines, importing only
+   `_toolkit`, `summarize_shared` and stdlib — **it calls no other tool through the
+   seam.** It carries its own tree probe, its own `ast` docstring reader, its own
+   YAML/TOML/go.work manifest parsers, its own cartridge scoring, its own map builder
+   and its own staleness signature. Every one of those is category **C**: capability
+   that exists, or should exist, as a registered tool.
+
+   Its enduring responsibility narrows toward: *determine current scope → select
+   appropriate existing observations → compose compact orientation → persist and
+   reference that result → recommend useful next actions.* The audit classifies every
+   internal function as **A** legitimate orchestration, **B** shared-core
+   responsibility (awareness persistence, instance association, revision identity),
+   **C** duplicated primitive capability, or **D** presentation. Category C moves to
+   the canonical tool — **incrementally, not as a rewrite.**
+
+   The warning *"do not let `attach` become Project Mapper 2"* arrived late. **It is
+   already partway there.** T7 must not add to that mass; the audit classifies it, and
+   reduction is incremental and evidence-led, not a rewrite.
 
 ### C2. The signal-to-context contract
 
@@ -206,11 +368,25 @@ needs it, rather than displacing product work now.
 | T4 | Cancellation and Progress | Long work is observable and stoppable |
 | ~~T5a~~ | ~~One Surface: Observe and Select~~ | **WITHDRAWN** 2026-08-09 — see below |
 | T5 | Ownership and Distribution Model | **CLOSED 2026-08-09** — one authority per normative fact; a stated deployment topology |
-| T6 | Instance Identity and the Installation Core | **REOPENED 2026-08-14** (0028), bounded to two updater defects. Binding, identity, relocation and runtime context all hold; **update does not**, so the outcome claim *"survives relocation and update"* is not yet true |
-| — | ***convergence phase begins after T6 re-parks*** | |
-| T7 | Shared Project Awareness Prototype | One compact evidence-backed orientation, persisted against the instance, same revision to human and agent |
-| T8 | Governed Work Loop Prototype | awareness → impact → preview/diff → approval → Apply → verification → refresh, using existing tools and the existing seam |
+| T6 | Instance Identity and the Installation Core | **CLOSED 2026-08-14** (0026 → 0027 → reopened 0028 → **re-parked 0031**) — one instance bound to one target, knowing its identity, root and state, surviving relocation **and update**, supplying canonical context to the runtime. 27 gate assertions |
+| — | ***convergence phase begins here*** | |
+| — | **Application Absorption Audit** (C1b) | *diagnostic, not a tranche.* What `apps/` actually owns, which primitives already provide it, what should become a chain, the safest retirement order, and whether T7 needs any live app |
+| T7 | Shared Project Awareness Prototype | One compact evidence-backed orientation, persisted against the instance, same revision to human and agent — **composed as a chain, with no application in the path** |
+| T8 | Governed Work Loop Prototype | awareness → impact → preview/diff → approval → Apply → target-native verification → awareness refresh, as chains over existing tools and the existing seam |
+| — | **Release / STOP certification** | build and install from source → clean target → documented launcher → the full human+agent acceptance walk → **prove no specialised-app dependency** |
 | **STOP** | **Prototype stop / dogfood** | Architectural development halts. See below |
+
+**The finish line is finite and this is all of it.** T6's bounded repair, one audit,
+two tranches, one certification. **No T9 is created unless actual use demonstrates a
+blocker** — that is what the STOP means.
+
+**Standing sequencing instruction, operator, 2026-08-14.** The alignment is complete
+and does not reopen. T6's repairs are discharged (0031). **The next thing is C1b** —
+inspect, classify, identify duplication, determine what T7 touches, **implement
+nothing** — and T7 is declared from its table. No further documentation sweep,
+codebase audit, architecture review, capability census or roadmap is required before
+proceeding; each would push the STOP farther away without resolving a demonstrated
+blocker.
 
 Ordering rationale up to T6: safety before capability (T1 precedes everything that
 acts); the seam contract before the surface that displays it (T2-T4 precede any
@@ -545,14 +721,65 @@ time.
 ---
 
 
+## T6 — the reopening, discharged
+
+Declared in 0028, re-parked in 0031. Two defects, gate-first, seen red before green,
+then certified against the whole established path. Kept here because the **acceptance
+standards** below are now parked evidence and must stay green.
+
+**Defect 1 — acceptance standard.** An update over a manifest that is present but
+broken must **fail loudly**. The installer must not absorb `InstanceError` into a
+`None` that `create()` then reads as *"mint a new identity."*
+
+**Defect 2 — acceptance standard**, stated by the operator and stronger than the
+obvious one:
+
+> **A failed update must not make the installed instance less recoverable than it was
+> before the update began.**
+
+*"Do not lose `_state`"* is the weaker claim and would be satisfied by a run that
+preserved the journal while leaving the instance unstartable, or by one that preserved
+nothing because it never reached the point of moving it. Recoverability is the property
+a user actually has: whatever position a failed update leaves them in, it is at least
+as good as the position they were in when they started it. That is what the gate
+asserts.
+
+Both gates **were seen to fail** against the unrepaired installer before the fix
+(protocol §5.1a): 24 pre-existing assertions passed, all three new ones failed, and
+27/27 passed afterwards. A check for an absent condition that has never been observed
+failing is not evidence.
+
+**Where they were run matters.** `gates/t06` skips its entire install half on a
+filesystem that denies `unlink` — honestly and with a stated reason, but it means every
+`t06 PASS` recorded on the development mount exercised only the eight static
+assertions. Both the red and the green run were performed on real disk. Windows CI
+remains the authority.
+
+---
+
 ## T7 — Shared Project Awareness Prototype · SKETCHED, NOT DECLARED
 
 **Outcome.** Existing deterministic tools are composed into **one compact,
 evidence-backed current orientation** of the bound target, persisted against the
 instance, and exposed as the **same revision** to human and MCP agent.
 
+**T7 is also the first proof of the tool-chain architecture** (Charter §1.4). It must
+demonstrate that Useful Helpers can understand a project **without an application
+layer**:
+
+```text
+canonical target -> orientation chain -> deterministic tools -> compact observations
+                 -> one persisted awareness revision -> human projection / MCP projection
+```
+
 **Walk steps advanced (Charter §3.3):** 6, 7, 8, and the awareness half of 13.
 It stops before target mutation — that is T8.
+
+**Contributor selection is evidence-driven, not hardcoded.** The `_theCELL` set below
+is what a *Python-rich* target demonstrated. Domain, cartridge and scope evidence
+choose the contributors: a records target and an empty folder use different
+observations and share the same envelope. A fixed universal pipeline would be the
+software ontology C4 forbids.
 
 ### The minimum observation set, from measurement not invention
 
@@ -621,11 +848,35 @@ entrance (protocol rule 8) at declaration:
 - moving the instance with its target preserves the awareness revision (T6 property,
   re-asserted here because awareness is the first durable consumer of identity)
 
+Two further assertions, from the product shape. **The first is stated as an invariant,
+deliberately, so it cannot harden into ceremony:**
+
+- **T7's understanding is produced by canonical tools through the common governed
+  composition path — not through a private application or backend.**
+
+  Whether the final composition is one playbook, several small playbooks selected by
+  evidence, or an existing front-door operation invoking them is decided by
+  **implementation evidence**, not declared here. What is forbidden is new private
+  orchestration inside `attach`; what is *not* required is manufacturing a playbook
+  file to prove a point.
+- **T7 completes with no dependency on specialised application architecture.** If
+  awareness needs `projectmapper`'s *application* shape, the tranche has not proven
+  what it claims. Depending on `projectmapper` as an ordinary registered tool is not a
+  violation — see the STOP assertion on semantics versus folder purity.
+
+**T7 is also partly a reduction pass.** Where it touches a responsibility the audit
+marked `replace`, it discharges that verdict by calling the canonical tool. Where it
+does not touch one, it leaves it alone. Reduction is a consequence of the work, never
+a separate rewrite.
+
 **Non-goals.** No target mutation. No change-driven selective refresh. No One
-Surface. No new tool unless C1 rule 1 is discharged. No awareness ontology framework.
+Surface. No "Project Awareness App". No new tool unless C1 rule 1 is discharged. No
+awareness ontology framework. No second chain engine (C1a.4). No net growth in
+`attach`'s category-C mass.
 
 **Stop condition.** Both projections resolve the same revision id on all three
-acceptance targets, and the gate suite is green on both platforms.
+acceptance targets, with no application-layer dependency, and the gate suite is green
+on both platforms.
 
 ---
 
@@ -652,8 +903,13 @@ Measured on `_theCELL`, 2026-08-14. Each row is a tool that already works.
 | verification | `smoke_runner` / `project_run` | selected by `kind`, mechanically |
 | reorientation | `attach` refresh + staleness | exists, coarse |
 
+**T8 proves chains can transform as well as understand.** Same architecture, second
+proof.
+
 **Explicitly do not build:** a new diff engine, a new approval engine, a new
-verification framework, a new project runner. (C1 rules 1 and 2.)
+verification framework, a new project runner — nor a change-review application, a
+verification application, a diff application, or an awareness-refresh application.
+Each of those is **a chain over the bench** (C1 rules 1 and 2; C1a rules 1 and 2).
 
 ### The three seams that are genuinely missing — all composition, none new subsystems
 
@@ -739,6 +995,38 @@ The prototype is done when a real user can:
 11. audit what happened
 12. refresh / re-engage and see the new reality
 ```
+
+### The architectural STOP assertion
+
+Twelve steps are the *experience*. This is the *shape*, and it is a stop condition in
+its own right:
+
+> **The complete acceptance walk must not require any specialised application layer.**
+>
+> Every step above must be reachable through common runtime + primitive tools + tool
+> chains + human/MCP projections. **If deleting the transitional `apps/` layer would
+> break the walk, convergence is not finished.**
+
+**Read that as semantics and ownership, not folder purity.** The condition is *no
+dependency on specialised application architecture* — not *the directory must become
+empty at all costs*. If the surviving `projectmapper` turns out to be an ordinary
+registered tool that happens to live under `apps/`, **re-homing it satisfies the
+architecture** and the assertion is met. What must not survive is a private backend,
+a private project model, a private state store or a private workflow engine that the
+walk depends on.
+
+Retirement is by demonstrated parity, never by decree. An application is removed when
+*all* of these hold:
+
+1. its useful behaviour is identified
+2. the enduring tool or chain owner is named
+3. the bench reproduces the behaviour the prototype needs
+4. no active human or agent entrance depends on it
+5. tests and gates exercise the replacement path
+6. no document still presents it as product architecture
+
+Reference copies may remain in the explicit archive area. The **live** product
+progressively loses application-level duplication.
 
 At that point:
 

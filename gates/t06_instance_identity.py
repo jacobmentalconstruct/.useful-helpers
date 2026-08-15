@@ -443,6 +443,96 @@ def check(r, root: Path) -> None:
             {p.name for p in moved.iterdir()} == {"README.md", "src", DEFAULT_HOME},
             f"target contains {sorted(p.name for p in moved.iterdir())}")
 
+    # ---- 9. THE REOPENING (journal 0028) ----------------------------------
+    # Two updater defects, found by reading the update path rather than by any failing
+    # check - which is the point. T6 parked with a green suite and an unexercised
+    # lifecycle path. Sections 1-8 verified what the tranche was ASKED; these two
+    # verify what it CLAIMED: "survives relocation AND update".
+    _update_defects(r, root, payload)
+
+
+def _update_defects(r, root: Path, payload: "Path | None") -> None:
+    """The two reopened assertions. Each installs its own fresh instance."""
+    if payload is None:
+        r.skip("update over a broken manifest fails loudly", "no payload fixture")
+        r.skip("a failed update leaves the instance no less recoverable", "no payload fixture")
+        return
+
+    # ---- 9a. a broken manifest must not be updated INTO a new identity ----
+    #
+    # `_read_identity()` catches Exception and returns None; `create(identity=None)`
+    # then mints a fresh UUID. So an update over a corrupt manifest reports ok:true
+    # and silently orphans every durable record keyed to the old identity - the exact
+    # outcome `instance.py` raises InstanceError to prevent. The authority's loud
+    # failure is converted to a silent success by its own caller.
+    tgt = Path(tempfile.mkdtemp(prefix="t06-badid-")) / "proj"
+    (tgt / "src").mkdir(parents=True)
+    (tgt / "src" / "keep.py").write_text("x = 1\n", encoding="utf-8")
+    _install(root, tgt, payload)
+    home = tgt / DEFAULT_HOME
+    before_uuid = _identity(root, home)
+
+    manifest = _manifest_path(home)
+    if manifest is None:
+        r.skip("update over a broken manifest fails loudly", "no manifest to corrupt")
+    else:
+        manifest.write_text('{"schema": 1, "uuid": "not-a-uuid", "target": ".."}\n',
+                            encoding="utf-8")
+        upd = _install(root, tgt, payload, mode="update")
+        after_uuid = _identity(root, home)
+        minted = bool(after_uuid) and after_uuid != before_uuid and after_uuid != "not-a-uuid"
+        r.check("update over a broken manifest fails loudly",
+                upd.returncode != 0 and not minted,
+                f"rc={upd.returncode} before={before_uuid!r} after={after_uuid!r} "
+                f"minted_new={minted} - a manifest that is PRESENT and INVALID must "
+                "stop the update. read_identity() raises InstanceError precisely so "
+                "this cannot happen; swallowing it into None makes create() mint a "
+                "fresh UUID and orphan every record keyed to the old one, silently, "
+                "on the first upgrade")
+
+    # ---- 9b. a failed update must not reduce recoverability ---------------
+    #
+    # THE STANDARD IS RECOVERABILITY, NOT "do not lose _state". The weaker claim is
+    # satisfied by a run that keeps the journal while leaving the instance unstartable,
+    # and by one that keeps nothing because it never reached the point of moving it.
+    # What a user actually holds is: whatever position a failed update leaves me in, it
+    # is at least as good as the position I was in when I started it.
+    #
+    # Fault injected OUT OF PROCESS, in a real interpreter loading the real installer,
+    # because the failure window is between `_state` leaving the instance root and
+    # returning to it. Nothing portable makes copytree fail on both platforms by
+    # filesystem means alone; patching the one call the window depends on tests exactly
+    # the window and nothing else.
+    tgt2 = Path(tempfile.mkdtemp(prefix="t06-recov-")) / "proj"
+    (tgt2 / "src").mkdir(parents=True)
+    (tgt2 / "src" / "keep.py").write_text("x = 1\n", encoding="utf-8")
+    _install(root, tgt2, payload)
+    home2 = tgt2 / DEFAULT_HOME
+
+    state = home2 / "_state"
+    state.mkdir(parents=True, exist_ok=True)
+    (state / "journal.marker").write_text("IRREPLACEABLE", encoding="utf-8")
+
+    startable_before = _target_of(home2) is not None
+    _fail_update(root, tgt2, payload)
+
+    survived = [p for p in tgt2.rglob("journal.marker")
+                if p.read_text(encoding="utf-8", errors="replace") == "IRREPLACEABLE"]
+    startable_after = _target_of(home2) is not None
+
+    r.check("a failed update preserves durable memory",
+            bool(survived),
+            "the state marker exists nowhere under the target after a failed update. "
+            "`_state` is moved to a temp directory, the old instance root is deleted, "
+            "and the `finally` clause removes that temp directory unconditionally - so "
+            "the one surviving copy is destroyed by the cleanup path")
+    r.check("a failed update leaves the instance no less recoverable",
+            startable_after or not startable_before,
+            f"startable before={startable_before} after={startable_after} - a failed "
+            "update must not leave the user worse off than when they began it. This is "
+            "stronger than 'do not lose _state': keeping the journal beside an "
+            "unstartable instance still fails it")
+
 
 # --------------------------------------------------------------------------
 def _materialise_payload(root: Path) -> "Path | None":
@@ -466,6 +556,35 @@ def _install(root: Path, target: Path, payload: Path, mode: str = "install"):
         [sys.executable, str(root / INSTALLER), "--target", str(target),
          "--payload", str(payload), "--mode", mode],
         cwd=root, capture_output=True, text=True, timeout=600, env=_clean_env())
+
+
+def _fail_update(root: Path, target: Path, payload: Path):
+    """Run a real update that fails inside the copy. Out of process, real installer.
+
+    Loads `packaging/installer/install.py` as a module, replaces the single call the
+    danger window depends on, and calls `install(mode="update")`. Everything else -
+    validation, the state move, the rmtree, the finally clause - is the shipping code.
+    """
+    driver = "\n".join((
+        "import importlib.util, shutil, sys",
+        "spec = importlib.util.spec_from_file_location('_uh_install', sys.argv[1])",
+        "mod = importlib.util.module_from_spec(spec)",
+        "sys.modules['_uh_install'] = mod",
+        "spec.loader.exec_module(mod)",
+        "def boom(*a, **k):",
+        "    raise OSError('injected: disk full during update')",
+        "mod.shutil.copytree = boom",
+        "from pathlib import Path",
+        "try:",
+        "    mod.install(Path(sys.argv[2]), Path(sys.argv[3]), 'update')",
+        "except Exception as e:",
+        "    print(f'{type(e).__name__}: {e}')",
+    ))
+    script = Path(tempfile.mkdtemp(prefix="t06-fail-")) / "drive.py"
+    script.write_text(driver, encoding="utf-8")
+    return subprocess.run(
+        [sys.executable, str(script), str(root / INSTALLER), str(payload), str(target)],
+        capture_output=True, text=True, timeout=300, env=_clean_env())
 
 
 def _target_of(home: Path) -> "Path | None":
