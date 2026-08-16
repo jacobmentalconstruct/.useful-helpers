@@ -592,13 +592,42 @@ def _install(root: Path, target: Path, payload: Path):
 
 
 def _identity(home: Path) -> "str | None":
-    m = home / "instance.json"
-    if not m.is_file():
-        return None
-    try:
-        return json.loads(m.read_text(encoding="utf-8")).get("uuid")
-    except Exception:
-        return None
+    """Ask the INSTALLED INSTANCE for its own uuid, through the identity authority.
+
+    NOT by reading `instance.json`. The first version of this helper parsed the manifest
+    directly, and `gates/t06` immediately failed: *"only the instance core knows the
+    identity format - active product code still defines or interprets identity:
+    ['gates/t07_shared_awareness.py']"*.
+
+    That census is right and the fix is NOT to add this file to its exclusion list.
+    Excluding a surface so a census stops seeing it is how the harness once vanished
+    from the identity census - it disappeared because it was excluded, not because it
+    stopped manufacturing identity (journal 0026, defect 7). A gate that blinds the
+    check it trips is worth less than no gate.
+
+    So this consumes the API instead, which is what t06's sibling assertion asks of any
+    verifier: *a test may inspect the persisted representation; it may not become a
+    second producer of it.* One authority on the identity format, and it is
+    `src/core/instance.py`.
+    """
+    probe = "\n".join((
+        "import sys, json",
+        "sys.path.insert(0, sys.argv[1])",
+        "from src.core import instance",
+        "from pathlib import Path",
+        "try:",
+        "    print(json.dumps({'uuid': instance.read_identity(Path(sys.argv[1]))}))",
+        "except Exception as e:",
+        "    print(json.dumps({'uuid': None, 'err': f'{type(e).__name__}: {e}'}))",
+    ))
+    script = Path(tempfile.mkdtemp(prefix="t07-id-")) / "id.py"
+    script.write_text(probe, encoding="utf-8")
+    out = subprocess.run([sys.executable, str(script), str(home)],
+                         capture_output=True, text=True, timeout=180, env=_clean_env())
+    for line in reversed((out.stdout or "").splitlines()):
+        if line.strip().startswith("{"):
+            return json.loads(line).get("uuid")
+    return None
 
 
 def _target_digest(target: Path) -> dict:
