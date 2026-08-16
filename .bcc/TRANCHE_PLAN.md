@@ -1,9 +1,10 @@
 # Tranche Plan
 
-Status: **ACTIVE.** T0-T6 parked. **C1b complete** (0032). Development mode:
-**CONVERGENCE**. **Next: declare T7 from C1b's evidence.** The audit sized it: of
-`attach`'s 24 responsibilities T7 touches 8, discharges **one** duplication, and
-depends on no live `apps/` member.
+Status: **ACTIVE.** T0-T6 parked. C1b complete (0032). **T7 DECLARED** 2026-08-16
+(0033) — gate written, run, **red**: 33 assertions, 3 passing pre-existing invariants,
+30 failing. Development mode: **CONVERGENCE**. **Next: implement against the red
+gate.** The audit sized it: of `attach`'s 24 responsibilities T7 touches 8, discharges
+**one** duplication, and depends on no live `apps/` member.
 Date: 2026-08-06, amended 2026-08-09, mode changed 2026-08-14, T6 reopened and
 re-parked 2026-08-14.
 Authority: subordinate to `CHARTER.md`; procedure defined by `TRANCHE_PROTOCOL.md`.
@@ -378,7 +379,7 @@ needs it, rather than displacing product work now.
 | T6 | Instance Identity and the Installation Core | **CLOSED 2026-08-14** (0026 → 0027 → reopened 0028 → **re-parked 0031**) — one instance bound to one target, knowing its identity, root and state, surviving relocation **and update**, supplying canonical context to the runtime. 27 gate assertions |
 | — | ***convergence phase begins here*** | |
 | — | **Application Absorption Audit** (C1b) | *diagnostic, not a tranche.* What `apps/` actually owns, which primitives already provide it, what should become a chain, the safest retirement order, and whether T7 needs any live app |
-| T7 | Shared Project Awareness Prototype | One compact evidence-backed orientation, persisted against the instance, same revision to human and agent — **composed as a chain, with no application in the path** |
+| T7 | Shared Project Awareness Prototype | **DECLARED, gate red** (0033) — one compact evidence-backed orientation, persisted against the instance, same revision to human and agent, produced by canonical tools through the common governed composition path |
 | T8 | Governed Work Loop Prototype | awareness → impact → preview/diff → approval → Apply → target-native verification → awareness refresh, as chains over existing tools and the existing seam |
 | — | **Release / STOP certification** | build and install from source → clean target → documented launcher → the full human+agent acceptance walk → **prove no specialised-app dependency** |
 | **STOP** | **Prototype stop / dogfood** | Architectural development halts. See below |
@@ -764,7 +765,7 @@ remains the authority.
 
 ---
 
-## T7 — Shared Project Awareness Prototype · SKETCHED, NOT DECLARED
+## T7 — Shared Project Awareness Prototype · **DECLARED 2026-08-16** (0033)
 
 **Outcome.** Existing deterministic tools are composed into **one compact,
 evidence-backed current orientation** of the bound target, persisted against the
@@ -835,7 +836,25 @@ ontology (C4).
 **This is composition, not another mapping engine** (C1 rules 2 and 3). Project
 Mapper stays a snapshot compiler; `attach` composes.
 
-### Gate — `gates/t07_shared_awareness.py` *(written at declaration, before implementation)*
+### Gate — `gates/t07_shared_awareness.py` · **WRITTEN AND RED** (0033)
+
+**33 assertions: 3 pass, 30 fail.** The three passes are pre-existing invariants
+(protocol §5.1a) — a payload materialises, an instance installs, `.git` is excluded.
+
+Four properties are stated **mechanically**, in the gate, because each has a history of
+degrading into a green assertion whose meaning drifted:
+
+| | |
+| --- | --- |
+| context reduction | `MAX_PROJECTION_RATIO = 0.25` **and** `MAX_PROJECTION_BYTES = 8192`, declared in one place. The ceiling exists because a ratio alone is satisfiable by an empty target. Changing it is a deliberate act with a reason |
+| revision identity | `instance` (who am I) + `revision` (what did I know) + `evidence_fingerprint` (what observed reality produced it). Same target → same fingerprint; one file added → different fingerprint |
+| canonical handles | every handle **must be accepted by the tool that owns it and resolve back to the entity it names**. A handle without an owning tool is decorative, not canonical |
+| drill-down | **provenance sufficient to retrieve canonical evidence** — a stored observation, a retrievable `evidence_id`, or a re-runnable invocation. Not byte-identical copies, and never prose |
+
+The gate also carries the narrow `.git*` prune regression from 0032: `.git` excluded,
+`.github` **not** excluded. One distinction, not an exclusion-subsystem redesign.
+
+Original declaration text follows.
 
 Sketched assertions, to be made executable and exercised through a real consumer
 entrance (protocol rule 8) at declaration:
