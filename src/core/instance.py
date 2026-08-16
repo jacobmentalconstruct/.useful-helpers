@@ -97,7 +97,12 @@ class InstanceContext:
         """
         return {"SUITE_HOME": str(self.instance_root),
                 "SUITE_PROJECT_ROOT": str(self.target_root),
-                "SUITE_STATE_ROOT": str(self.state_root)}
+                "SUITE_STATE_ROOT": str(self.state_root),
+                # The uuid joins the roots because awareness must belong to an
+                # INSTANCE, not to an absolute target path (T7). Transporting it keeps
+                # this module the one authority on the identity format: a tool receives
+                # a resolved value and never reads or parses the manifest itself.
+                "SUITE_INSTANCE_UUID": self.uuid}
 
 
 def _manifest_path(instance_root: Path) -> Path:

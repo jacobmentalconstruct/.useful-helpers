@@ -320,6 +320,14 @@ def _dispatch(paths: Paths, tool, tool_id: str, args: dict,
     env["PYTHONPATH"] = str(paths.root) + (os.pathsep + existing if existing else "")
     env["SUITE_HOME"] = str(paths.root)
     env["SUITE_PROJECT_ROOT"] = str(paths.project_root)
+    # Which INSTANCE this call belongs to. Transported rather than discoverable, so a
+    # tool never opens `instance.json` and becomes a second interpreter of the identity
+    # format - the defect `gates/t06`'s census exists to catch. Absent when uninstalled,
+    # and a consumer must treat absence as "no instance" rather than inventing one.
+    if paths.instance_uuid:
+        env["SUITE_INSTANCE_UUID"] = paths.instance_uuid
+    else:
+        env.pop("SUITE_INSTANCE_UUID", None)
 
     limit = DEFAULT_TIMEOUT_S if timeout is None else max(1, int(timeout))
 

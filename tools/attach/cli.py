@@ -108,9 +108,16 @@ def _probe(target: Path) -> dict:
 
     for current, dir_names, file_names in os.walk(target):
         here = Path(current)
+        # `not d.startswith(".git")` used to sit here. It was written for `.git` - which
+        # PRUNE already contains, so it added nothing there - and it silently swallowed
+        # `.github`, `.gitlab` and every other sibling sharing the prefix. CI
+        # configuration is exactly what a map of a target should see, and it made
+        # workflow files invisible to `command_profile` too. Removed, not narrowed: the
+        # named PRUNE set is the one authority on what is skipped, and a prefix test
+        # beside it is a second, weaker rule that nobody declared. Journal 0032.
         dir_names[:] = sorted(
             d for d in dir_names
-            if d not in skip and not d.startswith(".git") and (here / d) not in mine
+            if d not in skip and (here / d) not in mine
                and not is_instance_path(here / d)
         )
         rel_dir = here.relative_to(target)

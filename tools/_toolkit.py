@@ -153,6 +153,21 @@ def project_root() -> Path:
     return _required("SUITE_PROJECT_ROOT")
 
 
+def instance_uuid() -> "str | None":
+    """This instance's durable identity, as transported. None when uninstalled.
+
+    TRANSPORT, NOT INFERENCE - and deliberately not a manifest read. `src/core/instance.py`
+    is the one authority on the identity format; a tool that opened `instance.json` and
+    parsed it would become a second interpreter of that format, which is exactly what
+    `gates/t06`'s census exists to catch (it caught the T7 gate doing it).
+
+    None is a legitimate answer: an uninstalled development checkout has no instance, and
+    a consumer should say "no instance" rather than invent one.
+    """
+    v = os.environ.get("SUITE_INSTANCE_UUID", "").strip()
+    return v or None
+
+
 def instance_root() -> Path:
     """This sidecar's own home (INSTANCE_ROOT), as transported.
 

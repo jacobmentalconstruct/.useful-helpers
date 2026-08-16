@@ -39,6 +39,13 @@ class Paths:
     logs: Path
     state: Path
     venv_python: Path
+    # The installed instance's durable identity, or None when uninstalled. Resolved
+    # HERE because `resolve_paths` already consults `instance.resolve()` for the state
+    # root and was discarding the rest of what it returned - so the seam had no way to
+    # tell a tool which instance it belongs to without re-reading the manifest and
+    # becoming a second interpreter of its format. Defaulted so the one existing
+    # construction site is the only thing that has to know about it.
+    instance_uuid: str | None = None
 
 
 class NoTargetBound(RuntimeError):
@@ -146,4 +153,5 @@ def resolve_paths(root: Path | None = None) -> Paths:
                else (Path(state_override).resolve() if state_override
                      else root / "_state")),
         venv_python=venv_python,
+        instance_uuid=(bound.uuid if bound is not None else None),
     )

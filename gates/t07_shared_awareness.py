@@ -399,16 +399,33 @@ def _cli(home: Path, tool: str, args: dict, timeout: int = 300):
 
 
 def _output(proc) -> dict:
-    """The tool's own payload out of the CLI envelope, or {} with the reason kept."""
-    for line in reversed((proc.stdout or "").splitlines()):
-        line = line.strip()
-        if not line.startswith("{"):
-            continue
+    """The tool's own payload out of the CLI envelope, or {} with the reason kept.
+
+    PARSE THE WHOLE STREAM FIRST. The first version scanned lines in reverse for one
+    beginning with `{` and called `json.loads` on that single line - which works only if
+    the CLI emits compact JSON. It pretty-prints, so the scan reached the opening `{` on
+    its own line, failed to parse it, and returned {} for EVERY call. The gate was not
+    measuring the product at all; it was measuring its own parser.
+
+    Line scanning is kept as a fallback for a stream that carries a trailing banner,
+    but the whole-document read comes first because that is the actual contract.
+    """
+    raw = (proc.stdout or "").strip()
+    if raw:
         try:
-            doc = json.loads(line)
+            doc = json.loads(raw)
+            return doc.get("output") if isinstance(doc.get("output"), dict) else doc
         except ValueError:
-            continue
-        return doc.get("output") or doc
+            pass
+        for line in reversed(raw.splitlines()):
+            line = line.strip()
+            if not line.startswith("{"):
+                continue
+            try:
+                doc = json.loads(line)
+            except ValueError:
+                continue
+            return doc.get("output") if isinstance(doc.get("output"), dict) else doc
     _LAST_ERR.insert(0, (proc.stderr or proc.stdout or "")[-300:])
     return {}
 
