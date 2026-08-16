@@ -3389,6 +3389,71 @@ class SpineSmokeTest(unittest.TestCase):
                 else:
                     os.environ[k] = v
 
+    def test_broken_governance_config_degrades_audibly(self):
+        """A governance ceiling that fails open must SAY SO.
+
+        The defect this pins: `_config_ceiling` caught `Exception` and returned None, and
+        an unrecognised value fell through the same way - so an operator who clamped a
+        sensitive target to `Observe` and mistyped the file got the MOST PERMISSIVE
+        ceiling with no indication whatever. Two distinct silent paths, one outcome:
+        a governance control that is not in force and looks exactly like one that is.
+
+        The fail-open DEFAULT is deliberate and unchanged (a broken config must never
+        block the seam). What is asserted here is that the degradation is AUDIBLE, and
+        that a VALID clamp is still silent and still enforced - so the warning cannot be
+        satisfied by simply logging on every read.
+        """
+        import json
+        import logging
+        import tempfile
+        from dataclasses import replace
+        from pathlib import Path
+
+        from src.core import policy
+
+        root = Path(tempfile.mkdtemp(prefix="gov-"))
+        (root / "config").mkdir(parents=True)
+        cfg = root / "config" / "governance.json"
+        paths = replace(self.paths, root=root)
+
+        def ceiling_and_logs(text):
+            cfg.write_text(text, encoding="utf-8")
+            with self.assertLogs("suite.core.policy", level=logging.WARNING) as cm:
+                got = policy.effective_ceiling(paths)
+            return got, "\n".join(cm.output)
+
+        # 1. malformed JSON -> permissive, and it warns
+        got, logs = ceiling_and_logs('{ "max_authority": "Observe"')
+        self.assertEqual(got, policy.DEFAULT_CEILING)
+        self.assertIn("NO CEILING IS IN FORCE", logs)
+
+        # 2. a value outside AUTHORITIES (lowercase typo) -> permissive, and it warns
+        got, logs = ceiling_and_logs('{"max_authority": "observe"}')
+        self.assertEqual(got, policy.DEFAULT_CEILING)
+        self.assertIn("not one of", logs)
+
+        # 3. a VALID clamp is silent AND enforced. Without this the warning could be
+        #    made unconditional, which would pass 1 and 2 while meaning nothing.
+        cfg.write_text('{"max_authority": "Observe"}', encoding="utf-8")
+        with self.assertNoLogs("suite.core.policy", level=logging.WARNING):
+            self.assertEqual(policy.effective_ceiling(paths), "Observe")
+        self.assertEqual(policy.decide(paths, "Apply"), (False, "Observe"))
+
+        # 4. no config at all is not a degradation, and must stay silent.
+        #    A SEPARATE ROOT, deliberately, rather than deleting the one above: the
+        #    development mount denies unlink, so `cfg.unlink()` failed here for a reason
+        #    with nothing to do with governance - the exact class of assertion this
+        #    project keeps finding. A test must not need a capability it is not testing.
+        bare = Path(tempfile.mkdtemp(prefix="gov-bare-"))
+        with self.assertNoLogs("suite.core.policy", level=logging.WARNING):
+            self.assertEqual(policy.effective_ceiling(replace(self.paths, root=bare)),
+                             policy.DEFAULT_CEILING)
+
+        # 5. a config that simply declares no ceiling is also not a degradation
+        cfg.write_text(json.dumps({"note": "no ceiling here"}), encoding="utf-8")
+        with self.assertNoLogs("suite.core.policy", level=logging.WARNING):
+            self.assertEqual(policy.effective_ceiling(paths), policy.DEFAULT_CEILING)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -29,8 +29,25 @@ audited when it does. *"Never writes to the target"* is a misstatement of this r
    tool as a subprocess, records a governance event, and enforces the precept guard. It never
    imports tool code.
 2. **The adapters** (`tools/*/`)  -  each is a `tool.json` manifest + a `cli.py` exposing one
-   `run(args) -> dict`. Tools never import each other. They are interchangeable,
-   manifest-described capabilities.
+   `run(args) -> dict`. They are interchangeable, manifest-described capabilities.
+
+   **Coupling rule, stated as it actually holds.** A tool reaches another capability by one of
+   three sanctioned routes: `tools/_toolkit.py` (the shared runtime API), a `*_shared.py` module
+   (logic two tools genuinely share), or `seam_call` (a real governed invocation, which is what
+   `delegate`, `plan` and `genesis` use). Direct `from tools.<other>.cli import run` is **not**
+   one of them: it couples to another tool's implementation and the call produces no ledger
+   entry, so the capability is exercised without attribution.
+
+   *This paragraph previously read "Tools never import each other", which was an absolute the
+   code does not keep: `tools/dev_server_manager` imports `tools.command_profile.cli` directly,
+   and says so in its own `DEPENDS ON` header. Documenting an invariant with a live exception is
+   the E10 failure - a claim with nothing behind it. The exception is now named; whether it is
+   corrected by routing through `seam_call` or by extracting a shared module is recorded in the
+   backlog as a design decision, not silently settled here.*
+
+   One dependency runs the other way and is deliberate: `tools/vendor_export` imports
+   `src.core.payload` because the ship manifest is the **single authority** on what ships (T1),
+   and a consumer that restated it would be the second copy `BCC-ONE-AUTHORITY` forbids.
 
    `apps/*/` holds the same contract but is a **transitional layer**, not an enduring one.
    The intended shape is *tools → chains → seam → projections*, never

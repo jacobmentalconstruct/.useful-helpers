@@ -186,6 +186,7 @@ def _announce(paths: Paths, tool_id: str, op_id: str, phase: str, client: str) -
 _GUARD_SKIP = {".git", ".hg", ".svn", ".venv", "venv", "env", "node_modules", "__pycache__",
                ".pytest_cache", ".mypy_cache", ".ruff_cache", "dist", "build", "site-packages"}
 _GUARD_MAX_FILES = 20000  # bound the stat cost; above this, skip the guard and say so
+_GUARD_DISABLED_LOGGED = False  # so the kill-switch warning fires once, not per dispatch
 
 
 def _target_manifest(paths: Paths) -> tuple[dict, bool]:
@@ -242,6 +243,20 @@ def _guard_applies(paths: Paths, tool) -> bool:
     - not disabled via SUITE_STRICT_OBSERVE=0.
     """
     if os.environ.get("SUITE_STRICT_OBSERVE", "1") == "0":
+        # AUDIBLE, ONCE PER PROCESS. Charter 7.3 recorded that this "disables the guard
+        # entirely and silently - verified, the same fixture returned ok: true". The
+        # silence was the defect, not the switch: a precept violation is a DAMAGE event
+        # (the write lands, then gets reported), so a run with the detector off can do
+        # real harm and leave no trace that detection was even attempted.
+        #
+        # Once, not per call: _guard_applies runs on every dispatch, and a warning per
+        # invocation would train the reader to ignore it.
+        global _GUARD_DISABLED_LOGGED
+        if not _GUARD_DISABLED_LOGGED:
+            _GUARD_DISABLED_LOGGED = True
+            log.warning("invoke: SUITE_STRICT_OBSERVE=0 - the precept guard is OFF for "
+                        "this process. Observe tools that write to the target will not "
+                        "be detected or reported")
         return False
     if paths.project_root is None:
         return False  # no target to protect; _dispatch refuses the call anyway
