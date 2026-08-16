@@ -1,9 +1,9 @@
 # Tranche Plan
 
-Status: **ACTIVE.** T0-T6 parked. T6 was reopened 2026-08-14 (0028) for two updater
-correctness defects and re-parked the same day (0031) with both discharged, red before
-green. Development mode: **CONVERGENCE**. **Next: C1b, the Application Absorption
-Audit — diagnostic only. T7 is sketched and is declared from C1b's evidence.**
+Status: **ACTIVE.** T0-T6 parked. **C1b complete** (0032). Development mode:
+**CONVERGENCE**. **Next: declare T7 from C1b's evidence.** The audit sized it: of
+`attach`'s 24 responsibilities T7 touches 8, discharges **one** duplication, and
+depends on no live `apps/` member.
 Date: 2026-08-06, amended 2026-08-09, mode changed 2026-08-14, T6 reopened and
 re-parked 2026-08-14.
 Authority: subordinate to `CHARTER.md`; procedure defined by `TRANCHE_PROTOCOL.md`.
@@ -103,8 +103,15 @@ backend.
 
 ### C1b. Application Absorption Audit — a declared step, not a tranche
 
-**Runs after T6 re-parks and before T7 is declared.** Diagnostic only: it implements
-nothing, refactors nothing, and creates no framework.
+**COMPLETE — journal 0032, 2026-08-15.** Diagnostic only: it implemented nothing,
+refactored nothing, and created no framework. Headline result:
+
+> `attach`'s 34 functions group into **24 responsibilities**: 12 keep, 3 replace,
+> 3 move, 4 presentation, 2 retain. **T7 touches 8 and discharges one duplication,
+> partially.** `projectmapper` is **atomic — re-home, do not decompose.** T7 needs no
+> live `apps/` member.
+
+The original specification follows, unchanged.
 
 **The one narrow question it exists to answer:**
 
@@ -1236,6 +1243,10 @@ that contradiction is what this correction removes.
 | **`patch` declares `writes: toolkit` but writes to a target path** | §11 census, 2026-08-14 | **High — T8 owns it.** A tool that mutates the target while declaring it does not is a hole in the precept guard's own gating. Found by census, not by failure |
 | **`_instance_module` docstring and call order disagree** — it says the identity authority is loaded *"FROM THE PAYLOAD JUST INSTALLED"*, but the update path calls it before the copy and loads the **old** tree's copy | 0028, third finding | **Medium.** Reading an old manifest with the code that wrote it may well be correct; the point is that the comment and the behaviour cannot both be. Deliberately **out of scope** for the T6 reopening, which is bounded to two defects |
 | `docs-refresh` prints `_docs/TOOLS.md` while writing `docs/` | T6 closeout | Low — documentation staleness, no behaviour change |
+| **`attach` cannot see `.github/`, `.gitlab/` or any `.git*` directory** — `_probe` prunes with `not d.startswith(".git")`, written for `.git` and catching every sibling. `.github` is **not** in `PRUNE`, so this is an unintended prefix match | 0032 (C1b) | **Medium — T7 touches `_probe`.** CI configuration is exactly what a "understand this target" map should see, and `command_profile` cannot find workflow files either. Cheap: `d == ".git"` plus explicit `PRUNE` entries |
+| **`report` declares a `modules` field in `output_shape` that its output omits** | 0032 (C1b) | Low — a manifest promising what the tool does not return |
+| **No tool reports file modification time** — `attach._probe`'s `newest_mtime` has no canonical owner (only `snapshot_diff` mentions mtime, and it compares snapshots by path and content hash) | 0032 (C1b) | **Watch during T7.** If freshness needs it and composition cannot supply it, this is the first genuine primitive gap — but C1 rule 1 requires an end-to-end attempt to demonstrate it before any tool is proposed |
+| **`projectmapper` re-home** — `apps/` → `tools/`, then retire `apps/` and its registry scan path | 0032 (C1b) | Low — satisfies the STOP assertion by semantics; needs an operator decision, not urgent |
 | ~~**CI workflow unverified**~~ | Alignment, 2026-08-08 | **CLOSED** — the workflow has run; Windows is the primary job and has caught two Windows-only defects |
 | ~~**E8 may be a mechanism-exists claim**~~ | Alignment, 2026-08-08 | **CLOSED** — re-derived and demoted to NOT MET, 2026-08-09 |
 | **Shipped contract must arrive blank** — our copy carries resolved `BCC-CONFIG` values and project-specific bootstrap notes | 0016 | **`P-install-packaging` owns it — E13** |
