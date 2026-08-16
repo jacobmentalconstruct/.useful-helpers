@@ -9,8 +9,9 @@ DOES:       action=archetypes: list the built-in starting maps.
             action=create (apply:true): materialize the tree. Refuses to overwrite unless
             overwrite:true; refuses any path that escapes the resolved base.
 DEPENDS ON: tools._toolkit, tools.scaffold_shared
-WIRES TO:   invoked by src/core/invoke.py; described by sibling tool.json. A future `planner` tool
-            generates the map and sequences this with sidecar_install / journal.
+WIRES TO:   invoked by src/core/invoke.py; described by sibling tool.json. The `plan` tool
+            generates the map and sequences this with genesis / provenance / journal.
+            (This line named `sidecar_install` until T6 deleted it.)
 NOTES:      Deliberately dumb: it plans nothing, it honors the contract the agent fed it, and it
             writes ONLY the project tree (no sidecar traces, nothing outside the base). Preview is
             free and always available; a single apply:true executes the WHOLE batch - the

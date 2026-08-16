@@ -178,10 +178,20 @@ path-tokened (`<project>`, `<toolkit>`), never raw absolute paths.
 
 ## 8. Entrances
 
-- **Agents:** `python -m src.app mcp` (JSON-RPC 2.0 over stdio)  -  native JSON, no shell escaping.
+Two launchers wrap everything: `run.bat` (Windows) and `run.sh` (Linux, macOS). Each resolves
+its own directory and changes into it, so the working directory you start from does not matter —
+but neither is on `PATH`, so **invoke them by path**: `.useful-helpers\run.bat attach`.
+
+- **Front door:** `run.bat attach` / `sh run.sh attach`  -  what this target is, and what to do next.
+- **Agents:** `run.bat mcp` (JSON-RPC 2.0 over stdio)  -  native JSON, no shell escaping.
 - **Humans:** `run.bat ui` (browse/run any tool) - `run.bat map` (shareable project snapshot) - `run.bat plan` (plan a new project).
-- **CLI:** `python -m src.app cli <version|tool-list|registry-refresh|docs-refresh|tool-call|run-playbook>`.
-- **Playbooks:** `python -m src.app cli run-playbook --file playbooks/<name>.json`.
+- **CLI:** `run.bat cli <version|tool-list|registry-refresh|docs-refresh|tool-call|run-playbook>`.
+- **Playbooks:** `run.bat cli run-playbook --file playbooks/<name>.json`.
+- **Verify:** `run.bat smoke`.
+
+The raw form is `python -m src.app <mode>`, which requires the instance directory as the working
+directory. **Installing a sidecar is not among these modes** — that belongs to the setup
+application (`packaging/installer/`), and an installed instance does not vend further instances.
 
 ## 9. Adding a capability
 

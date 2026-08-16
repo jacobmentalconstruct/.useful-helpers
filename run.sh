@@ -38,7 +38,14 @@ Useful Helpers - a governed sidecar for the folder it lives in.
   run.sh ui                the graphical surface
   run.sh smoke             verify this installation
 
-Run it from anywhere:  sh .useful-helpers/run.sh attach
+Invoke it BY PATH - it is not on PATH, but it resolves its own directory, so the
+working directory you start from does not matter:
+
+  sh .useful-helpers/run.sh attach      from the target root
+  sh run.sh attach                      from inside the instance
+
+Installing a sidecar is the setup application's job. This instance is bound to the
+folder it lives in and does not install others.
 USAGE
     ;;
   *) exec "$PYTHON_EXE" -m src.app "$@" ;;

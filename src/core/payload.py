@@ -6,7 +6,7 @@ DOES:       Names every exclusion BY CATEGORY, so each states its reason, and de
             the payload boundary from those categories.
 DEPENDS ON: nothing (deliberately: the harness, the gates, the tests and the vend
             tools all import it, so it must stay dependency-free)
-WIRES TO:   tools/vendor_export, tools/sidecar_install, _harness/harness.py,
+WIRES TO:   tools/vendor_export, packaging/installer, _harness/harness.py,
             tests/test_smoke.py, gates/t01_ship_manifest.py
 NOTES:      This exists because the boundary used to be implicit in the folder layout.
             While the sidecar was nested inside toolkit/, "what ships" was "what is in

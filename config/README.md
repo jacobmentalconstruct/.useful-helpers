@@ -20,7 +20,7 @@
 | `input_schema` | JSON-schema of accepted arguments |
 | `output_shape` | expected structured result shape |
 
-The generated catalog lives in `_docs/TOOLS.md` (`cli docs-refresh`).
+The generated catalog lives in `docs/TOOLS.md` (`cli docs-refresh`).
 
 ## `governance.json` — the authority policy
 

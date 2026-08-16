@@ -27,9 +27,17 @@ so the toolkit can sit anywhere and manage a project elsewhere:
 set SUITE_PROJECT_ROOT=C:\path\to\your\project     :: the toolkit reads/writes THAT project
 ```
 
-The toolkit writes only its own home; the target is never modified except by deliberate Apply
-tools you invoke. To drop the toolkit *into* a project as a self-contained sidecar folder, use the
-`sidecar_install` tool - it writes exactly one `.useful-helpers/` directory and nothing else.
+The toolkit writes no trace of *itself* into the target: no pointer file, no `.gitignore` line,
+no config key. Delete this folder and every trace of the instrument is gone.
+
+That is a rule about the instrument's footprint, not about your work. Target files **are**
+modified by a governed **Apply** tool you deliberately invoke - editing them is the point - and
+every such change is preview-first, confined to a declared write scope, and recorded in the
+ledger. Those changes are yours and survive removing the sidecar.
+
+To install a sidecar into another folder, use the **setup application** you received. It writes
+exactly one `.useful-helpers/` directory and nothing else. An installed instance belongs to one
+target and does not install further sidecars.
 
 ## Start here
 

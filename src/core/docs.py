@@ -2,7 +2,7 @@
 FILE:       src/core/docs.py
 ROLE:       Generate the docs that are DERIVED from the registry, so they cannot drift.
 DOMAIN:     core
-DOES:       generate_tools_md: render _docs/TOOLS.md from the discovered tool manifests - the
+DOES:       generate_tools_md: render docs/TOOLS.md from the discovered tool manifests - the
             single source of truth. Anything a manifest already knows is generated, never
             hand-maintained; drift becomes a bug the smoke suite catches, not rot nobody notices.
 DEPENDS ON: src.core.{config,registry}, (stdlib) datetime, pathlib
@@ -84,9 +84,18 @@ def render_tools_md(paths: Paths) -> str:
 
 
 def generate_tools_md(paths: Paths) -> dict:
-    """Write _docs/TOOLS.md from the registry. Returns a small report."""
+    """Write docs/TOOLS.md from the registry. Returns a small report.
+
+    The reported path is DERIVED from where the file was actually written, never a
+    literal: this returned "_docs/TOOLS.md" while writing `docs/` for several tranches,
+    so the one field a caller reads to find the output named the wrong place.
+    """
     content = render_tools_md(paths)
     out = paths.docs / "TOOLS.md"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(content, encoding="utf-8")
-    return {"written": "_docs/TOOLS.md", "bytes": len(content)}
+    try:
+        where = out.relative_to(paths.root).as_posix()
+    except ValueError:
+        where = out.as_posix()
+    return {"written": where, "bytes": len(content)}

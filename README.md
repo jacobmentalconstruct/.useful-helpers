@@ -69,5 +69,5 @@ calls `python -m src.app`.
 ## Memory & governance
 `journal` + `evidence` are **this project's** durable memory  -  empty until you use them.
 Governance enforcement is always on and defaults to permissive; clamp it per project via
-`config/governance.json` (see `_docs/PROJECT_GOVERNANCE.md`).
+`config/governance.json` (see `docs/PROJECT_GOVERNANCE.md`).
 "# .useful-helpers" 

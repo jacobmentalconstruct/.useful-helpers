@@ -16,24 +16,38 @@ setup_env.bat                                   (Windows)
 python -m venv .venv && .venv/Scripts/pip install -r requirements.txt
 ```
 
-## Point it at a project
+## It is already pointed at a project
 
-Set `SUITE_PROJECT_ROOT` to the project you want the toolkit to manage (default: the current
-directory). The toolkit writes only its own home; the target changes only via Apply tools you
-invoke. To install it into a project as a sidecar folder, use the `sidecar_install` tool.
+An installed instance is **bound to the folder it lives in** by the identity manifest
+(`instance.json`) written at install time. It resolves its target structurally - no folder-name
+guess, no marker file, no environment variable - and moving the pair together keeps the
+relationship intact.
+
+If you are running an uninstalled copy, set `SUITE_PROJECT_ROOT` to the project you want it to
+manage. Where an instance exists, identity wins and a conflicting variable is refused.
+
+To install a sidecar into another folder, use the **setup application** you received - not this
+runtime. An installed instance operates on its one target; it does not install more sidecars.
+
+The instance writes only its own home. Target files change only via a governed **Apply** tool you
+deliberately invoke, and every such change is recorded in the ledger.
 
 ## Read order
 
 1. `AGENTS.md` - product-neutral front door (any agent).
 2. `README.md` - what the toolkit is + quick start.
-3. `_docs/ARCHITECTURE.md` - the structure (spine, governed seam, contracts, memory, playbooks).
-4. `_docs/TOOLS.md` - the capability catalog (what you can call, with examples).
-   `_docs/OPERATIONS.md` - how to drive them (sequencing, flags, trust levels).
-5. `_docs/PROJECT_GOVERNANCE.md` - the optional authority ceiling, engaged per project.
+3. `docs/ARCHITECTURE.md` - the structure (spine, governed seam, contracts, memory, playbooks).
+4. `docs/TOOLS.md` - the capability catalog (what you can call, with examples).
+   `docs/OPERATIONS.md` - how to drive them (sequencing, flags, trust levels).
+5. `docs/PROJECT_GOVERNANCE.md` - the optional authority ceiling, engaged per project.
 
 ## Entrances
 
-- **GUI:** `python -m src.app ui` / `run.bat ui` - **Project Snapshot:** `run.bat map`
+Invoke a launcher **by path** - they are not on `PATH`, but each resolves its own directory, so
+the working directory you start from does not matter.
+
+- **Front door:** `run.bat attach` (Windows) / `sh run.sh attach` (Linux, macOS)
+- **GUI:** `run.bat ui` - **Project Snapshot:** `run.bat map`
 - **CLI:** `python -m src.app cli ...`
 - **MCP (agents):** `python -m src.app mcp`
 - **Playbooks:** `python -m src.app cli run-playbook ...`

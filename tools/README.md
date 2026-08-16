@@ -16,7 +16,7 @@ optional thin GUI). Anything carrying a substantial GUI or its own data store be
 `tools/myTool/` (or `apps/` with `"kind":"app"`) ready to fill in.
 2. **Manifest** — a `tool.json` (schema in `config/README.md`) so the registry can discover it.
    It declares `authority`, `operates_on`, and `writes` — the seam enforces the last for Observe
-   tools (see `_docs/ARCHITECTURE.md` §5).
+   tools (see `docs/ARCHITECTURE.md` §5).
 3. **Subprocess-only** — invoked by `core.invoke()` as a subprocess via the shared root
    `.venv`; never imported across package boundaries.
 4. **Graceful** — non-zero exit + structured error on failure, never a silent crash.

@@ -9,7 +9,9 @@ DOES:       Records a durable workspace identity (id + name + intent + authority
 DEPENDS ON: tools._toolkit (state_root, seam_call); (stdlib) json, uuid, datetime
 WIRES TO:   invoked by src/core/invoke.py; read by tools/attach (which surfaces the intent and maps
             the workspace at whatever evidence density it has). A future planner chains
-            genesis -> scaffold_project -> sidecar_install -> journal.
+            genesis -> scaffold_project -> journal. (The chain named a fourth step,
+            `sidecar_install`, until T6 deleted it: installing a sidecar is the setup
+            application's job, not a runtime tool's.)
 NOTES:      Genesis writes ONLY sidecar state - workspace.json in the state root, plus the journal.
             It puts NOTHING into the target's own tree: the workspace's identity and intent are the
             sidecar's memory of what the project is trying to BECOME, not an artifact imposed on

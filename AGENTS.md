@@ -221,7 +221,7 @@ machine paths. They land in exported mirrors and leak.
 
 Enforcement is always on; the ceiling defaults to permissive (**Apply**), so nothing is blocked
 out of the box. To constrain work on a sensitive target, opt in: set `SUITE_MAX_AUTHORITY` in the
-environment, or `"max_authority"` in `config/governance.json`. See `_docs/PROJECT_GOVERNANCE.md`.
+environment, or `"max_authority"` in `config/governance.json`. See `docs/PROJECT_GOVERNANCE.md`.
 
 ## Ground rules
 
