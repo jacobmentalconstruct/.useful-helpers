@@ -3455,5 +3455,76 @@ class SpineSmokeTest(unittest.TestCase):
             self.assertEqual(policy.effective_ceiling(paths), policy.DEFAULT_CEILING)
 
 
+    def test_canonical_observation_selects_rather_than_denylists(self):
+        """Evidence identity is built by SELECTION; runtime metadata never enters it.
+
+        A HELPER-LEVEL test on purpose. The black-box gate cannot reach this: none of the
+        three current contributors emits a timestamp, so removing the exclusion entirely
+        left the gate green (verified by mutation). The invariant is real even where the
+        current fixtures cannot exercise it, so it is pinned at the level where it lives.
+
+        The defect this replaces was a VOLATILE_KEYS denylist stripping key NAMES -
+        `path`, `created`, `db`, `root` - recursively from arbitrary tool output. Two
+        failures in one:
+
+          it DISCARDED REAL EVIDENCE. `path` is which file a finding is about; `created`
+          is a record's own date. A finding moving from a.txt to b.txt produced the SAME
+          fingerprint, so awareness reported "nothing changed" about a target that had.
+
+          it was a DENYLIST, wrong in only one direction: every future contributor field
+          participates until someone remembers to exclude it.
+
+        A key name cannot tell you whether a value is noise. Selection can.
+        """
+        from tools.awareness_shared import canonical_observation, fingerprint
+
+        noisy = {
+            "summary": {"files": 3, "classes": 1, "functions": 9},
+            # runtime metadata: must NOT reach the canonical observation
+            "generated_at": "2026-08-16T12:00:00Z", "duration_ms": 412,
+            "root": "/tmp/build-a/proj", "evidence_id": "ev-1",
+            # THE DISCRIMINATOR. Bulky, unlisted, and not part of the semantic
+            # projection. A denylist keeps it (nobody named it); selection drops it
+            # (nobody reached for it). Without a field of this shape the fixture cannot
+            # tell the two implementations apart - verified by mutation: an earlier
+            # version of this test contained only fields both approaches agreed on, and
+            # a restored denylist passed it.
+            "markdown": "# Report\n" + ("verbose rendering\n" * 40),
+        }
+        c1 = canonical_observation("report", noisy)
+        self.assertEqual(c1, {"summary": {"files": 3, "classes": 1, "functions": 9}})
+        for volatile in ("generated_at", "duration_ms", "root", "evidence_id"):
+            self.assertNotIn(volatile, c1)
+        self.assertNotIn("markdown", c1)
+
+        # And the other half: a field named like "volatile" that IS the evidence must
+        # survive, because selection reaches for it. `sqlite_inspect`'s table names are
+        # the observation; a denylist carrying "tables" or "path" would erase them.
+        tables = canonical_observation(
+            "sqlite_inspect", {"tables": [{"name": "records"}, {"name": "audit"}],
+                               "db": "/tmp/x/app.sqlite3", "duration_ms": 9})
+        self.assertEqual(tables, {"tables": ["audit", "records"]})
+
+        # Same findings observed later, elsewhere, taking longer -> identical identity.
+        c2 = canonical_observation("report", {
+            **noisy, "generated_at": "2026-09-01T04:00:00Z", "duration_ms": 3,
+            "root": "/elsewhere/entirely/proj", "evidence_id": "ev-999"})
+        self.assertEqual(c1, c2)
+        obs = [{"tool": "report", "canonical": c1, "ok": True}]
+        self.assertEqual(fingerprint("", obs),
+                         fingerprint("", [{"tool": "report", "canonical": c2, "ok": True}]))
+
+        # And the half a denylist got backwards: a REAL change must still register.
+        changed = canonical_observation("report", {**noisy, "summary": {"files": 4}})
+        self.assertNotEqual(c1, changed)
+        self.assertNotEqual(
+            fingerprint("", obs),
+            fingerprint("", [{"tool": "report", "canonical": changed, "ok": True}]))
+
+        # Scope participates, but only relatively - an absolute path would make a
+        # relocated target look different (gates/t07 asserts the same thing end to end).
+        self.assertNotEqual(fingerprint("", obs), fingerprint("src", obs))
+
+
 if __name__ == "__main__":
     unittest.main()

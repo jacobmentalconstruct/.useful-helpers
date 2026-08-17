@@ -57,30 +57,52 @@ SCHEMA = 1
 AWARENESS_DIR = "awareness"
 CURRENT = "current.json"
 
-# Keys whose values describe the OBSERVATION rather than the TARGET. Excluded from the
-# fingerprint by name, declared here so the exclusion is auditable rather than ad hoc.
-VOLATILE_KEYS = frozenset({
-    "generated_at", "observed_at", "timestamp", "duration_ms", "elapsed", "elapsed_ms",
-    "root", "path", "cwd", "target", "db", "evidence_id", "op_id", "started", "created",
-})
+# ---------------------------------------------------------------------------------
+# CANONICALIZATION. Only SEMANTICALLY SELECTED observation data enters evidence
+# identity; runtime and envelope metadata never enters it in the first place.
+#
+# The first version did the opposite and was wrong twice over. It carried a
+# VOLATILE_KEYS set - `generated_at`, `duration_ms`, `root`, `path`, `target`, `db`,
+# `created` ... - and stripped those key NAMES recursively from arbitrary tool output.
+#
+#   1. IT DISCARDED REAL EVIDENCE. `path` is which file a finding is about. `created`
+#      is a record's own date. `db` is which database was inspected. For a records
+#      target those are the evidence, not noise - so a finding moving from a.txt to
+#      b.txt, or a record's date changing, produced the SAME fingerprint. Awareness
+#      would have reported "nothing changed" about a target that had.
+#
+#   2. IT WAS A DENYLIST, so it could only ever be wrong in one direction: every future
+#      contributor field is included until someone remembers to exclude it, and every
+#      legitimate field sharing a listed name is silently destroyed.
+#
+# A key name cannot tell you whether a value is noise. Its POSITION can. So the
+# canonical observation is built by SELECTION - the same compact projection `_findings`
+# already derives - and runtime metadata lives structurally outside it.
+# ---------------------------------------------------------------------------------
 
 
-def _normalize(value, target: str):
-    """Strip volatile metadata and tokenize host paths. Deterministic by construction.
+def canonical_observation(tool: str, output: dict) -> dict:
+    """The part of a contributor's output that IS the evidence, selected by meaning.
 
-    Recursive because contributor payloads nest, and a volatile key three levels down
-    poisons the hash exactly as surely as one at the top.
+    An allowlist by construction: a field participates in identity because this function
+    reached for it, never because nobody remembered to exclude it. A contributor whose
+    projection is not known here contributes its `summary`, which is the one field the
+    tool contract already declares to be a stable digest of what it found.
     """
-    if isinstance(value, dict):
-        return {k: _normalize(v, target) for k, v in sorted(value.items())
-                if k not in VOLATILE_KEYS}
-    if isinstance(value, list):
-        return [_normalize(v, target) for v in value]
-    if isinstance(value, str) and target and target in value:
-        # An absolute host path makes the same target fingerprint differently after a
-        # move - which T6 went to some trouble to make survivable.
-        return value.replace(target, "<target>")
-    return value
+    body = output or {}
+    if tool == "report":
+        return {"summary": body.get("summary")}
+    if tool == "import_graph":
+        return {"summary": body.get("summary"),
+                "hubs": sorted(h.get("module") or h.get("name")
+                               for h in (body.get("hotspots") or [])
+                               if h.get("module") or h.get("name")),
+                "cycles": len(body.get("cycles") or [])}
+    if tool == "dead_code":
+        return {"summary": body.get("summary")}
+    if tool == "sqlite_inspect":
+        return {"tables": sorted((t or {}).get("name", "") for t in (body.get("tables") or []))}
+    return {"summary": body.get("summary")}
 
 
 def _digest(payload) -> str:
@@ -111,7 +133,6 @@ def observe(domain: str, probe: dict) -> list:
     The evidence is attached HERE, at observation time, because that is the only moment
     the output is the output for THIS revision (semantic 4).
     """
-    target = str(project_root())
     seen = []
     for tool, args in contributors(domain, probe):
         res = seam_call(tool, args)
@@ -128,24 +149,34 @@ def observe(domain: str, probe: dict) -> list:
             "tool": tool, "args": args, "ok": True, "output": output,
             "evidence_id": ((ev.get("output") or {}).get("evidence_id") if ev.get("ok")
                             else None),
-            "normalized": _normalize(output, target),
+            "canonical": canonical_observation(tool, output),
         })
     return seen
 
 
-def fingerprint(scope: str, observations: list) -> str:
-    """H(scope, [(tool, normalized output)]) - what was seen, never when (semantic 1)."""
-    body = {"scope": scope,
+def fingerprint(rel_scope: str, observations: list) -> str:
+    """H(relative scope, [(tool, canonical observation)]).
+
+    THE SCOPE IS RELATIVE, and that is not cosmetic. The first version hashed
+    `str(project_root())` - an ABSOLUTE path - so moving a target and its instance
+    together changed the fingerprint and the revision although nothing about the target
+    had changed. T6 spent a whole tranche removing absolute-path identity; this had
+    quietly reintroduced it one layer up. A relative scope keeps the distinction that
+    matters (whole target vs one subsystem) and drops the one that does not (where the
+    drive happens to be mounted).
+    """
+    body = {"scope": rel_scope,
             "observations": sorted(
-                ({"tool": o["tool"], "seen": o.get("normalized"), "ok": o.get("ok")}
+                ({"tool": o["tool"], "seen": o.get("canonical"), "ok": o.get("ok")}
                  for o in observations),
                 key=lambda o: o["tool"])}
     return _digest(body)
 
 
-def revision_id(instance: str | None, scope: str, evidence_fingerprint: str) -> str:
-    """Content-anchored, not sequential (semantic 2)."""
-    return _digest({"instance": instance, "scope": scope, "evidence": evidence_fingerprint})[:16]
+def revision_id(instance: str | None, rel_scope: str, evidence_fingerprint: str) -> str:
+    """Content-anchored, not sequential (semantic 2). Relative scope, never absolute."""
+    return _digest({"instance": instance, "scope": rel_scope,
+                    "evidence": evidence_fingerprint})[:16]
 
 
 def _findings(observations: list) -> dict:
@@ -195,19 +226,22 @@ def _limitations(observations: list, probe: dict, pmap: dict) -> list:
     return lim
 
 
-def build(pmap: dict, probe: dict, stale: bool) -> dict:
+def build(pmap: dict, probe: dict, stale: bool, *, scope_rel: str = "") -> dict:
     """Compose one awareness revision and persist it. Returns the compact envelope."""
-    scope = str(project_root())
     instance = instance_uuid()
     obs = observe((pmap or {}).get("domain") or "generic", probe)
-    fp = fingerprint(scope, obs)
-    rev = revision_id(instance, scope, fp)
+    fp = fingerprint(scope_rel, obs)
+    rev = revision_id(instance, scope_rel, fp)
     envelope = {
         "schema": SCHEMA,
         "revision": rev,
         "evidence_fingerprint": fp,
         "instance": instance,
-        "scope": scope,
+        # DISPLAY vs IDENTITY, kept apart deliberately. `scope` is the absolute path a
+        # reader wants to see; `scope_rel` is what participates in the revision. Folding
+        # the absolute one into identity is what made a relocated target look changed.
+        "scope": str(project_root()),
+        "scope_rel": scope_rel,
         "observed_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "findings": _findings(obs),
         "handles": _handles(obs),

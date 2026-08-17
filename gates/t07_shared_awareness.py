@@ -273,6 +273,39 @@ def check(r, root: Path) -> None:
             "mean only 'the Nth run'")
     _digest_snapshot = _target_digest(soft)
 
+    # ---- 4b. WALK STEP 14 -- awareness survives relocation ----------------
+    # T6 spent an entire tranche removing absolute-path identity: nothing absolute is
+    # written down, so a target and its instance move together and the relationship
+    # survives. Awareness must not quietly reintroduce it.
+    #
+    # The real topology, not a file copy: the whole target INCLUDING its
+    # `.useful-helpers` instance is relocated to a different absolute path, and the
+    # moved instance is what answers afterwards.
+    #
+    # If this fails, the repair is to find which field leaks location into the
+    # canonical observation - NOT to strip anything that looks like a path.
+    relocated = Path(tempfile.mkdtemp(prefix="t07-moved-")) / "elsewhere"
+    shutil.move(str(soft), str(relocated))
+    moved_home = relocated / DEFAULT_HOME
+    # REFRESH, NOT RE-ENGAGE, and the distinction is the whole assertion. A plain
+    # re-engage returns the PERSISTED revision without recomputing, so it round-trips a
+    # stored string and would pass even if identity were entirely location-dependent -
+    # verified by mutation: restoring the absolute scope left this green. Forcing a
+    # recomputation at the new location is what actually tests the invariant.
+    after_move = _awareness(moved_home, refresh=True)
+    r.check("awareness survives relocation of the target and its instance",
+            after_move.get("evidence_fingerprint") == reverted.get("evidence_fingerprint")
+            and after_move.get("revision") == reverted.get("revision"),
+            f"before move fp={reverted.get('evidence_fingerprint')!r} "
+            f"rev={reverted.get('revision')!r}; after move "
+            f"fp={after_move.get('evidence_fingerprint')!r} "
+            f"rev={after_move.get('revision')!r} - the target did not change, only its "
+            "absolute location. A revision that moves with the path is absolute-path "
+            "identity, which T6 removed")
+    soft = relocated
+    home = moved_home
+    _digest_snapshot = _target_digest(soft)
+
     # ---- 5. the anti-hallucination property -------------------------------
     handles = aw.get("handles") or []
     r.check("awareness promotes at least one canonical handle for a software target",

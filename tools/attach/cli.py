@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 from tools import awareness_shared, summarize_shared
-from tools._toolkit import is_instance_path, output_root, project_root, state_root, suite_home, tool_main
+from tools._toolkit import instance_uuid, is_instance_path, output_root, project_root, state_root, suite_home, tool_main
 
 PRUNE = {
     ".git", ".hg", ".svn", ".venv", "venv", "env", "node_modules", "__pycache__",
@@ -948,8 +948,22 @@ def run(args: dict) -> dict:
     if have and not forced:
         profile = json.loads(profile_path.read_text(encoding="utf-8"))
         pmap = json.loads(map_path.read_text(encoding="utf-8"))
+        # THE PROFILE'S RECORDED TARGET IS A DISPLAY VALUE, NOT A BINDING.
+        #
+        # This compared a stored ABSOLUTE path against the resolved target, so moving a
+        # target and its instance together - which T6 exists to make safe - made the
+        # front door refuse: "this workbench is attached to X, not Y". The relationship
+        # had not broken; only a string written down beside it had gone stale.
+        #
+        # Where an instance exists, IDENTITY decides what the target is (T6), so a
+        # matching uuid means this workbench belongs to this target wherever it now
+        # lives. The path comparison survives only for the uninstalled case, which has
+        # no identity to consult - the same environment-governs-development rule the
+        # roots already follow.
         known = Path(profile.get("target", ""))
-        if known.resolve() != target:
+        bound_uuid = instance_uuid()
+        same_instance = bool(bound_uuid) and profile.get("instance") == bound_uuid
+        if not same_instance and known.resolve() != target:
             return {
                 "ok": False,
                 "error": (f"this workbench is attached to {known}, not {target}. "
@@ -1032,6 +1046,9 @@ def run(args: dict) -> dict:
     workbench = _build_workbench(chosen, comp)
     profile = {
         "target": str(target),
+        # Recorded so a relocated instance recognises its own workbench. The uuid is the
+        # binding; the path above is only what a reader wants to see.
+        "instance": instance_uuid(),
         "attached_at": pmap["generated_at"],
         "domain": chosen["domain"],
         "selected_by": "explicit" if args.get("domain") else "detected",
