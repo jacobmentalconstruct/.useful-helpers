@@ -214,6 +214,13 @@ def check(r, root: Path) -> None:
             "moves without the target moving cannot identify an observed state")
 
     (soft / "src" / "added_later.py").write_text("def later(): pass\n", encoding="utf-8")
+    # RE-BASELINE. The gate just wrote to the target itself, to prove the fingerprint
+    # tracks evidence. Assertion 9 compares against a snapshot to prove AWARENESS does
+    # not write - and comparing it to the pre-write baseline would charge the product
+    # with the gate's own edit. A verifier must not accuse the thing it measures of its
+    # own side effects.
+    global _digest_snapshot
+    _digest_snapshot = _target_digest(soft)
     moved = _awareness(home, refresh=True)
     r.check("changing the target changes the evidence fingerprint",
             moved.get("evidence_fingerprint") not in (None, fp1),
@@ -221,7 +228,7 @@ def check(r, root: Path) -> None:
             "evidence, or 'revision X' means only 'the Nth time this ran'")
     r.check("the revision is bound to the instance identity",
             aw.get("instance") == _identity(home),
-            f"awareness says {aw.get('instance')!r}, instance.json says "
+            f"awareness says {aw.get('instance')!r}, resolved identity says "
             f"{_identity(home)!r} - awareness belongs to an instance, never to an "
             "absolute target path")
 
@@ -242,6 +249,29 @@ def check(r, root: Path) -> None:
             mcp_rev is not None and mcp_rev == after_restart.get("revision"),
             f"human={after_restart.get('revision')!r} agent={mcp_rev!r} - two "
             "projections of one revision, or two competing project models")
+
+    # ---- 4a. CONTENT ANCHORING, and the only assertion that distinguishes a
+    # revision id from a counter. Found by MUTATION: replacing `revision_id` with a
+    # millisecond timestamp passed all thirty-three other assertions, because every one
+    # of them reads the value back from persistence and a counter round-trips exactly as
+    # well as a hash. The semantic was declared and unenforced.
+    #
+    # Reverting the target to an earlier state must return the EARLIER revision. A
+    # function of content does that by construction; a counter never can.
+    #
+    # Ordered last of this group deliberately: it moves the current revision, so any
+    # assertion comparing against the post-change one has to run before it. Placing it
+    # earlier silently broke first the restart check and then the MCP check.
+    (soft / "src" / "added_later.py").unlink()
+    reverted = _awareness(home, refresh=True)
+    r.check("reverting the target returns the earlier revision",
+            reverted.get("revision") == aw.get("revision")
+            and reverted.get("evidence_fingerprint") == fp1,
+            f"first={aw.get('revision')!r} after-revert={reverted.get('revision')!r} - a "
+            "revision anchored to instance+scope+evidence returns to its earlier value "
+            "when the evidence does; a sequential id cannot, and would make 'revision X' "
+            "mean only 'the Nth run'")
+    _digest_snapshot = _target_digest(soft)
 
     # ---- 5. the anti-hallucination property -------------------------------
     handles = aw.get("handles") or []
@@ -319,11 +349,18 @@ def _degradation_targets(r, root: Path, payload: Path) -> None:
         r.check(f"the {name} target declares what it does not know",
                 bool((a or {}).get("limitations")),
                 "honesty about absent evidence is the deliverable for a thin target")
-        # GUARDED. `_has_software_ontology({})` is False, so an unguarded version of
-        # this PASSES whenever awareness does not exist - an assertion satisfied for a
-        # reason unrelated to the product, which is the defect family this project has
-        # recorded seven times. It can only mean something once there are findings.
-        if a.get("findings"):
+        # GUARDED ON THE ENVELOPE, NOT ON THE FINDINGS.
+        #
+        # The guard originally required non-empty findings, because `_has_software_
+        # ontology({})` is False and an unguarded check PASSES whenever awareness does
+        # not exist. That was right while nothing existed and became wrong the moment it
+        # did: for an EMPTY target, findings SHOULD be empty, and that emptiness IS the
+        # property under test - it invented nothing. The guard was failing the correct
+        # answer.
+        #
+        # So it guards on whether an envelope was produced at all. No envelope means
+        # nothing to inspect; an envelope with no findings on an empty target is a pass.
+        if a:
             r.check(f"the {name} target does not invent software findings",
                     not _has_software_ontology(a),
                     f"findings={json.dumps(a.get('findings'))[:200]} - a folder of "
@@ -331,9 +368,7 @@ def _degradation_targets(r, root: Path, payload: Path) -> None:
                     "does is the failure this target exists to catch")
         else:
             r.check(f"the {name} target does not invent software findings", False,
-                    "no findings to inspect; this cannot be evaluated yet. Recorded as "
-                    "a failure rather than a pass, because an empty envelope satisfies "
-                    "'contains no software concepts' trivially")
+                    "no awareness envelope at all, so this cannot be evaluated")
 
 
 # --------------------------------------------------------------------------
@@ -357,6 +392,29 @@ def _software_target() -> Path:
         "from src.backend import Backend\n\n\ndef main():\n    return Backend().start()\n",
         encoding="utf-8")
     (t / "src" / "orphan.py").write_text("def never_called():\n    return 0\n", encoding="utf-8")
+
+    # NONTRIVIAL ON PURPOSE (C4 target A). Eight files is not "a nontrivial software
+    # project", and the reduction ratio is meaningless against a target with nothing to
+    # compress: measured, an 8-file fixture yielded 2,726 B of contributor output, so a
+    # ten-field envelope could not be 25% of it however lean it was. The same envelope
+    # against a real 254-file target measured 2,343 B from 133,477 B - a ratio of 0.018.
+    #
+    # The threshold was RIGHT and the fixture was WRONG. Enlarging it is the honest fix;
+    # relaxing the ratio to accommodate a toy would have retired the assertion while
+    # leaving it green - which is how this project's false greens have always happened.
+    for i in range(60):
+        (t / "src" / f"mod_{i:02d}.py").write_text(
+            f'"""Module {i}."""\n'
+            "from src.backend import Backend\n"
+            f"from src.mod_{max(0, i - 1):02d} import helper_{max(0, i - 1):02d}\n"
+            if i else '"""Module 0."""\nfrom src.backend import Backend\n',
+            encoding="utf-8")
+        with (t / "src" / f"mod_{i:02d}.py").open("a", encoding="utf-8") as fh:
+            fh.write(f"\n\ndef helper_{i:02d}(x):\n"
+                     "    b = Backend()\n"
+                     "    return b.start() + x\n"
+                     f"\n\ndef unused_{i:02d}():\n    return {i}\n")
+
     global _digest_snapshot
     _digest_snapshot = _target_digest(t)
     return t
@@ -504,28 +562,35 @@ def _unresolved_handles(home: Path, handles) -> list:
 
 
 def _drill_down(home: Path, aw: dict) -> "tuple[bool, str]":
-    """Can the caller cross from a finding back to canonical evidence?
+    """Drill-down must recover the evidence ACTUALLY USED for this revision.
 
-    Satisfied EITHER by a stored raw observation OR by provenance sufficient to
-    re-obtain it. Not satisfied by prose.
+    TIGHTENED BEFORE IMPLEMENTATION (operator lock 4). The first version accepted
+    either a retrievable evidence id OR a re-runnable invocation. Re-running is not
+    equivalent and must not pass: a contributor re-executed later observes the target
+    as it is NOW, not as it was when revision X was formed. That silently answers
+    "what did revision X know?" with "what would I know today?" - which is the same
+    substitution of a plausible answer for the true one this project keeps finding, and
+    it would make a persisted revision unfalsifiable.
+
+    So provenance must name RETRIEVABLE, CONTENT-ADDRESSED evidence captured at
+    observation time. `evidence attach` already returns an id and a hash, and
+    `evidence get` retrieves it, so this needs no new store.
     """
     prov = aw.get("provenance") or {}
     if not isinstance(prov, dict) or not prov:
         return False, "no provenance to follow"
     for key, entry in list(prov.items())[:4]:
-        if isinstance(entry, dict) and entry.get("evidence_id"):
-            out = _output(_cli(home, "evidence",
-                               {"action": "get", "evidence_id": entry["evidence_id"]}))
-            if out.get("ok") is not False and out:
-                return True, ""
-        if isinstance(entry, dict) and entry.get("tool"):
-            out = _output(_cli(home, entry["tool"], dict(entry.get("args") or {})))
-            if out and out.get("ok") is not False:
-                return True, ""
-        return False, (f"provenance entry {key!r} = {entry!r} names neither a "
-                       "retrievable evidence id nor a re-runnable invocation, so "
-                       "drill-down can only return narrative")
-    return False, "provenance carried no followable entry"
+        if not isinstance(entry, dict) or not entry.get("evidence_id"):
+            return False, (f"provenance entry {key!r} = {entry!r} carries no "
+                           "evidence_id. A re-runnable invocation is NOT sufficient: "
+                           "re-running observes today's target, not the state this "
+                           "revision was formed from")
+        out = _output(_cli(home, "evidence",
+                           {"action": "get", "evidence_id": entry["evidence_id"]}))
+        if not out or out.get("ok") is False:
+            return False, (f"evidence {entry['evidence_id']!r} for {key!r} is not "
+                           "retrievable, so the revision cannot be examined")
+    return True, ""
 
 
 def _contributor_bytes(home: Path) -> int:

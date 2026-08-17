@@ -23,7 +23,7 @@ import os
 import time
 from pathlib import Path
 
-from tools import summarize_shared
+from tools import awareness_shared, summarize_shared
 from tools._toolkit import is_instance_path, output_root, project_root, state_root, suite_home, tool_main
 
 PRUNE = {
@@ -995,6 +995,12 @@ def run(args: dict) -> dict:
             "next": _next_steps("reengaged", cart, stale, nascent=nascent,
                                 has_intent=bool(workspace.get("intent"))),
         }
+        # Re-engage READS the persisted revision; it does not re-observe. Recomposing
+        # here would spend every contributor on every attach and defeat the whole point
+        # of persisting. A stale target earns a fresh revision only on refresh, which is
+        # the same coarse signal `staleness` already reports.
+        held = awareness_shared.load_current()
+        result["awareness"] = held or awareness_shared.build(pmap, probe, stale)
         return _apply_scope(result, scope) if scope else result
 
     # ---- MAP ---------------------------------------------------------------------
@@ -1055,4 +1061,5 @@ def run(args: dict) -> dict:
         "next": _next_steps("mapped", chosen, False, nascent=pmap.get("nascent", False),
                             has_intent=bool(workspace.get("intent"))),
     }
+    result["awareness"] = awareness_shared.build(pmap, probe, False)
     return _apply_scope(result, scope) if scope else result
