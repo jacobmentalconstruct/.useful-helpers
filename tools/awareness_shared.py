@@ -17,19 +17,21 @@ NOTES:      A SHARED MODULE, NOT AN APPLICATION, and not new orchestration insid
             FOUR SEMANTICS, LOCKED BEFORE IMPLEMENTATION (operator, 2026-08-16). Each exists
             because the obvious implementation would have been subtly wrong.
 
-            1. THE FINGERPRINT EXCLUDES VOLATILE OBSERVATION METADATA.
-               Hashing raw contributor output would fold in timestamps, durations and
-               absolute host paths, so observing an unchanged target twice would produce two
-               fingerprints and the whole idea would collapse on its first use. `_normalize`
-               strips a declared volatile key set and tokenizes the target path, then
-               serializes with sorted keys. What is hashed is WHAT WAS SEEN, never WHEN.
+            1. ONLY SEMANTICALLY SELECTED OBSERVATION DATA ENTERS EVIDENCE IDENTITY.
+               Runtime and envelope metadata never enters the canonical payload in the
+               first place, rather than being scrubbed out of it afterwards.
+               `canonical_observation()` SELECTS; see the block below it for why the first
+               version - a recursive denylist of key NAMES - was wrong in both directions.
+               What is hashed is WHAT WAS SEEN, never WHEN or WHERE.
 
-            2. REVISION IDENTITY IS CONTENT-ANCHORED, NOT SEQUENTIAL.
-               `revision = H(instance, scope, evidence_fingerprint)`. A counter would make
-               "revision 5" mean "the fifth run" - it would differ after a no-op re-observe
-               and survive a real change, which is exactly backwards. Content anchoring makes
-               restart-persistence and re-observation stability fall out rather than needing
-               to be defended separately.
+            2. REVISION IDENTITY IS CONTENT-ANCHORED, NOT SEQUENTIAL, AND NOT LOCATIONAL.
+               `revision = H(instance, RELATIVE scope, evidence_fingerprint)`. A counter
+               would make "revision 5" mean "the fifth run" - differing after a no-op
+               re-observe and surviving a real change, exactly backwards. An ABSOLUTE
+               scope was worse: it made a relocated target look changed, reintroducing
+               the absolute-path identity T6 spent a tranche removing. Content anchoring
+               makes restart-persistence, re-observation stability and move-survival all
+               fall out instead of each needing its own defence.
 
             3. HANDLES ARE IDENTIFIERS OWNED BY EXISTING TOOLS.
                A handle is `{tool, id, resolve_with}` - a pointer INTO an existing tool's
