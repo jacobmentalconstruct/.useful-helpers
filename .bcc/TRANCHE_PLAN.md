@@ -381,12 +381,19 @@ needs it, rather than displacing product work now.
 | — | **Application Absorption Audit** (C1b) | *diagnostic, not a tranche.* What `apps/` actually owns, which primitives already provide it, what should become a chain, the safest retirement order, and whether T7 needs any live app |
 | T7 | Shared Project Awareness Prototype | **AWAITING APPROVAL** (0035) — one compact evidence-backed orientation, persisted against the instance, same revision to human and agent. 35/35; measured reduction **133,477 B → 2,343 B (0.018)** on a real target; revision content-anchored and move-stable; handles round-trip; drill-down recovers the evidence actually used |
 | T8 | Governed Work Loop Prototype | awareness → impact → preview/diff → approval → Apply → target-native verification → awareness refresh, as chains over existing tools and the existing seam |
-| — | **Release / STOP certification** | build and install from source → clean target → documented launcher → the full human+agent acceptance walk → **prove no specialised-app dependency** |
+| — | **Closure gate 1: PARITY certification** | every retained donor product reproduced through the common bench, and the suite still passes **with the parts bin absent** |
+| — | **Closure gate 2: RELEASE certification** | a release artifact from a clean clone installs and completes the whole walk on a clean machine, both platforms |
 | **STOP** | **Prototype stop / dogfood** | Architectural development halts. See below |
 
 **The finish line is finite and this is all of it.** T6's bounded repair, one audit,
-two tranches, one certification. **No T9 is created unless actual use demonstrates a
-blocker** — that is what the STOP means.
+two tranches, **two closure gates**, then stop. **No T9/T10 architecture is created for
+the closure gates** — a red closure gate is fixed by repairing the specific red thing
+and re-running it, not by scheduling a tranche.
+
+*Rescoped 2026-08-18.* STOP previously meant "enough product to begin dogfooding", with
+chains, `apps/` retirement and packaging all sitting **after** it. Under the operator's
+stronger definition — a shippable prototype that replaces what motivated it — those are
+proof obligations, not future features, so they moved in front.
 
 **Standing sequencing instruction, operator, 2026-08-14.** The alignment is complete
 and does not reopen. T6's repairs are discharged (0031). **The next thing is C1b** —
@@ -849,10 +856,27 @@ degrading into a green assertion whose meaning drifted:
 | context reduction | `MAX_PROJECTION_RATIO = 0.25` **and** `MAX_PROJECTION_BYTES = 8192`, declared in one place. The ceiling exists because a ratio alone is satisfiable by an empty target. Changing it is a deliberate act with a reason |
 | revision identity | `instance` (who am I) + `revision` (what did I know) + `evidence_fingerprint` (what observed reality produced it). Same target → same fingerprint; one file added → different fingerprint |
 | canonical handles | every handle **must be accepted by the tool that owns it and resolve back to the entity it names**. A handle without an owning tool is decorative, not canonical |
-| drill-down | **provenance sufficient to retrieve canonical evidence** — a stored observation, a retrievable `evidence_id`, or a re-runnable invocation. Not byte-identical copies, and never prose |
+| drill-down | **the evidence ACTUALLY USED for that revision** — a retrievable, content-addressed `evidence_id` captured at observation time. *A re-runnable invocation is NOT sufficient, and this row said it was until 2026-08-18: re-running observes today's target, answering "what did revision X know?" with "what would I know today?", which makes a persisted revision unfalsifiable. The gate has enforced the strict rule since increment 3; this text described the abandoned one.* |
 
 The gate also carries the narrow `.git*` prune regression from 0032: `.git` excluded,
 `.github` **not** excluded. One distinction, not an exclusion-subsystem redesign.
+
+**Three further semantics closed 2026-08-18**, each red before its repair and each
+mutation-confirmed afterwards:
+
+| | |
+| --- | --- |
+| a stale re-engagement reports awareness as stale | the envelope was written while
+fresh and kept saying so, so one response could report outer `staleness: true` and
+`freshness.stale: false` together. Freshness is now projected at read time; the
+revision id is deliberately untouched, because recomposing on every attach is the
+cost persistence exists to avoid |
+| an existing revision record is not rewritten | `_persist` rewrote
+`<revision>.json` every observation, so the same id named a moving record. Content-
+addressed records are **write-once**; re-observing a known state re-points `current` |
+| a contributor whose evidence capture fails is not promoted as evidence-backed |
+found by **failure injection** — no ordinary run reaches it. An observation that
+cannot be captured is not evidence-backed knowledge, and `limitations` says so |
 
 Original declaration text follows.
 
@@ -1020,7 +1044,95 @@ The prototype is done when a real user can:
 10. verify it using meaningful target-provided checks when available
 11. audit what happened
 12. refresh / re-engage and see the new reality
+13. reproduce every RETAINED useful product of the donor apps through the common
+    bench, with no runtime or reference dependency on the parts bin
+14. do all of it with NO specialised live application architecture — any surviving
+    atomic capability, such as ProjectMapper, re-homed as an ordinary tool
+15. do all of it from a RELEASE ARTIFACT built from a clean clone, installed on a
+    clean machine, without the development repository
 ```
+
+### Steps 13-15 were added 2026-08-18, and they change what DONE means
+
+The first twelve steps describe *"enough coherent product to stop architecture work and
+begin dogfooding"*. That was the right bar when the danger was underbuilding.
+
+The operator's definition is stronger:
+
+> **A shippable prototype that actually replaces the useful products that motivated it,
+> can be handed to someone else, and contains no known reason to keep developing it.**
+
+Under the old wording the Plan could declare the prototype done while still saying *"we
+have not proven the old workflows produce their outputs, we have not proven the thing
+ships from a clean artifact, and `P-chains` will handle that someday."* **That is not
+done.** So parity, parts-bin independence, application retirement and release
+certification move **in front of** STOP rather than after it.
+
+**This adds no architecture tranche.** They are closure gates, not build phases. A red
+closure gate is fixed by repairing the specific red thing and re-running it.
+
+### Closure gate 1 — PARITY CERTIFICATION *(after T8, before STOP)*
+
+One matrix over the donor contracts already written in the reference material. **Three
+valid outcomes, and "deferred" is not one of them:**
+
+| outcome | meaning |
+| --- | --- |
+| **Retained — direct** | produced today by tool X |
+| **Retained — composed** | produced by chain X → Y → Z through the existing playbook machinery |
+| **Superseded** | the old product deliberately no longer exists, because capability X replaces its useful outcome |
+
+For every **retained** row, a representative fixture goes through the **current common
+runtime** and the documented useful output is asserted. **Product parity, not UI parity,
+not code parity, not internal-architecture parity.**
+
+And the assertion that makes it mean something: **run the parity suite with the parts
+bin renamed or absent.** If it still passes, the ancestors have genuinely been absorbed.
+That is the prototype-scale version of E9.
+
+**Do not turn every donor into a chain.** If `projectmapper` already takes a target and
+produces the complete useful snapshot, it is atomic: re-home it to `tools/`, drop the
+`apps/` registry path, gate it, done. A chain is justified only where the user-facing
+product is genuinely multi-step. Parity closure should *reduce* the live architecture
+while proving more capability.
+
+### Closure gate 2 — RELEASE CERTIFICATION *(before STOP)*
+
+The question, stated as narrowly as it can be:
+
+> **Can this repository become an artifact another machine installs and uses without the
+> development checkout?**
+
+**Use the existing payload and vend mechanism first.** Build a new assembler only if a
+real release attempt demonstrates the existing one cannot produce a clean release. Do
+not build the governance-cartridge UI, the positive-manifest assembler, or any other
+feature merely because an earlier plan imagined it.
+
+The walk: clean clone → release artifact → fresh Windows *and* Linux environment →
+choose a code, records or empty target → install → documented launcher → `attach`
+produces awareness → external MCP agent connects → registry reachable → parity products
+work → the T8 change loop works → update preserves UUID and state → deleting an
+untouched sidecar leaves target-owned content unchanged.
+
+And inspect the distribution itself: no parts bin, no harness, no development journal,
+no accumulated evidence or state, no source git history, no build-machine absolute path.
+
+Shippable does **not** mean signed, MSI-packaged, auto-updating or app-store polished.
+It means a genuine distributable product rather than *"run this from my dev checkout."*
+
+### Two safety debts that do not survive to STOP
+
+- **`patch` declares `writes: toolkit` while writing to a target path** (0034). T8 owns
+  it, and the governed work loop is not safe until it closes.
+- **Malformed governance fails open, audibly** (0034). For a locally installed bench
+  that can modify arbitrary target files, the safe posture is: a broken configuration
+  may continue to permit **Observe**, but must not silently grant **Apply**. *Fail closed
+  for mutation, inspectable enough to diagnose.* That is choosing a failure posture for
+  an existing mechanism, not new architecture.
+
+The `dev_server_manager` → `command_profile` import and the absent layering policy are
+**not** STOP blockers unless the parity or acceptance walk actually exercises them and
+exposes a problem.
 
 ### The architectural STOP assertion
 

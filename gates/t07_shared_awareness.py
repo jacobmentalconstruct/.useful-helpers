@@ -47,13 +47,17 @@ NOTES:      Written at declaration, BEFORE implementation (protocol 3.2 rule 1),
                Awareness that emits a convenient pseudo-identifier is worse than
                awareness that emits none.
 
-            4. DRILL-DOWN CROSSES BACK INTO EVIDENCE, NOT INTO MORE NARRATIVE. The gate
-               does NOT require awareness to persist duplicate copies of every raw
-               contributor response. It requires enough PROVENANCE to retrieve the
-               canonical evidence. Storing the raw observation satisfies this; storing
-               the invocation needed to re-obtain it satisfies this. What fails is a
-               drill-down that returns prose - a model reconstructing what the evidence
-               probably said.
+            4. DRILL-DOWN RECOVERS THE EVIDENCE ACTUALLY USED FOR THAT REVISION. Not a
+               duplicate copy of every raw response - a retrievable, content-addressed
+               reference captured AT OBSERVATION TIME.
+
+               A RE-RUNNABLE INVOCATION IS NOT SUFFICIENT, and this paragraph said it was
+               until 2026-08-18. Re-running a contributor observes the target as it is
+               NOW, so it answers "what did revision X know?" with "what would I know
+               today?" - a plausible answer substituted for the true one, which makes a
+               persisted revision unfalsifiable. `_drill_down` enforces the strict rule;
+               this text described the abandoned one, so the live assertion and its own
+               header disagreed.
 
             THREE TARGETS, AND THE POINT IS DEGRADATION. Software, records, empty. Equal
             richness is NOT required; truthful thinness is. Together they stop T7 from
@@ -199,6 +203,7 @@ def check(r, root: Path) -> None:
         _blocked(r, _DEPENDENT_ASSERTIONS,
                  "no awareness envelope exists yet, so this cannot be evaluated")
         _degradation_targets(r, root, payload)
+        _evidence_failure(r, root, payload)
         return
 
     for field in REQUIRED_FIELDS:
@@ -306,6 +311,58 @@ def check(r, root: Path) -> None:
     home = moved_home
     _digest_snapshot = _target_digest(soft)
 
+    # ---- 4c. THE ENVELOPE MUST NOT LIE ABOUT ITS OWN FRESHNESS ------------
+    # Re-engage returns the PERSISTED revision without recomposing, which is right - a
+    # contributor sweep on every attach would defeat the point of persisting. But the
+    # stored envelope was written while fresh, so it kept reporting `stale: false` while
+    # the very same response reported outer `staleness.stale: true`. One answer, two
+    # values, and the gate asserted only that the FIELD EXISTED.
+    #
+    # A field that is present and wrong is worse than one that is absent.
+    (soft / "src" / "late_change.py").write_text("def late(): pass\n", encoding="utf-8")
+    reengaged = _output(_cli(home, "attach", {}))
+    aw_re = reengaged.get("awareness") or {}
+    outer_stale = ((reengaged.get("staleness") or {}).get("stale"))
+    r.check("a stale re-engagement reports the SAME revision",
+            aw_re.get("revision") == after_move.get("revision"),
+            f"{after_move.get('revision')!r} -> {aw_re.get('revision')!r} - re-engage must "
+            "not recompute; recomposing on every attach is what persistence exists to avoid")
+    r.check("a stale re-engagement reports awareness as stale",
+            outer_stale is True and (aw_re.get("freshness") or {}).get("stale") is True,
+            f"outer staleness={outer_stale} but awareness.freshness="
+            f"{(aw_re.get('freshness') or {}).get('stale')} - the envelope was written "
+            "while fresh and kept saying so. The revision is still the current knowledge; "
+            "what changed is that it no longer describes the target")
+
+    # ---- 4d. A CONTENT-ADDRESSED REVISION IS WRITE-ONCE --------------------
+    # The closeout calls these records immutable. `_persist` rewrote
+    # `awareness/<revision>.json` on every observation, so re-observing an unchanged
+    # target produced the same revision id over a REWRITTEN record - new `observed_at`,
+    # possibly new evidence references. "Revision X -> evidence X" only stays meaningful
+    # if X is written once, and T8 is about to compare revision X against revision Y.
+    # BACK TO THE STATE `after_move` DESCRIBES, or this proves nothing. The first
+    # version left the freshness test's added file in place, so the refresh observed a
+    # DIFFERENT state, minted a different revision, and never touched the record under
+    # test - which then passed by not being exercised. Fourth assertion this tranche to
+    # be satisfied without measuring what it names.
+    (soft / "src" / "late_change.py").unlink()
+    first = _revision_record(home, after_move.get("revision"))
+    again = _awareness(home, refresh=True)               # same state, observed again
+    second = _revision_record(home, after_move.get("revision"))
+    r.check("re-observing the same state returns to the same revision",
+            again.get("revision") == after_move.get("revision"),
+            f"{after_move.get('revision')!r} -> {again.get('revision')!r} - without this "
+            "the immutability check below reads a record nothing rewrote")
+    # The gate wrote and removed a file of its own above; re-baseline so assertion 9
+    # measures AWARENESS's footprint rather than the verifier's.
+    _digest_snapshot = _target_digest(soft)
+    r.check("an existing revision record is not rewritten",
+            first and second and first == second,
+            "re-observing the same semantic state rewrote the stored record: "
+            f"observed_at {(first or {}).get('observed_at')!r} -> "
+            f"{(second or {}).get('observed_at')!r}. A content-addressed record must be "
+            "write-once, or 'revision X' names a moving target")
+
     # ---- 5. the anti-hallucination property -------------------------------
     handles = aw.get("handles") or []
     r.check("awareness promotes at least one canonical handle for a software target",
@@ -356,8 +413,64 @@ def check(r, root: Path) -> None:
             _target_digest(soft) == _digest_snapshot,
             "awareness is an Observe operation")
 
-    # ---- 10. truthful degradation on the other two targets -----------------
+    # ---- 10. truthful degradation, and the evidence-failure path -----------
     _degradation_targets(r, root, payload)
+    _evidence_failure(r, root, payload)
+
+
+def _evidence_failure(r, root: Path, payload: Path) -> None:
+    """FAILURE INJECTION. Evidence capture is broken; awareness must not claim to be
+    evidence-backed anyway.
+
+    `observe()` kept a contributor as `ok: True` when the evidence attachment failed,
+    recording `evidence_id: None` and promoting its findings regardless. Under a storage
+    failure the product would hand back something calling itself evidence-backed
+    awareness that cannot drill back to any evidence - and no ordinary gate run reaches
+    that path, because the evidence store does not normally fail.
+
+    The rule: if an observation cannot be captured, it is not evidence-backed knowledge.
+    Say so in `limitations` and keep it out of `provenance`.
+    """
+    tgt = Path(tempfile.mkdtemp(prefix="t07-evfail-")) / "proj"
+    (tgt / "src").mkdir(parents=True)
+    (tgt / "requirements.txt").write_text("x\n", encoding="utf-8")
+    for i in range(8):
+        (tgt / "src" / f"m{i}.py").write_text(f"def f{i}():\n    return {i}\n", encoding="utf-8")
+    if _install(root, tgt, payload).returncode != 0:
+        r.skip("a contributor whose evidence capture fails is not promoted as evidence-backed",
+               "install failed")
+        return
+    home = tgt / DEFAULT_HOME
+    # Break the evidence tool inside the INSTALLED instance only. Real entrance, real
+    # composition, one deliberately broken dependency.
+    ev = home / "tools" / "evidence" / "cli.py"
+    ev.write_text('from tools._toolkit import tool_main\n\n\n@tool_main\ndef run(args):\n'
+                  '    return {"ok": False, "error": "injected: evidence store unavailable"}\n',
+                  encoding="utf-8")
+    aw = _awareness(home, refresh=True)
+    prov = aw.get("provenance") or {}
+    orphaned = [t for t, e in prov.items()
+                if isinstance(e, dict) and e.get("ok") and not e.get("evidence_id")]
+    said_so = any("evidence" in str(x).lower() for x in (aw.get("limitations") or []))
+    r.check("a contributor whose evidence capture fails is not promoted as evidence-backed",
+            bool(aw) and not orphaned and said_so,
+            f"provenance claims ok with no evidence_id for {orphaned}; "
+            f"limitations mention evidence: {said_so} - awareness that cannot drill back "
+            "to its own evidence must not present itself as evidence-backed")
+
+
+def _revision_record(home: Path, revision: "str | None") -> dict:
+    """Read one persisted revision record from the installed instance's state."""
+    if not revision:
+        return {}
+    for base in (home / "_state" / "awareness", home / "_state"):
+        p = base / f"{revision}.json"
+        if p.is_file():
+            try:
+                return json.loads(p.read_text(encoding="utf-8"))
+            except ValueError:
+                return {}
+    return {}
 
 
 def _degradation_targets(r, root: Path, payload: Path) -> None:

@@ -181,10 +181,23 @@ def observe(domain: str, probe: dict) -> list:
             "action": "attach", "kind": "tool_output",
             "summary": f"{tool} observation for awareness",
             "body_json": output, "apply": True})
+        evidence_id = (ev.get("output") or {}).get("evidence_id") if ev.get("ok") else None
+        if not evidence_id:
+            # AN OBSERVATION THAT CANNOT BE CAPTURED IS NOT EVIDENCE-BACKED KNOWLEDGE.
+            #
+            # This used to keep the contributor as ok:True with `evidence_id: None` and
+            # promote its findings anyway. Under a storage failure the product would
+            # hand back something calling itself evidence-backed awareness that cannot
+            # drill back to any evidence - the claim surviving the thing that justified
+            # it. No ordinary run reaches this path, which is exactly why it needed
+            # deliberate failure injection to find.
+            seen.append({"tool": tool, "args": args, "ok": False,
+                         "error": "observation could not be captured as evidence: "
+                                  + ((ev.get("error") or "attach returned no id")[:160])})
+            continue
         seen.append({
             "tool": tool, "args": args, "ok": True, "output": output,
-            "evidence_id": ((ev.get("output") or {}).get("evidence_id") if ev.get("ok")
-                            else None),
+            "evidence_id": evidence_id,
             "canonical": canonical_observation(tool, output),
         })
     return seen
@@ -290,6 +303,12 @@ def _limitations(observations: list, probe: dict, pmap: dict) -> list:
     if failed:
         lim.append(f"These contributors did not complete, so their findings are absent: "
                    f"{sorted(failed)}")
+    uncaptured = [o["tool"] for o in observations
+                  if not o.get("ok") and "evidence" in str(o.get("error") or "")]
+    if uncaptured:
+        lim.append(f"Evidence capture failed for {sorted(uncaptured)}, so those "
+                   "observations are NOT part of this revision and cannot be drilled "
+                   "into. This awareness is evidence-backed only for what remains.")
     lim.append(f"Findings are composed from {sorted(asked) or 'no contributors'}; anything "
                "outside what those tools report is unknown, not absent.")
     return lim
@@ -324,18 +343,56 @@ def build(pmap: dict, probe: dict, stale: bool, *, scope_rel: str = "") -> dict:
 
 
 def _persist(envelope: dict) -> None:
-    """Durable, under the instance's state root, keyed by revision.
+    """Durable, under the instance's state root, keyed by revision. WRITE-ONCE.
 
-    `current.json` is a POINTER, not a second copy: a copy would be a second authority on
-    what the current revision is, and the two would disagree the first time a write was
-    interrupted.
+    A content-addressed record is written the first time its revision is observed and
+    never again. The first version rewrote `<revision>.json` on every observation, so
+    re-observing an unchanged target produced the SAME revision id over a REWRITTEN
+    record - a new `observed_at`, and potentially different evidence references behind
+    an identifier that is supposed to name one fixed thing.
+
+    That quietly breaks the property the whole design rests on. "Revision X -> evidence
+    X" is only meaningful if X is immutable, and T8 is about to compare revision X
+    against revision Y across a mutation. A moving X makes that comparison a guess.
+
+    `current.json` is a POINTER, not a second copy: a copy would be a second authority
+    on what the current revision is, and the two would disagree the first time a write
+    was interrupted. Re-observing an already-known state therefore just re-points it.
     """
     d = state_root() / AWARENESS_DIR
     d.mkdir(parents=True, exist_ok=True)
-    (d / f"{envelope['revision']}.json").write_text(
-        json.dumps(envelope, indent=2, default=str) + "\n", encoding="utf-8")
+    record = d / f"{envelope['revision']}.json"
+    if not record.exists():
+        record.write_text(json.dumps(envelope, indent=2, default=str) + "\n",
+                          encoding="utf-8")
     (d / CURRENT).write_text(
         json.dumps({"revision": envelope["revision"]}, indent=2) + "\n", encoding="utf-8")
+
+
+def project_freshness(envelope: dict, stale: bool) -> dict:
+    """The held revision, re-stated with CURRENT freshness. No recomputation.
+
+    A persisted envelope was written while fresh and kept saying `stale: false` forever,
+    so a re-engagement could report outer `staleness.stale: true` and
+    `awareness.freshness.stale: false` in the SAME response. One question, two answers,
+    and the gate asserted only that the field existed.
+
+    The distinction the envelope has to carry: the revision is still the most recent
+    knowledge this instance HAS - that has not changed. What changed is whether it still
+    DESCRIBES the target. So freshness is projected at read time rather than frozen at
+    write time, and the revision id is deliberately untouched: recomposing on every
+    attach is the cost persistence exists to avoid.
+    """
+    if not envelope:
+        return envelope
+    out = dict(envelope)
+    fresh = dict(out.get("freshness") or {})
+    fresh["stale"] = bool(stale)
+    if stale:
+        fresh["note"] = ("the target changed after this revision was observed; refresh "
+                         "to compose a new one")
+    out["freshness"] = fresh
+    return out
 
 
 def load_current() -> dict:

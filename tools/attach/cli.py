@@ -1014,7 +1014,12 @@ def run(args: dict) -> dict:
         # of persisting. A stale target earns a fresh revision only on refresh, which is
         # the same coarse signal `staleness` already reports.
         held = awareness_shared.load_current()
-        result["awareness"] = held or awareness_shared.build(pmap, probe, stale)
+        # Projected, not recomposed. The held revision is still the current knowledge;
+        # `stale` says whether it still describes the target. Returning it verbatim let
+        # the envelope claim freshness the outer `staleness` block was simultaneously
+        # denying, in one response.
+        result["awareness"] = (awareness_shared.project_freshness(held, stale) if held
+                               else awareness_shared.build(pmap, probe, stale))
         return _apply_scope(result, scope) if scope else result
 
     # ---- MAP ---------------------------------------------------------------------

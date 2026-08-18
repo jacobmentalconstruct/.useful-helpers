@@ -244,3 +244,61 @@ attribution across that loop is a comparison of two immutable records rather tha
 inference.
 
 **T8 is not declared. No T8 work begins before T7 parks.**
+
+---
+
+## 10. Addendum, 2026-08-18 — three semantic holes closed before approval
+
+Operator review after this closeout was drafted. Three found by source inspection, one
+pure alignment defect. **None required architecture.** Each was red before its repair
+and mutation-confirmed afterwards; the gate is now **40 assertions**.
+
+### 10.1 The freshness field could lie
+
+Re-engage returned the persisted envelope unchanged, and that envelope was written while
+fresh. So one response could report outer `staleness.stale: true` **and**
+`awareness.freshness.stale: false` — one question, two answers. The gate asserted only
+that the field *existed*.
+
+Freshness is now **projected at read time**. The revision id is deliberately untouched:
+the held revision is still the most recent knowledge this instance has; what changed is
+whether it still *describes* the target. Recomposing on every attach is the cost
+persistence exists to avoid.
+
+### 10.2 A revision record was not immutable
+
+`_persist` rewrote `<revision>.json` on every observation, so re-observing an unchanged
+target produced the same id over a **rewritten** record — new `observed_at`, potentially
+different evidence references behind an identifier meant to name one fixed thing.
+
+This closeout called those records immutable. They were not. Now **write-once**:
+re-observing a known state re-points `current` and leaves the record alone. §9 promises
+T8 a comparison of two immutable records; that promise is now true.
+
+### 10.3 "Evidence-backed" was not guaranteed under storage failure
+
+`observe()` kept a contributor as `ok: True` when evidence capture failed, recorded
+`evidence_id: None`, and promoted its findings anyway. Under a storage failure the
+product would return something calling itself **evidence-backed awareness** that cannot
+drill back to any evidence.
+
+**Found by failure injection** — the evidence tool was replaced inside an installed
+instance — because no ordinary gate run reaches that path. An observation that cannot be
+captured is no longer promoted, and `limitations` names it.
+
+### 10.4 The alignment defect
+
+The gate's own header and the Plan's semantics table still granted the re-runnable
+invocation that `_drill_down` had stopped accepting in increment 3. Live product,
+executable assertion and closeout said one thing; two descriptive surfaces said the
+abandoned one. **Text corrected in both.** This project does not park contradictions.
+
+### 10.5 And a fourth assertion that passed without measuring anything
+
+The immutability check first ran a refresh while the freshness test's added file was
+still present — so it observed a *different* state, minted a different revision, and
+never touched the record under test. It passed by not being exercised.
+
+**Fourth time this tranche.** The family is now unmistakable: an assertion satisfied by
+reading back a stored value, or by a fixture that cannot distinguish two
+implementations. It is the single most useful thing T7 produced.
