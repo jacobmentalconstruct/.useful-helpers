@@ -83,6 +83,37 @@ CURRENT = "current.json"
 # ---------------------------------------------------------------------------------
 
 
+def _module_purposes(report_body: dict) -> dict:
+    """One purpose line per module, preferring the PRIMARY CLASS docstring.
+
+    Not the module docstring first, which was the obvious choice and the wrong one.
+    Measured on `_theCELL`: `src/backend.py` has NO module docstring, and the line worth
+    reading - "ROLE: Orchestration / Logic Hub - pure downstream task list runner" - is
+    the docstring of `class Backend`. Same for the microservices: "The Hippocampus",
+    "The Spine", "The Switchboard". In a class-oriented codebase the class carries the
+    purpose and the module carries nothing.
+
+    Measured here too, in the other direction: this project's own modules open with a
+    `FILE: src/core/invoke.py` header line, so taking the module docstring first yielded
+    "FILE: src/core/invoke.py" as the purpose of five hub modules - technically the first
+    line, and worthless.
+
+    Falls back to the module docstring when there is no documented class. Neither source
+    is guaranteed to be meaningful, which is why `limitations` says so rather than
+    implying otherwise.
+    """
+    out = {}
+    for m in (report_body.get("modules") or []):
+        rel = m.get("file")
+        if not rel:
+            continue
+        doc = next((c.get("doc") for c in (m.get("classes") or []) if c.get("doc")), "")
+        purpose = doc or m.get("purpose") or ""
+        if purpose:
+            out[rel] = purpose
+    return out
+
+
 def canonical_observation(tool: str, output: dict) -> dict:
     """The part of a contributor's output that IS the evidence, selected by meaning.
 
@@ -93,7 +124,10 @@ def canonical_observation(tool: str, output: dict) -> dict:
     """
     body = output or {}
     if tool == "report":
-        return {"summary": body.get("summary")}
+        # Purposes participate in identity: a module whose docstring changes has
+        # changed, and a fingerprint that ignored it would report "nothing happened".
+        return {"summary": body.get("summary"),
+                "purposes": _module_purposes(body)}
     if tool == "import_graph":
         return {"summary": body.get("summary"),
                 "hubs": sorted(h.get("module") or h.get("name")
@@ -182,20 +216,53 @@ def revision_id(instance: str | None, rel_scope: str, evidence_fingerprint: str)
 
 
 def _findings(observations: list) -> dict:
-    """Compact, domain-shaped, small. The SUMMARY projection only."""
+    """Compact, domain-shaped, small. The SUMMARY projection only.
+
+    HUB PURPOSES ARE PROMOTED, and only the hubs'. The dogfood run on `_theCELL` is why:
+    the envelope said "41 files, and `src.backend` is the hub" while the evidence it had
+    just captured said `src.backend` is the "Orchestration / Logic Hub - pure downstream
+    task list runner" wiring sixteen microservices. Naming the hub without saying what it
+    does is a map that stops one word short of useful, and the word was already in hand.
+
+    Only the hubs, because purpose for all 41 modules would be prose bulk in the default
+    projection - the thing C2 exists to prevent. Everything else stays one drill-down
+    away in the evidence.
+    """
     out = {}
+    purposes = {}
+    hubs = []
     for o in observations:
         if not o.get("ok"):
             continue
         body = o.get("output") or {}
         if o["tool"] == "report":
             out["code_shape"] = body.get("summary")
+            # THE SAME helper the canonical observation uses. Two selections of "the
+            # purpose of a module" would be two authorities on one fact, and they would
+            # disagree the first time either changed - which they already did: this line
+            # read the module docstring while the canonical observation read the class,
+            # so findings came back empty on exactly the codebases the class-preference
+            # was written for.
+            purposes = _module_purposes(body)
         elif o["tool"] == "import_graph":
-            s = body.get("summary") or {}
-            hot = [h.get("module") or h.get("name") for h in (body.get("hotspots") or [])[:5]]
-            out["dependencies"] = {"summary": s, "hubs": [h for h in hot if h]}
+            s_ = body.get("summary") or {}
+            hubs = [h.get("module") or h.get("name")
+                    for h in (body.get("hotspots") or [])[:5]]
+            hubs = [h for h in hubs if h]
+            out["dependencies"] = {"summary": s_, "hubs": hubs}
         elif o["tool"] == "dead_code":
             out["unused"] = body.get("summary")
+    # Cross-reference two contributors this composition already holds: `import_graph`
+    # says WHERE the gravity is, `report` says WHAT sits there. Neither tool changes.
+    if hubs and purposes:
+        named = {}
+        for hub in hubs:
+            rel = hub.replace(".", "/") + ".py"
+            doc = purposes.get(rel) or purposes.get(hub)
+            if doc:
+                named[hub] = doc[:200]
+        if named:
+            out["hub_purposes"] = named
     return out
 
 

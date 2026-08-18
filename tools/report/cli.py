@@ -95,5 +95,16 @@ def run(args: dict) -> dict:
             "classes": sum(len(m.get("classes", [])) for m in mods),
             "functions": sum(len(m.get("functions", [])) for m in mods),
         },
+        # `modules` is DECLARED in this tool's manifest and the file branch already
+        # returned it; the directory branch computed `mods`, rendered it to prose, and
+        # threw the structure away. So the manifest promised a field the common path
+        # never returned - a documented claim with nothing behind it (E10), found by the
+        # C1b audit (journal 0032).
+        #
+        # It matters beyond tidiness: every module's `purpose` docstring was in here,
+        # reachable only by parsing the markdown back out of prose. A consumer that has
+        # to re-parse a rendering to recover the data that produced it is a consumer
+        # working around a contract, not using one.
+        "modules": mods,
         "markdown": "\n---\n".join(_md(m) for m in mods),
     }

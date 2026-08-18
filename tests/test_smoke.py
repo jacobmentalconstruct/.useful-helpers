@@ -3491,8 +3491,16 @@ class SpineSmokeTest(unittest.TestCase):
             # a restored denylist passed it.
             "markdown": "# Report\n" + ("verbose rendering\n" * 40),
         }
+        noisy["modules"] = [
+            {"file": "src/backend.py", "purpose": "",
+             "classes": [{"name": "Backend", "doc": "ROLE: Orchestration Hub."}]},
+        ]
         c1 = canonical_observation("report", noisy)
-        self.assertEqual(c1, {"summary": {"files": 3, "classes": 1, "functions": 9}})
+        self.assertEqual(c1["summary"], {"files": 3, "classes": 1, "functions": 9})
+        # The purpose comes from the CLASS, not the empty module docstring - measured on
+        # `_theCELL`, where every useful line lived on a class and `src/backend.py` had
+        # no module docstring at all.
+        self.assertEqual(c1["purposes"], {"src/backend.py": "ROLE: Orchestration Hub."})
         for volatile in ("generated_at", "duration_ms", "root", "evidence_id"):
             self.assertNotIn(volatile, c1)
         self.assertNotIn("markdown", c1)
