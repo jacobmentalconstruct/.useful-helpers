@@ -1,9 +1,9 @@
 # Tranche Plan
 
-Status: **ACTIVE.** T0-T6 parked. C1b complete (0032). **T7 DECLARED** 2026-08-16
-(0033) — gate written, run, **red**: 33 assertions, 3 passing pre-existing invariants,
-30 failing. Development mode: **CONVERGENCE**. **Next: implement against the red
-gate.** The audit sized it: of `attach`'s 24 responsibilities T7 touches 8, discharges
+Status: **ACTIVE.** T0-T6 parked. C1b complete (0032). **T7 AWAITING APPROVAL**
+(0035) — 35/35, four increments, seven defects found (five of them in the verifier),
+four escaped mutations closed. One certification gap: Windows covers `46dcc4f`;
+increment 4 is Linux-verified only. Development mode: **CONVERGENCE**. The audit sized it: of `attach`'s 24 responsibilities T7 touches 8, discharges
 **one** duplication, and depends on no live `apps/` member.
 Date: 2026-08-06, amended 2026-08-09, mode changed 2026-08-14, T6 reopened and
 re-parked 2026-08-14.
@@ -379,7 +379,7 @@ needs it, rather than displacing product work now.
 | T6 | Instance Identity and the Installation Core | **CLOSED 2026-08-14** (0026 → 0027 → reopened 0028 → **re-parked 0031**) — one instance bound to one target, knowing its identity, root and state, surviving relocation **and update**, supplying canonical context to the runtime. 27 gate assertions |
 | — | ***convergence phase begins here*** | |
 | — | **Application Absorption Audit** (C1b) | *diagnostic, not a tranche.* What `apps/` actually owns, which primitives already provide it, what should become a chain, the safest retirement order, and whether T7 needs any live app |
-| T7 | Shared Project Awareness Prototype | **DECLARED, gate red** (0033) — one compact evidence-backed orientation, persisted against the instance, same revision to human and agent, produced by canonical tools through the common governed composition path |
+| T7 | Shared Project Awareness Prototype | **AWAITING APPROVAL** (0035) — one compact evidence-backed orientation, persisted against the instance, same revision to human and agent. 35/35; measured reduction **133,477 B → 2,343 B (0.018)** on a real target; revision content-anchored and move-stable; handles round-trip; drill-down recovers the evidence actually used |
 | T8 | Governed Work Loop Prototype | awareness → impact → preview/diff → approval → Apply → target-native verification → awareness refresh, as chains over existing tools and the existing seam |
 | — | **Release / STOP certification** | build and install from source → clean target → documented launcher → the full human+agent acceptance walk → **prove no specialised-app dependency** |
 | **STOP** | **Prototype stop / dogfood** | Architectural development halts. See below |
@@ -765,7 +765,7 @@ remains the authority.
 
 ---
 
-## T7 — Shared Project Awareness Prototype · **DECLARED 2026-08-16** (0033)
+## T7 — Shared Project Awareness Prototype · **AWAITING APPROVAL** (0033 → 0035)
 
 **Outcome.** Existing deterministic tools are composed into **one compact,
 evidence-backed current orientation** of the bound target, persisted against the
