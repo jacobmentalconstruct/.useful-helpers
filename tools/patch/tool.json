@@ -4,6 +4,7 @@
   "category": "text",
   "authority": "Apply",
   "operates_on": "project",
+  "writes": "target",
   "invocation": {
     "interpreter": "${ROOT_VENV_PYTHON}",
     "entry": "tools/patch/cli.py"

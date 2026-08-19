@@ -136,12 +136,36 @@ def ensure_manifest(paths: Paths) -> bool:
 
     Generating on demand keeps the file out of version control (no drift, no merge
     conflicts on a build artifact) while making a clean checkout work with no manual
-    setup step. Cheap and idempotent: it is a no-op once the file exists.
+    setup step. Cheap and idempotent.
+
+    IT ALSO REGENERATES WHEN A MANIFEST IS NEWER THAN THE CATALOG. "Missing" was the
+    only trigger, which handled the fresh-clone case and silently failed the ordinary
+    one: editing a tool.json left the derived catalog describing the OLD declaration
+    forever. Found by adding `writes: target` to `patch` and watching the catalog keep
+    reporting `toolkit` - a consumer asking what a tool may touch would have been told
+    the opposite of the truth, which is worse than being told nothing.
+
+    mtime is a COARSE signal and this says so rather than pretending otherwise: it can
+    move backwards under a checkout, a copy, or a restore, so this catches editing (the
+    case that actually happens during development) and not every possible divergence.
+    Anyone needing certainty runs `generate_manifest` outright. Preferring a cheap
+    mostly-right refresh over a stale catalog is the correct trade only because the
+    catalog is derived - there is nothing here to lose by rebuilding it.
     """
-    if (paths.config / "registry.json").is_file():
-        return False
-    generate_manifest(paths)
-    return True
+    catalog = paths.config / "registry.json"
+    if not catalog.is_file():
+        generate_manifest(paths)
+        return True
+    catalog_mtime = catalog.stat().st_mtime
+    for base in (paths.tools, paths.apps):
+        if not base.is_dir():
+            continue
+        for manifest in base.rglob("tool.json"):
+            if manifest.stat().st_mtime > catalog_mtime:
+                log.info("registry.json is older than %s; regenerating", manifest.name)
+                generate_manifest(paths)
+                return True
+    return False
 
 
 def generate_manifest(paths: Paths) -> dict:

@@ -121,12 +121,27 @@ def _precondition_patch_declares_target(r, root: Path) -> None:
             manifest.get("writes") == "target",
             f"tool.json writes={manifest.get('writes', '<absent>')!r} - an Apply tool with "
             "no `writes` field is inferred `toolkit`, and this one writes target files")
-    reg = json.loads((root / "config" / "registry.json").read_text(encoding="utf-8"))
-    entry = next((t for t in reg["tools"] if t["id"] == "patch"), {})
+    # THE CATALOG IS READ THROUGH THE MECHANISM THAT MAINTAINS IT, not off disk. Reading
+    # the file directly asserted only that somebody had remembered to regenerate it - and
+    # on a fresh clone, where the file is deliberately untracked, it raised
+    # FileNotFoundError and took the gate down instead of reporting anything. Entering the
+    # seam once is what a consumer does, and `src/app.py` calls `ensure_manifest` at the
+    # composition root, so this measures the state a consumer would actually be handed.
+    # `attach` reads this catalog, so a stale entry here is a lie told to the awareness
+    # entrance the rest of the loop starts from.
+    subprocess.run([sys.executable, "-m", "src.app", "cli", "version"],
+                   cwd=root, capture_output=True, text=True, timeout=120, env=_clean_env())
+    catalog = root / "config" / "registry.json"
+    entry = {}
+    if catalog.is_file():
+        entry = next((t for t in json.loads(catalog.read_text(encoding="utf-8"))["tools"]
+                      if t["id"] == "patch"), {})
     r.check("the derived registry agrees that `patch` writes the target",
             entry.get("writes") == "target",
-            f"registry writes={entry.get('writes')!r} - the generated catalog is derived, "
-            "so it must be regenerated after the manifest is corrected")
+            f"registry writes={entry.get('writes', '<no catalog>')!r} - the catalog is "
+            "derived, so entering the seam must bring it up to date with its source; a "
+            "catalog that only regenerates when MISSING describes the old declaration "
+            "forever, which is worse than describing nothing")
 
 
 def _precondition_governance_denies_apply(r, root: Path, payload: Path) -> None:
@@ -188,6 +203,13 @@ def _precondition_malformed_output_fails(r, root: Path, payload: Path) -> None:
         witness = tgt / "src" / "probe_wrote.py"
         if witness.exists():
             witness.unlink()
+        # AWARENESS IS ESTABLISHED BEFORE THE PROBE WRITES, EVERY CASE. Without this the
+        # three cases shared one record composed during the first of them: case 1 observed
+        # the target AFTER its own probe had written, so it was correctly fresh and failed
+        # for a fixture reason, while cases 2 and 3 went stale because case 1's write was
+        # still outstanding. All three verdicts were about the loop's bookkeeping and none
+        # of them was about the probe under test.
+        _awareness(home, refresh=True)
         tool = _plant_tool(home, "t08probe", emit, writes_first=True)
         out = _cli(home, "t08probe", {"apply": True})
         env = _envelope(out)
@@ -196,8 +218,8 @@ def _precondition_malformed_output_fails(r, root: Path, payload: Path) -> None:
         # question is whether an AMBIGUOUS MUTATION can be reported as success.
         r.check(f"the {label} probe really mutated the target first",
                 witness.exists(),
-                "the probe did not write, so the assertion below would prove nothing "
-                "about ambiguous mutation outcomes")
+                f"probe_wrote.py present={witness.exists()} - without a real write the "
+                "assertion below would prove nothing about ambiguous mutation outcomes")
         r.check(f"seam fails on {label} from a tool that already wrote",
                 env.get("ok") is False,
                 f"envelope reported ok={env.get('ok')!r} for {label!r}. The tool mutated "
@@ -207,6 +229,13 @@ def _precondition_malformed_output_fails(r, root: Path, payload: Path) -> None:
         # AND THE MUTATION MUST REMAIN VISIBLE. A refused call is not an undone call -
         # the bytes are on disk. Awareness must not go on describing a target that
         # changed underneath it just because the invocation was rejected.
+        #
+        # THIS IS A REGRESSION GUARD, NOT A DRIVING RED, and saying so is the honest
+        # description: T7 already stales awareness on any target change, so it is green
+        # before the refusal exists and stays green after. Its work is to forbid the
+        # tempting wrong fix - making a refused call "clean" by treating it as though
+        # nothing happened and suppressing or rolling back the staleness. A green here
+        # is worth nothing on its own; a red here means the seam started lying.
         aw = _output(_cli(home, "attach", {}))
         fresh = ((aw.get("awareness") or {}).get("freshness") or {}).get("stale")
         r.check(f"the refused {label} mutation still stales awareness",
@@ -440,7 +469,7 @@ def _measurement_via_project_run(r, home: Path, tgt: Path) -> None:
     out = _output(_cli(home, "project_run", {"command": cmd, "apply": True}))
     r.check("a shell command through `project_run` really mutated the target",
             made.exists(),
-            f"the fixture command did not write: exit={out.get('exit_code')!r} "
+            f"made_by_shell.py present={made.exists()} exit={out.get('exit_code')!r} "
             f"{str(out.get('stderr_tail'))[:120]}")
     paths = out.get("changed_paths")
     r.check("the seam measures a change `project_run` cannot self-report",
