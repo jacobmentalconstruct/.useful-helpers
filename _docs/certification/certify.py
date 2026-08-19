@@ -177,12 +177,38 @@ def step_discovery(target: str) -> dict:
     # successful discovery pass was recorded with an empty body - `ok: true` and nothing
     # to read. A guessed key silently produced a substanceless record.
     scores = record.get("score") or {}
-    return {"ok": rc == 0, "exit": rc, "target": target,
+
+    # THE EXIT CODE IS NOT THE VERDICT, and treating it as one broke this file's own
+    # stated promise ("an absent result and a passing result must not look alike").
+    # The harness exits 0 whether its axes passed, failed, or never ran. Three
+    # certifications were recorded PASS while `front_door` and `enforcement` reported
+    # `pass: false` and `tool_health` ran zero probes - the contradicting evidence was
+    # sitting in this very record, captured and unread. A certifier that collects
+    # evidence it does not consult is worse than one that collects none, because the
+    # record looks thorough.
+    failed_axes = sorted(k for k, v in scores.items()
+                         if isinstance(v, dict) and v.get("pass") is False)
+    # Null is not false and is not pass either: it means the axis produced no verdict.
+    # Named separately so a reader can tell "checked and failed" from "never ran" -
+    # different findings with different repairs.
+    not_scored = sorted(k for k, v in scores.items()
+                        if v is None or (isinstance(v, dict) and v.get("pass") is None))
+    reasons = []
+    if rc != 0:
+        reasons.append(f"harness exited {rc}")
+    if failed_axes:
+        reasons.append("axes failed: " + ", ".join(failed_axes))
+    if not_scored:
+        reasons.append("axes produced no verdict: " + ", ".join(not_scored))
+    return {"ok": rc == 0 and not failed_axes and not not_scored,
+            "exit": rc, "target": target,
             "run_dir": fresh[-1].name if fresh else None,
             "scores": scores,
+            "failed_axes": failed_axes,
+            "not_scored": not_scored,
             "axes": {k: record.get(k) for k in
                      ("precept", "enforcement", "lineage_hits") if k in record},
-            "detail": "" if rc == 0 else (err or out)[-400:]}
+            "detail": "; ".join(reasons) or ((err or out)[-400:] if rc else "")}
 
 
 # --------------------------------------------------------------------------- main
@@ -238,10 +264,26 @@ def main(argv=None) -> int:
     else:
         print("  [4/4] discovery ...", flush=True)
         disc = step_discovery(ns.target)
-        print(f"        {'ok' if disc['ok'] else 'FAILED'}")
+        print(f"        {'ok' if disc['ok'] else 'FAILED'}  {disc.get('detail', '')}")
+        for axis in disc.get("failed_axes") or []:
+            print(f"          FAILED axis   {axis}")
+        for axis in disc.get("not_scored") or []:
+            print(f"          NOT SCORED    {axis}  (never ran; not a pass)")
 
-    verdict = "PASS" if (lint["ok"] and suite["ok"] and gates["ok"]
-                         and (disc.get("ok") or disc.get("skipped"))) else "FAIL"
+    # A SKIP IS NOT A PASS, and this counted one as a pass while the flag's own help text
+    # said "recorded as skipped, never as passing". `gates/run.py` has always reported
+    # INCOMPLETE for exactly this - skipped checks are not passes - so the same word is
+    # used here rather than inventing a second vocabulary for the same idea. Kept distinct
+    # from FAIL because "we did not look" and "we looked and it was wrong" are different
+    # things to tell an operator, and only one of them is fixed by fixing the product.
+    if not (lint["ok"] and suite["ok"] and gates["ok"]):
+        verdict = "FAIL"
+    elif disc.get("skipped"):
+        verdict = "INCOMPLETE"
+    elif not disc.get("ok"):
+        verdict = "FAIL"
+    else:
+        verdict = "PASS"
     record = {
         "schema": SCHEMA,
         "verdict": verdict,
@@ -270,6 +312,12 @@ def main(argv=None) -> int:
     print(f"  commit   {record['commit']}{' (DIRTY)' if record['dirty'] else ''}")
     print(f"  platform {record['platform']['system']} python {record['platform']['python']}")
     print(f"  gates    {gates['total_passed']}/{gates['total_assertions']} assertions")
+    # Named at the bottom too. The gate totals are the line an eye goes to, and a
+    # discovery pass whose axes never ran is exactly the thing a good-looking assertion
+    # count hides.
+    if disc.get("failed_axes") or disc.get("not_scored"):
+        print(f"  discovery FAILED {disc.get('failed_axes') or []} "
+              f"| NOT SCORED {disc.get('not_scored') or []}")
     print(f"  written  {path.relative_to(ROOT).as_posix()}")
     print()
     print("Commit and push that file; it is the whole certification record.")
