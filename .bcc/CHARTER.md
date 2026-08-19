@@ -711,8 +711,14 @@ Consequences:
 
 ### 7.4 Other recorded frailties
 
-- A tool emitting unparseable output is treated as **success** with
-  `{"raw_stdout": ...}`. A silent tool passes. Must be treated as failure.
+- ~~A tool emitting unparseable output is treated as **success** with
+  `{"raw_stdout": ...}`. A silent tool passes. Must be treated as failure.~~
+  **CLOSED in T8 (2026-08-19).** Empty stdout, invalid JSON, and valid JSON that is
+  not an object are now three distinct seam failures, each naming which one occurred.
+  `raw_stdout` is preserved in every branch — refusing to interpret output is not a
+  reason to discard the only evidence of what the tool was trying to say. Swept all
+  52 Observe tools: none emits uninterpretable output. The 42 Apply/Sandbox tools
+  were not swept, because firing them blindly is not a safe audit.
 - `DEFAULT_TIMEOUT_S = 120` is module-level, not a per-call parameter. Too short
   for large snapshot compiles.
 - The seam blocks on `subprocess.run`: no cancellation, no progress streaming.

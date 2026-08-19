@@ -389,14 +389,50 @@ def _dispatch(paths: Paths, tool, tool_id: str, args: dict,
         # absolute build-machine paths.
         return InvokeResult(False, tool_id, None, _clean(paths, err), proc.returncode)
 
-    try:
-        output = json.loads(out) if out.strip() else {}
-    except json.JSONDecodeError:
+    # UNINTERPRETABLE OUTPUT IS A FAILURE, NOT A DEFAULT SUCCESS. Charter 7.4 recorded
+    # this on 2026-08-06: a tool could exit 0 and emit nothing, or garbage, or valid JSON
+    # that is not an object, and all three arrived as ok=True. The seam was reporting an
+    # outcome it did not know.
+    #
+    # That is tolerable for a catalogue of read-only helpers and NOT tolerable for a
+    # governed work loop, because exit 0 does not mean "did nothing". A tool can mutate
+    # the target and then fail to describe what it did; calling that success is how an
+    # unreviewed change enters a target while the ledger records a clean run. The
+    # ambiguity is the finding - the correct report is "this tool's outcome is unknown",
+    # which a human can act on, rather than "fine", which they cannot.
+    #
+    # THE PAYLOAD IS PRESERVED IN EVERY BRANCH. Refusing to interpret output is not a
+    # reason to throw it away; raw_stdout is what makes the failure diagnosable, and it
+    # is the only evidence of what the tool was trying to say.
+    contract_error = None
+    if not out.strip():
         output = {"raw_stdout": out}
+        contract_error = ("tool produced no output; a tool that exits 0 without "
+                          "describing what it did leaves its outcome unknown")
+    else:
+        try:
+            parsed = json.loads(out)
+        except json.JSONDecodeError as e:
+            output = {"raw_stdout": out}
+            contract_error = f"tool output is not valid JSON ({e.__class__.__name__}: {e})"
+        else:
+            if isinstance(parsed, dict):
+                output = parsed
+            else:
+                # Valid JSON, wrong shape. Kept separate from the parse failure because
+                # the two say different things to whoever has to fix the tool.
+                output = {"raw_stdout": out}
+                contract_error = (f"tool output is valid JSON but not an object "
+                                  f"({type(parsed).__name__}); the seam has no `ok` to read")
+    if contract_error is not None:
+        log.warning("invoke tool=%s UNINTERPRETABLE OUTPUT: %s", tool_id, contract_error)
+        return InvokeResult(False, tool_id, output, _clean(paths, contract_error), 0)
+
     # A produced result is a successful *invocation*; business success is carried in
-    # output["ok"] (payload preserved either way). Reflect it on InvokeResult.ok.
-    ok = bool(output.get("ok", True)) if isinstance(output, dict) else True
-    error = output.get("error") if (isinstance(output, dict) and not ok) else None
+    # output["ok"]. Reflect it on InvokeResult.ok. A tool that says ok=false is being
+    # understood, not misunderstood - a different outcome from the three above.
+    ok = bool(output.get("ok", True))
+    error = output.get("error") if not ok else None
     if not ok:
         log.info("invoke tool=%s returned ok=false: %s", tool_id, error)
     return InvokeResult(ok, tool_id, output, error, 0)
