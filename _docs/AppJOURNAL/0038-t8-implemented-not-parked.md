@@ -168,13 +168,17 @@ truthfulness   null
 The axes went dark between the 07:20 and 10:33 runs on 2026-08-18 — before T8 was
 declared. **Three certifications have reported `PASS` since.**
 
-**Root cause, read from the code rather than inferred:** `_harness/ro_probe_inner.py:32`
-attaches by setting `SUITE_PROJECT_ROOT=target` in the child's environment. T6 bound an
-installed instance to a canonical target and made that override a hard refusal — the
-exact inference-versus-transport distinction T6 exists to enforce. `front_door` and
-`tool_health` are computed from that same probe's output, so one root cause takes all
-three axes down together. The guard is behaving correctly; **the harness is attaching the
-way T6 forbade.**
+**Root cause — SUPERSEDED. See the addendum in §11; the attribution below was wrong.**
+
+~~`_harness/ro_probe_inner.py:32` attaches by setting `SUITE_PROJECT_ROOT=target` in the
+child's environment. T6 bound an installed instance to a canonical target and made that
+override a hard refusal.~~ That file belongs to the `mount` subcommand, is not on the
+`run` path, and sets the variable *to the target* — which agrees with identity and cannot
+produce the conflict. I read a plausible line and stopped reading.
+
+What remains true from this paragraph: `front_door` and `tool_health` are computed from
+the same probe path as `enforcement`, so one root cause takes all three axes down
+together, and the guard is behaving correctly.
 
 ### The certifier was the thing that hid it
 
@@ -282,3 +286,66 @@ the operator:
 
 Until then the truthful statement is: *T8 is implemented, its gate is green, and the
 acceptance walk that was supposed to corroborate it has not been running.*
+
+
+---
+
+## 11. Addendum — the root cause, corrected and demonstrated
+
+*Added the same day, after §5 was written. §5's claim is struck through above rather than
+deleted: protocol §5.1 keeps historical evidence, and a wrong diagnosis that looked right
+is worth more to a later reader than a clean record.*
+
+**`gates/t02_ledger_presence.py` `setdefault`s `SUITE_PROJECT_ROOT` to the repo root and
+never puts it back.** `certify.py` runs the gates **in-process** and *then* spawns the
+discovery harness, which inherits it. The harness drives an instance canonically bound to
+its own target, T6 refuses the conflicting value, and every seam call dies.
+
+Demonstrated rather than argued:
+
+```text
+BEFORE gates:  SUITE_PROJECT_ROOT = None
+AFTER  gates:  SUITE_PROJECT_ROOT = /tmp/uh
+CHILD sees:                         /tmp/uh
+```
+
+**The dating now fits exactly, and that is what showed the first answer was wrong.**
+`certify.py` landed 08-18 09:26; the 10:33 run is the first it drove and the first to go
+dark, and the 07:20 run before it was green. The T6 guard landed **08-13** and ran green
+for five days. *The guard did not break the harness — running the gates in-process in
+front of it did.*
+
+t02 was already inconsistent with itself: two functions above, it saves and restores
+`SUITE_STATE_ROOT`, and `t03` saves and restores both vars. Line 254 was the only one of
+the three that did not, and no other gate leaks anything.
+
+### Two fixes, at different layers, on purpose
+
+1. **`gates/t02`** — restore what it set, mirroring `setdefault` exactly: a value the
+   caller already had is left alone, only an introduced one is removed. The variable is
+   still needed *during* the call, because this repository is a source factory with no
+   installed instance and `_resolve_project_root` has no identity to read. Needing it
+   during the call was never a reason to leave it set afterwards.
+
+2. **`_harness/harness.py` `_instance_env()`** — applied to `_call` and all three
+   `registry-refresh` invocations. An installed instance is bound to one target
+   structurally, so its identity is the authority on where it points. An inherited
+   `SUITE_PROJECT_ROOT` / `SUITE_HOME` / `SUITE_STATE_ROOT` can only agree with identity
+   and change nothing, or disagree and be refused. **There is no third case where the
+   ambient value is the right answer.** Scrubbed rather than pinned: the point is to let
+   identity resolve, not to assert a second opinion about the target in a second place.
+
+Fix 1 is the cause. Fix 2 makes the apparatus immune to the next process that leaks one —
+a measurement apparatus that silently retargets itself based on the caller's shell is not
+measuring the thing it names.
+
+### The worse possibility, recorded because it did not happen here
+
+Before an instance has identity, `ctx` is `None` and the environment variable simply
+**wins**. A leaked value does not always announce itself as an error: on an uninstalled
+sidecar it silently retargets the probe and the run still reports PASS. **The refusal is
+the good outcome — it is the only reason this was findable at all.**
+
+Verified: t02 leaks nothing and still passes 18/0; `_instance_env` drops exactly the three
+root vars and keeps `PATH`. Not verified here, and it is the operator's step: this mount
+is read-only for the harness targets, so the discovery pass must be re-run on Windows.
