@@ -320,6 +320,31 @@ SCAFFOLDS = {"python-app": _python_app, "data-curation": _data_curation,
 
 # ---------------------------------------------------------------- sidecar drive
 
+def _instance_env() -> dict:
+    """The environment for driving an INSTALLED instance: no inherited root overrides.
+
+    The harness measures a real installed sidecar, and an installed instance is bound to
+    one target structurally (Charter SIDECAR:INSTANCE-OWNERSHIP). Its identity is the
+    authority on where it points. Inheriting SUITE_PROJECT_ROOT / SUITE_HOME /
+    SUITE_STATE_ROOT from whoever launched the harness can only do one of two things,
+    and both are wrong: agree with identity and change nothing, or disagree and be
+    refused. There is no third case where the ambient value is the right answer.
+
+    THIS IS THE "BIND, DON'T OVERRIDE" HALF. `gates/t02` leaking the variable is what
+    actually took the discovery pass down, and that is fixed at the source; this makes
+    the harness immune to the next process that leaks one, from anywhere. A measurement
+    apparatus that silently retargets itself based on the caller's shell is not measuring
+    the thing it names.
+
+    Scrubbed rather than pinned: the point is to let identity resolve, not to assert a
+    second opinion about the target in a second place.
+    """
+    env = dict(os.environ)
+    for k in ("SUITE_PROJECT_ROOT", "SUITE_HOME", "SUITE_STATE_ROOT"):
+        env.pop(k, None)
+    return env
+
+
 def _call(sidecar: Path, tool: str, args: dict, timeout: int = 120) -> dict:
     """Drive one governed call. Uses --args-file to sidestep shell escaping entirely
     (field report F0 — hand-escaped JSON breaks the moment args get real)."""
@@ -330,7 +355,8 @@ def _call(sidecar: Path, tool: str, args: dict, timeout: int = 120) -> dict:
         proc = subprocess.run(
             [sys.executable, "-m", "src.app", "cli", "tool-call", "--tool", tool,
              "--args-file", str(tmp)],
-            cwd=str(sidecar), capture_output=True, text=True, timeout=timeout)
+            cwd=str(sidecar), capture_output=True, text=True, timeout=timeout,
+            env=_instance_env())
         dt = round(time.time() - t0, 3)
         try:
             env = json.loads(proc.stdout)
@@ -383,7 +409,8 @@ def _registry(sidecar: Path) -> list[dict]:
     p = sidecar / "config" / "registry.json"
     if not p.exists():
         subprocess.run([sys.executable, "-m", "src.app", "cli", "registry-refresh"],
-                       cwd=str(sidecar), capture_output=True, text=True)
+                       cwd=str(sidecar), capture_output=True, text=True,
+                       env=_instance_env())
     return json.loads(p.read_text(encoding="utf-8"))["tools"]
 
 
@@ -419,7 +446,8 @@ def _probe_enforcement(sidecar: Path, target: Path) -> dict:
             "    return {'ok': True, 'did': 'wrote to the target'}\n",
             encoding="utf-8")
         subprocess.run([sys.executable, "-m", "src.app", "cli", "registry-refresh"],
-                       cwd=str(sidecar), capture_output=True, text=True)
+                       cwd=str(sidecar), capture_output=True, text=True,
+                       env=_instance_env())
         r = _call(sidecar, _EVIL_TOOL, {})
         wrote = mark.exists()
         rejected = (not r.get("ok")) and ("precept" in (r.get("error") or "").lower())
@@ -429,7 +457,8 @@ def _probe_enforcement(sidecar: Path, target: Path) -> dict:
         shutil.rmtree(tdir, ignore_errors=True)
         mark.unlink(missing_ok=True)
         subprocess.run([sys.executable, "-m", "src.app", "cli", "registry-refresh"],
-                       cwd=str(sidecar), capture_output=True, text=True)
+                       cwd=str(sidecar), capture_output=True, text=True,
+                       env=_instance_env())
 
 
 def install(target: Path, method: str = "product") -> dict:

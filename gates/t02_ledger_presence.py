@@ -248,7 +248,28 @@ def _db_columns(db: Path) -> set:
 
 
 def _paths(root: Path):
+    """Resolve paths for this gate WITHOUT leaving the variable behind.
+
+    THE LEAK THIS CLOSES. `setdefault` here was never undone, so running this gate
+    in-process permanently set SUITE_PROJECT_ROOT to the repo root for the whole
+    process - and for every subprocess spawned afterwards. `certify.py` imports
+    gates/run.py and runs the gates IN-PROCESS, then spawns the discovery harness. The
+    harness drives an instance canonically bound to its own target, T6 refuses the
+    conflicting inherited value, and `front_door`, `tool_health` and `enforcement` all
+    die at once. Three certifications reported PASS on a discovery pass that never ran.
+
+    The variable is still needed DURING the call: this repository is a source factory
+    with no installed instance, so `_resolve_project_root` has no identity to read and
+    needs an explicit target. Needing it during the call is not a reason to leave it set
+    afterwards.
+
+    `setdefault` is mirrored exactly - if the caller already had a value it is theirs and
+    is left alone; only a value this function introduced is removed. Two functions above,
+    SUITE_STATE_ROOT was already saved and restored, and `t03` does the same for both
+    vars. This one line was the odd one out.
+    """
     sys.path.insert(0, str(root))
+    had = "SUITE_PROJECT_ROOT" in os.environ
     try:
         from src.core.config import resolve_paths
         os.environ.setdefault("SUITE_PROJECT_ROOT", str(root))
@@ -256,5 +277,7 @@ def _paths(root: Path):
     except Exception:
         return None
     finally:
+        if not had:
+            os.environ.pop("SUITE_PROJECT_ROOT", None)
         if str(root) in sys.path:
             sys.path.remove(str(root))
