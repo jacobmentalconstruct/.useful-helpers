@@ -947,7 +947,7 @@ Measured on `_theCELL`, 2026-08-14. Each row is a tool that already works.
 | Step | Existing mechanism | Status |
 | --- | --- | --- |
 | impact inspection | `symbol_graph refs` | exact — resolves inbound edges to specific call sites with line numbers |
-| proposed transformation | `edit` / `patch` preview | returns `source` **and** `result`, `written:false`, `apply_with` |
+| proposed transformation | `read_file` → `edit` / `patch` preview | preview returns `result`, `written:false`, `apply_with`. **`source` is the source KIND (`"path"`/`"text"`), not the original content** — the before-state comes from `read_file` |
 | reviewable before/after | existing `diff` tool | takes the text pair the preview already returns |
 | governed mutation | same call with `apply:true` | returns `written:true` and `path` |
 | attribution / audit | `event_log` | records client, authority, args_hash |
@@ -965,10 +965,26 @@ Each of those is **a chain over the bench** (C1 rules 1 and 2; C1a rules 1 and 2
 
 ### The three seams that are genuinely missing — all composition, none new subsystems
 
-1. **The preview does not offer its own diff.** `edit` returns both sides and stops
-   at `replacements: 1`, so approving means approving *a count*. The shortest current
-   chain is `edit` → `diff {a_text: source, b_text: result}` → `edit {apply:true}`.
-   Nothing new is required; the chain is simply not wired.
+1. **The preview does not offer its own diff.** `edit` stops at `replacements: 1`, so
+   approving means approving *a count*. The real chain is `read_file` → `edit` preview
+   → `diff {a_text: read.content, b_text: preview.result}` → `edit {apply:true}`. One
+   more existing tool; still nothing new.
+
+   ***CORRECTED 2026-08-19, and the error was fabricated rather than measured.*** This
+   entry previously read *"`edit` returns both sides"* and proposed
+   `diff {a_text: source, b_text: result}`, on the belief that `edit` returns the
+   original text under `source`. **It does not.** `tools/edit/cli.py:39` sets
+   `content, source = path.read_text(...), "path"` — `source` is the literal string
+   `"path"` or `"text"`, the source KIND. The proposed chain would have diffed the word
+   `"path"` against the new content.
+
+   This is the `CellBackend` failure repeated in a *plan* rather than a query: an
+   interface asserted from plausibility instead of read from the code, then carried
+   into journal 0032 and this section, where it survived a closeout, a park and two
+   reviews before an outside reader opened the source. **A gate written against it
+   would have tested an imagined product.** The lesson is not "read more carefully" —
+   it is that a claimed interface belongs in the same category as a claimed capability,
+   and C1 rule 1 already covers it: attempt it before asserting it.
 2. **Verification is selectable but not selected.** `kind` is the selector. On
    `_theCELL` it yields only `run_bat` and `setup_env` — **no test command exists in
    that target**. The correct behaviour is to say so, not to invent one. Truthful
@@ -1374,6 +1390,8 @@ that contradiction is what this correction removes.
 | Precept-guard cost unmeasured on large targets | Charter §7.3 | **Medium — T8 touches it.** T8 reuses `_target_manifest` on the Apply path, so its cost stops being hypothetical. `_GUARD_MAX_FILES = 20000` with an honest `complete=False` is the existing bound; T8 must measure, not assume |
 | `test_d1_p1` slow: `attach` re-maps ~18k files twice | 0004 | **Still open — T7 did NOT close it.** T7 avoided *adding* cost (re-engage reads the persisted revision rather than recomposing) but did not remove the existing double map. Recorded honestly rather than counted as collateral |
 | **`patch` declares `writes: toolkit` but writes to a target path** | §11 census, 2026-08-14 | **High — T8 owns it.** A tool that mutates the target while declaring it does not is a hole in the precept guard's own gating. Found by census, not by failure |
+| **Malformed tool output fails OPEN at the seam** — empty stdout, invalid JSON, and valid JSON that is not an object ALL yield `ok=True`. Verified: `invoke.py:393-398` wraps unparseable output as `raw_stdout` and defaults `output.get("ok", True)` | Charter §7.4, re-confirmed 2026-08-19 | **HIGH — T8 precondition.** A writer could mutate the filesystem, emit garbage, and have the governed loop record a success it cannot interpret. Charter §7.4 named this in 2026-08-06 and it is still live |
+| **`edit` preview does not bind Apply to the reviewed state** — `apply_with` carries only `{"apply": true}`, so an approved diff against state A can land against state B if the file changes in between | 2026-08-19 review | **HIGH — T8 precondition.** Classic stale-preview/TOCTOU. Minimal close: preview returns a source SHA-256 and carries it in `apply_with`; Apply refuses when the current hash differs. Belongs in `edit`, not a framework |
 | **`_instance_module` docstring and call order disagree** — it says the identity authority is loaded *"FROM THE PAYLOAD JUST INSTALLED"*, but the update path calls it before the copy and loads the **old** tree's copy | 0028, third finding | **Medium.** Reading an old manifest with the code that wrote it may well be correct; the point is that the comment and the behaviour cannot both be. Deliberately **out of scope** for the T6 reopening, which is bounded to two defects |
 | ~~`docs-refresh` prints `_docs/TOOLS.md` while writing `docs/`~~ | T6 closeout | **CLOSED 0034 sweep.** The reported path is now DERIVED from where the write landed, so the one field a caller reads to find the output cannot name the wrong place again |
 | ~~**`attach` cannot see `.github/` or any `.git*` directory**~~ | 0032 (C1b) | **CLOSED — T7 increment 1.** The prefix test was REMOVED rather than narrowed: `PRUNE` already contained `.git`, so it added nothing there and only swallowed siblings. Verified behaviourally — `_probe` now returns `.github/workflows/ci.yml` and still excludes `.git` |
