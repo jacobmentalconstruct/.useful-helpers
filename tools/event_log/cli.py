@@ -79,13 +79,19 @@ def run(args: dict) -> dict:
                 return {"ok": False, "error": "action 'tool' requires 'tool_id'"}
             rows = conn.execute(
                 "SELECT event_id, ts, tool_id, authority, category, ok, exit_code, duration_ms, "
-                "arg_keys, error FROM events WHERE tool_id=? ORDER BY event_id DESC LIMIT ?",
+                "arg_keys, error, client FROM events WHERE tool_id=? ORDER BY event_id DESC "
+                "LIMIT ?",
                 (str(tid), limit)).fetchall()
             return {"tool": "event_log", "action": "tool", "tool_id": tid,
                     "count": len(rows), "events": [dict(r) for r in rows]}
 
+        # `client` is projected because WHO called is half of an audit trail. The seam has
+        # always recorded it correctly - `cli` and `agent` are passed at both entrances and
+        # `record` never writes NULL - but every read projection here omitted the column,
+        # so the attribution was complete in the database and absent at the only interface
+        # anyone reads it through. A ledger you cannot ask "who did this" is a log.
         rows = conn.execute(
-            "SELECT event_id, ts, tool_id, authority, ok, duration_ms, error "
+            "SELECT event_id, ts, tool_id, authority, ok, duration_ms, error, client "
             "FROM events ORDER BY event_id DESC LIMIT ?", (limit,)).fetchall()
         return {"tool": "event_log", "action": "recent",
                 "count": len(rows), "events": [dict(r) for r in rows]}

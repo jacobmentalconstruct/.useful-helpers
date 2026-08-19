@@ -101,6 +101,7 @@ def check(r, root: Path) -> None:
 
     # ---- DEGRADATION ------------------------------------------------------
     _degradation(r, root, payload)
+    _unmeasurable_target(r, root, payload)
 
     # ---- NO NEW SUBSYSTEM -------------------------------------------------
     _no_new_machinery(r, root)
@@ -476,6 +477,46 @@ def _loop(r, root: Path, payload: Path) -> None:
         r.check("X still drills into its pre-change evidence",
                 bool(got) and got.get("ok") is not False,
                 f"evidence {old_ev!r} unreachable after the change")
+
+
+def _unmeasurable_target(r, root: Path, payload: Path) -> None:
+    """A target too large to walk must say "not measured", not "nothing changed".
+
+    THE ASSERTION THAT SENDS THIS ONE. "the mutation signal states its basis and
+    completeness" only checks that a `complete` key EXISTS - while its own failure text
+    promises that "an exceeded bound must be an explicit incomplete state, never an empty
+    changed_paths". The words claimed more than the check tested, which is the family this
+    project keeps finding. This exercises the branch instead of describing it.
+
+    Empty and null are not stylistic variants here. `[]` means "measured, nothing
+    changed" - a clean bill of health - and a target that was never walked must never be
+    able to issue one. Building 20k files takes about a second and a half, which is a
+    cheap price for the difference between a measurement and a reassurance.
+    """
+    tgt = Path(tempfile.mkdtemp(prefix="t08-big-")) / "big"
+    (tgt / "src").mkdir(parents=True)
+    (tgt / "src" / "backend.py").write_text("VALUE = 'before'\n", encoding="utf-8")
+    bulk = tgt / "bulk"
+    bulk.mkdir()
+    for i in range(20_100):  # over invoke._GUARD_MAX_FILES
+        (bulk / f"f{i:05d}.txt").write_text("x", encoding="utf-8")
+    if _install(root, tgt, payload).returncode != 0:
+        r.skip("an unmeasurable target reports no measurement rather than no change",
+               "install failed")
+        return
+    out = _output(_cli(tgt / DEFAULT_HOME, "edit",
+                       {"path": "src/backend.py", "pattern": "before",
+                        "replacement": "after", "literal": True, "apply": True}))
+    meas = out.get("measurement") or {}
+    r.check("an unmeasurable target reports no measurement rather than no change",
+            meas.get("complete") is False and out.get("changed_paths") is None,
+            f"complete={meas.get('complete')!r} changed_paths={out.get('changed_paths')!r} "
+            "- `[]` is a clean bill of health, and a target that was never walked has no "
+            "standing to issue one")
+    r.check("the write still landed on the unmeasurable target",
+            (tgt / "src" / "backend.py").read_text(encoding="utf-8") == "VALUE = 'after'\n",
+            "declining to MEASURE a change is not declining to make it; a bounded "
+            "observer must not become a bounded actor")
 
 
 def _ledger_mark(home: Path) -> int:

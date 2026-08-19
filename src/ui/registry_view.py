@@ -188,7 +188,19 @@ class RegistryView:
         self._running = False
         self.run_btn.config(state="normal", text="Run")
         head = f"[{'ok' if result.ok else 'FAILED'}] {result.tool_id}"
-        body = json.dumps(result.output, indent=2) if result.output is not None else (result.error or "")
+        # THE ERROR LEADS ON A FAILURE, and is no longer displaced by the payload. This
+        # read `output if output is not None else error`, which was fine while a failed
+        # call had no output. The seam now attaches `changed_paths`/`measurement` to
+        # target-writing calls WHETHER OR NOT THEY SUCCEEDED - deliberately, since a
+        # write that landed before a failure is exactly what a reader needs - and that
+        # turned "here is why it failed" into a dict of measurement metadata with the
+        # reason nowhere on screen. Both are shown, in the order a reader needs them.
+        parts = []
+        if not result.ok and result.error:
+            parts.append(str(result.error))
+        if result.output is not None:
+            parts.append(json.dumps(result.output, indent=2))
+        body = "\n\n".join(parts) or (result.error or "")
         color = theme.PALETTE["status"] if result.ok else theme.PALETTE["danger"]
         self.output.config(fg=color)
         self._write_output(f"{head}\n{body}")

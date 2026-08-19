@@ -26,7 +26,8 @@ import sys
 import threading
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
+from pathlib import Path
 
 from src.core import event_log, policy, presence, proctree, registry
 from src.core.config import Paths
@@ -225,6 +226,93 @@ def _manifest_diff(before: dict, after: dict) -> list[str]:
     changed = [p for p in after if p not in before or after[p] != before[p]]
     changed += [p for p in before if p not in after]
     return sorted(set(changed))
+
+
+def _measure_applies(paths: Paths, tool) -> bool:
+    """Measure the target around tools that ARE allowed to write it.
+
+    The exact complement of `_guard_applies`, over the same walk and the same manifest.
+    The guard asks "did a tool that may NOT write, write?"; this asks "what did a tool
+    that MAY write actually change?" One is an accusation, the other is a record, and
+    neither is derivable from the tool's own account of itself.
+
+    Keyed on the DECLARATION, which is why `patch`'s absent `writes` field was a T8
+    precondition rather than a tidiness complaint: an undeclared target writer is
+    invisible here.
+    """
+    if paths.project_root is None:
+        return False
+    if paths.project_root.resolve() == paths.root.resolve():
+        return False  # standalone/dev: no separate target to measure
+    return getattr(tool, "writes", "none") == "target"
+
+
+def _relative_to_target(paths: Paths, p: str) -> str:
+    """Target-relative posix form, or the basename if it escapes the target.
+
+    Absolute host paths must not travel out on an ordinary result. `_clean` scrubs the
+    error path for that reason; a measured path list is the same exposure.
+    """
+    try:
+        return Path(p).resolve().relative_to(Path(paths.project_root).resolve()).as_posix()
+    except (ValueError, OSError):
+        return Path(p).name
+
+
+def _attach_measurement(paths: Paths, result: "InvokeResult", before: dict,
+                        complete_before: bool) -> "InvokeResult":
+    """Record what the filesystem shows changed, and whether that record is trustworthy.
+
+    ATTACHED EVEN WHEN THE CALL FAILED, deliberately. A tool can mutate the target and
+    then fail - that is precisely the ambiguous-outcome case the seam now refuses to call
+    success - and "the call failed" is the moment a reader most needs to know what landed
+    anyway. Suppressing the measurement on failure would hide exactly the writes nobody
+    approved.
+
+    AN EXCEEDED BOUND IS `None`, NEVER `[]`. Empty means "measured, nothing changed";
+    None means "not measured". Collapsing them would let a target too large to walk
+    report a clean bill of health, which is the failure mode this whole tranche is about.
+    """
+    after, complete_after = _target_manifest(paths)
+    complete = bool(complete_before and complete_after)
+    output = dict(result.output) if isinstance(result.output, dict) else {}
+
+    if complete:
+        changed = sorted(_relative_to_target(paths, p) for p in _manifest_diff(before, after))
+        output["changed_paths"] = changed
+    else:
+        changed = None
+        output["changed_paths"] = None
+    output["measurement"] = {
+        "basis": "mtime+size",
+        "complete": complete,
+        "limit": _GUARD_MAX_FILES,
+        "note": ("stat-only over a pruned walk: coarse, not byte-exact - a change that "
+                 "preserves both mtime and size is not visible here"
+                 if complete else
+                 f"target exceeds {_GUARD_MAX_FILES} files; no measurement was taken, "
+                 "and `changed_paths` is null rather than empty to say so"),
+    }
+
+    # THE DECLARATION IS AUTHORITY, THE FILESYSTEM IS EVIDENCE. When a tool says it wrote
+    # one path and the walk shows that path unchanged, neither side gets to quietly win:
+    # trusting the claim hides the real write, and trusting the measurement rewrites what
+    # the tool said. It is recorded as a disagreement for a human to resolve.
+    claimed = output.get("path")
+    if changed is not None and claimed and output.get("written"):
+        rel = _relative_to_target(paths, str(claimed))
+        if rel not in changed:
+            output["path_claim_mismatch"] = {
+                "claimed": rel,
+                "measured": changed,
+                "basis": "mtime+size",
+                "note": "the tool reported writing a path the target walk does not show "
+                        "changing. Coarse signal: treat as a finding to investigate, not "
+                        "as proof of bad faith",
+            }
+            log.warning("invoke tool=%s PATH-CLAIM MISMATCH claimed=%s measured=%s",
+                        result.tool_id, rel, changed[:5])
+    return replace(result, output=output)
 
 
 def _guard_applies(paths: Paths, tool) -> bool:
@@ -472,6 +560,10 @@ def invoke(paths: Paths, tool_id: str, args: dict, allow: str | None = None,
                     f"modified the target it may not write to: {changed[:5]}"
                     + (f" (+{len(changed) - 5} more)" if len(changed) > 5 else ""),
                     result.exit_code)
+    elif tool is not None and _measure_applies(paths, tool):
+        before, complete = _target_manifest(paths)
+        result = _dispatch(paths, tool, tool_id, args, timeout, client)
+        result = _attach_measurement(paths, result, before, complete)
     else:
         result = _dispatch(paths, tool, tool_id, args, timeout, client)
     duration_ms = int((time.monotonic() - started) * 1000)
