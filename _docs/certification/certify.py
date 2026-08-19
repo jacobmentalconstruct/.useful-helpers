@@ -173,10 +173,15 @@ def step_discovery(target: str) -> dict:
                 record = json.loads(rj.read_text(encoding="utf-8"))
             except ValueError as e:
                 record = {"_unreadable": str(e)}
-    scores = record.get("scores") or record.get("summary") or {}
+    # The harness writes `score`. Looking for `scores`/`summary` found neither, so a
+    # successful discovery pass was recorded with an empty body - `ok: true` and nothing
+    # to read. A guessed key silently produced a substanceless record.
+    scores = record.get("score") or {}
     return {"ok": rc == 0, "exit": rc, "target": target,
             "run_dir": fresh[-1].name if fresh else None,
             "scores": scores,
+            "axes": {k: record.get(k) for k in
+                     ("precept", "enforcement", "lineage_hits") if k in record},
             "detail": "" if rc == 0 else (err or out)[-400:]}
 
 
@@ -186,10 +191,32 @@ def main(argv=None) -> int:
     ap.add_argument("--label", default="", help="e.g. t07-park")
     ap.add_argument("--target", default="_UsefulHelperSCRIPTS",
                     help="harness target for the discovery pass")
+    ap.add_argument("--allow-dirty", action="store_true",
+                    help="certify anyway; the record says so")
     ap.add_argument("--only", default="", help="one gate, e.g. t07 (records the narrowing)")
     ap.add_argument("--skip-discovery", action="store_true",
                     help="omit the discovery pass (recorded as skipped, never as passing)")
     ns = ap.parse_args(argv)
+
+    # REFUSE A DIRTY TREE, and this exists because the script tripped over itself.
+    #
+    # `certify.py` writes its record INTO the tree it certifies. Leave that record
+    # uncommitted and the NEXT run fails `t00`'s "working tree is clean" assertion - so a
+    # certification failed for the certifier's own leftovers rather than for anything
+    # about the product. Observed exactly once, and once is enough.
+    #
+    # Not fixed by excluding `_docs/certification/` from t00: blinding a census so it
+    # stops seeing a surface is the defect this project has recorded three times. Fixed
+    # by making the sequencing explicit - commit, certify, commit the record, push.
+    dirty = _git("status", "--porcelain")
+    if dirty and not ns.allow_dirty:
+        print("REFUSING: the working tree is not clean, and `t00` asserts that it is.")
+        print("A record produced now would certify something that is not in git.\n")
+        for line in dirty.splitlines()[:15]:
+            print("   ", line)
+        print("\nCommit (or stash) first, then re-run. --allow-dirty overrides and is")
+        print("recorded in the JSON, so an overridden run cannot be mistaken for a clean one.")
+        return 2
 
     started = datetime.now(timezone.utc)
     print(f"certifying {ROOT}")
@@ -224,6 +251,7 @@ def main(argv=None) -> int:
         "commit": _git("rev-parse", "--short", "HEAD"),
         "branch": _git("rev-parse", "--abbrev-ref", "HEAD"),
         "dirty": bool(_git("status", "--porcelain")),
+        "allow_dirty": bool(ns.allow_dirty),
         "platform": {"system": platform.system(), "release": platform.release(),
                      "machine": platform.machine(),
                      "python": platform.python_version()},
