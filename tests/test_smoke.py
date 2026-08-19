@@ -3534,5 +3534,61 @@ class SpineSmokeTest(unittest.TestCase):
         self.assertNotEqual(fingerprint("", obs), fingerprint("src", obs))
 
 
+    def test_awareness_persistence_failure_does_not_break_orientation(self):
+        """Awareness is an ENRICHMENT on orientation. It must not take the front door down.
+
+        `build()` persists, and `_persist` mkdir'd and wrote with nothing catching it -
+        so an unwritable state root (read-only mount, full disk, a file sitting where the
+        directory belongs) raised straight out of `attach.run()`. The user loses their
+        PROJECT_MAP, workbench and next steps because a *derived* record could not be
+        saved.
+
+        The seam already holds this line for the same reason: `_announce` wraps presence
+        in try/except because "visibility is an enrichment; it must never break a
+        dispatch". Same rule, one layer up.
+
+        The envelope must still come back - awareness that was COMPOSED is real
+        knowledge even if it could not be stored - and it must SAY it was not persisted,
+        because a caller that re-engages later will not find it.
+        """
+        import os
+        import tempfile
+        from pathlib import Path
+
+        from tools import awareness_shared
+
+        state = Path(tempfile.mkdtemp(prefix="aw-state-"))
+        # A file where the directory has to go: mkdir cannot succeed, and no amount of
+        # permission juggling is needed to reproduce it on any platform.
+        (state / awareness_shared.AWARENESS_DIR).write_text("not a directory\n",
+                                                           encoding="utf-8")
+        # `awareness_shared` is a TOOL-side module: it consumes TRANSPORTED roots and
+        # refuses to infer them (MissingRuntimeContext). Supply the whole context, not
+        # just the one under test - a test that omits it fails for a reason unrelated to
+        # what it is asserting.
+        target = Path(tempfile.mkdtemp(prefix="aw-target-"))
+        keys = ("SUITE_STATE_ROOT", "SUITE_PROJECT_ROOT", "SUITE_HOME")
+        prev = {k: os.environ.get(k) for k in keys}
+        os.environ.update(SUITE_STATE_ROOT=str(state), SUITE_PROJECT_ROOT=str(target),
+                          SUITE_HOME=str(self.paths.root))
+        try:
+            env = awareness_shared.build({"domain": "generic"}, {"file_count": 0}, False)
+        finally:
+            for k, v in prev.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
+
+        self.assertTrue(env, "composing awareness must survive a persistence failure")
+        self.assertTrue(env.get("revision"), "the revision is still validly derived")
+        self.assertFalse(env.get("persisted", True),
+                         "an unpersisted envelope must say so")
+        self.assertTrue(
+            any("persist" in str(x).lower() or "stored" in str(x).lower()
+                for x in (env.get("limitations") or [])),
+            f"limitations must name the failure; got {env.get('limitations')}")
+
+
 if __name__ == "__main__":
     unittest.main()

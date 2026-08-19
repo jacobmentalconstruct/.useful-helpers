@@ -338,35 +338,55 @@ def build(pmap: dict, probe: dict, stale: bool, *, scope_rel: str = "") -> dict:
         "limitations": _limitations(obs, probe, pmap),
         "freshness": {"stale": bool(stale), "contributors": len(obs)},
     }
-    _persist(envelope)
+    failure = _persist(envelope)
+    # STATED, NOT ASSUMED. Composed awareness is real knowledge even when it could not
+    # be stored - but a caller who re-engages later will not find it, so the envelope
+    # says so rather than letting absence be discovered.
+    envelope["persisted"] = failure is None
+    if failure:
+        envelope["limitations"] = list(envelope.get("limitations") or []) + [
+            f"This revision could NOT be persisted ({failure}); it is valid for this "
+            "call only, and re-engaging will not find it."]
     return envelope
 
 
-def _persist(envelope: dict) -> None:
+def _persist(envelope: dict) -> "str | None":
     """Durable, under the instance's state root, keyed by revision. WRITE-ONCE.
+
+    Returns None on success, or a short reason on failure. IT DOES NOT RAISE, because
+    awareness is an ENRICHMENT on orientation and a derived record that cannot be saved
+    must not cost the caller their project map, workbench and next steps.
+
+    That is not a new rule. The seam already holds the same line one layer down -
+    `invoke._announce` wraps presence in try/except because "visibility is an
+    enrichment; it must never break a dispatch". An unwritable state root - read-only
+    mount, full disk, a file sitting where the directory belongs - used to raise
+    straight out of `attach.run()`.
 
     A content-addressed record is written the first time its revision is observed and
     never again. The first version rewrote `<revision>.json` on every observation, so
     re-observing an unchanged target produced the SAME revision id over a REWRITTEN
     record - a new `observed_at`, and potentially different evidence references behind
-    an identifier that is supposed to name one fixed thing.
-
-    That quietly breaks the property the whole design rests on. "Revision X -> evidence
-    X" is only meaningful if X is immutable, and T8 is about to compare revision X
-    against revision Y across a mutation. A moving X makes that comparison a guess.
+    an identifier that is supposed to name one fixed thing. "Revision X -> evidence X"
+    is only meaningful if X is immutable, and T8 compares X against Y across a mutation.
 
     `current.json` is a POINTER, not a second copy: a copy would be a second authority
     on what the current revision is, and the two would disagree the first time a write
     was interrupted. Re-observing an already-known state therefore just re-points it.
     """
-    d = state_root() / AWARENESS_DIR
-    d.mkdir(parents=True, exist_ok=True)
-    record = d / f"{envelope['revision']}.json"
-    if not record.exists():
-        record.write_text(json.dumps(envelope, indent=2, default=str) + "\n",
-                          encoding="utf-8")
-    (d / CURRENT).write_text(
-        json.dumps({"revision": envelope["revision"]}, indent=2) + "\n", encoding="utf-8")
+    try:
+        d = state_root() / AWARENESS_DIR
+        d.mkdir(parents=True, exist_ok=True)
+        record = d / f"{envelope['revision']}.json"
+        if not record.exists():
+            record.write_text(json.dumps(envelope, indent=2, default=str) + "\n",
+                              encoding="utf-8")
+        (d / CURRENT).write_text(
+            json.dumps({"revision": envelope["revision"]}, indent=2) + "\n",
+            encoding="utf-8")
+    except OSError as e:
+        return f"{type(e).__name__}: {e}"
+    return None
 
 
 def project_freshness(envelope: dict, stale: bool) -> dict:

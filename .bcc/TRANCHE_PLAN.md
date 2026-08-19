@@ -843,10 +843,12 @@ ontology (C4).
 **This is composition, not another mapping engine** (C1 rules 2 and 3). Project
 Mapper stays a snapshot compiler; `attach` composes.
 
-### Gate — `gates/t07_shared_awareness.py` · **WRITTEN AND RED** (0033)
+### Gate — `gates/t07_shared_awareness.py` · **GREEN 40/40** (0036)
 
-**33 assertions: 3 pass, 30 fail.** The three passes are pre-existing invariants
-(protocol §5.1a) — a payload materialises, an instance installs, `.git` is excluded.
+*At declaration (0033) it read **33 assertions: 3 pass, 30 fail** — the three passes
+being pre-existing invariants under protocol §5.1a. It grew to 40 as three further
+semantics were closed, and is green on Windows in the parked record. The declaration
+figures are kept because red-before-green is the evidence, not a footnote.*
 
 Four properties are stated **mechanically**, in the gate, because each has a history of
 degrading into a green assertion whose meaning drifted:
@@ -1370,14 +1372,14 @@ that contradiction is what this correction removes.
 | `dependency_check` does not distinguish dev from runtime deps | Corollary 6 | Low — post-STOP |
 | `VERSION` does not move when tools change | Charter §7.4 | Medium — `P-install-packaging` owns it |
 | Precept-guard cost unmeasured on large targets | Charter §7.3 | **Medium — T8 touches it.** T8 reuses `_target_manifest` on the Apply path, so its cost stops being hypothetical. `_GUARD_MAX_FILES = 20000` with an honest `complete=False` is the existing bound; T8 must measure, not assume |
-| `test_d1_p1` slow: `attach` re-maps ~18k files twice | 0004 | **Medium — T7 touches it.** `attach` is the composition point; re-mapping twice is exactly the cost C2 exists to control |
+| `test_d1_p1` slow: `attach` re-maps ~18k files twice | 0004 | **Still open — T7 did NOT close it.** T7 avoided *adding* cost (re-engage reads the persisted revision rather than recomposing) but did not remove the existing double map. Recorded honestly rather than counted as collateral |
 | **`patch` declares `writes: toolkit` but writes to a target path** | §11 census, 2026-08-14 | **High — T8 owns it.** A tool that mutates the target while declaring it does not is a hole in the precept guard's own gating. Found by census, not by failure |
 | **`_instance_module` docstring and call order disagree** — it says the identity authority is loaded *"FROM THE PAYLOAD JUST INSTALLED"*, but the update path calls it before the copy and loads the **old** tree's copy | 0028, third finding | **Medium.** Reading an old manifest with the code that wrote it may well be correct; the point is that the comment and the behaviour cannot both be. Deliberately **out of scope** for the T6 reopening, which is bounded to two defects |
-| `docs-refresh` prints `_docs/TOOLS.md` while writing `docs/` | T6 closeout | Low — documentation staleness, no behaviour change |
-| **`attach` cannot see `.github/`, `.gitlab/` or any `.git*` directory** — `_probe` prunes with `not d.startswith(".git")`, written for `.git` and catching every sibling. `.github` is **not** in `PRUNE`, so this is an unintended prefix match | 0032 (C1b) | **Medium — T7 touches `_probe`.** CI configuration is exactly what a "understand this target" map should see, and `command_profile` cannot find workflow files either. Cheap: `d == ".git"` plus explicit `PRUNE` entries |
+| ~~`docs-refresh` prints `_docs/TOOLS.md` while writing `docs/`~~ | T6 closeout | **CLOSED 0034 sweep.** The reported path is now DERIVED from where the write landed, so the one field a caller reads to find the output cannot name the wrong place again |
+| ~~**`attach` cannot see `.github/` or any `.git*` directory**~~ | 0032 (C1b) | **CLOSED — T7 increment 1.** The prefix test was REMOVED rather than narrowed: `PRUNE` already contained `.git`, so it added nothing there and only swallowed siblings. Verified behaviourally — `_probe` now returns `.github/workflows/ci.yml` and still excludes `.git` |
 | ~~**`report` declares a `modules` field its output omits**~~ | 0032 (C1b) | **CLOSED 0035** — the directory branch computed the structure, rendered it to prose and discarded it. Now returned as declared, which is what let awareness select module purposes without re-parsing markdown |
 | **`report` now returns `modules` AND `markdown` — the same information twice** | 0035 | Low. Measured on `src/`: 15,675 B + 14,772 B = 30,577 B, roughly double the previous payload. Both fields are declared and both are consumed (`playbooks/ground_report.json` binds `@report.markdown`), so this is the cost of honouring the contract rather than a defect. Rendering markdown on request would remove it, but that is an API change and not T7's business |
-| **No tool reports file modification time** — `attach._probe`'s `newest_mtime` has no canonical owner (only `snapshot_diff` mentions mtime, and it compares snapshots by path and content hash) | 0032 (C1b) | **Watch during T7.** If freshness needs it and composition cannot supply it, this is the first genuine primitive gap — but C1 rule 1 requires an end-to-end attempt to demonstrate it before any tool is proposed |
+| **No tool reports file modification time** | 0032 (C1b) | **ANSWERED by T7: no tool is needed.** `awareness_shared` never references `newest_mtime` — freshness is a projection over `attach`'s existing staleness signature, and the evidence fingerprint is content-anchored, so nothing in the composition wanted an mtime primitive. C1 rule 1 discharged the honest way: the end-to-end attempt demonstrated the gap was not real. `newest_mtime` stays front-door logic until a **second** consumer independently needs it |
 | **`projectmapper` re-home** — `apps/` → `tools/`, then retire `apps/` and its registry scan path | 0032 (C1b) | Low — satisfies the STOP assertion by semantics; needs an operator decision, not urgent |
 | **Should the governance ceiling fail open or closed?** A malformed or mistyped `governance.json` now warns loudly but still degrades to the permissive default | 0034 | **Operator decision.** The review fixed the invisibility, not the posture — changing a security default is not a review's call |
 | **`dev_server_manager` imports `tools.command_profile.cli` directly** — route via `seam_call`, or extract a `*_shared` module? | 0034 | Medium. The call produces no ledger entry, so a capability is exercised without attribution. Behaviour-changing, and unrelated to T7 |
