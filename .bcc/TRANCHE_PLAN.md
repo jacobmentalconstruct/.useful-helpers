@@ -1140,13 +1140,21 @@ It means a genuine distributable product rather than *"run this from my dev chec
 
 ### Two safety debts that do not survive to STOP
 
-- **`patch` declares `writes: toolkit` while writing to a target path** (0034). T8 owns
-  it, and the governed work loop is not safe until it closes.
-- **Malformed governance fails open, audibly** (0034). For a locally installed bench
-  that can modify arbitrary target files, the safe posture is: a broken configuration
-  may continue to permit **Observe**, but must not silently grant **Apply**. *Fail closed
-  for mutation, inspectable enough to diagnose.* That is choosing a failure posture for
-  an existing mechanism, not new architecture.
+- ~~**`patch` declares `writes: toolkit` while writing to a target path**~~ (0034).
+  **CLOSED in T8.** The field was ABSENT, not wrong, so `toolkit` was inferred from
+  authority. Correcting it exposed a second defect: the derived catalog `attach` reads
+  regenerated only when MISSING, so it kept publishing the old declaration forever.
+  A census recorded 26 Apply tools with no `writes` field; only `patch` was corrected,
+  because only `patch` is on T8's Apply path. The rest are a **manifest-truth pass**
+  and are listed below rather than absorbed into this tranche.
+- ~~**Malformed governance fails open, audibly**~~ (0034). **CLOSED in T8.** A broken
+  configuration continues to permit **Observe** and no longer grants **Apply**:
+  `policy.DEGRADED_CEILING = "Observe"`. *Fail closed for mutation, inspectable enough
+  to diagnose.* Absent, unspecified and valid configurations are unchanged and stay
+  permissive — only *present and unreadable* degrades, because only that is a broken
+  control. Observe rather than Sandbox because a control in an unknown state must be
+  safe under **every** value the operator might have intended, and Observe is the only
+  such value.
 
 The `dev_server_manager` → `command_profile` import and the absent layering policy are
 **not** STOP blockers unless the parity or acceptance walk actually exercises them and
@@ -1401,7 +1409,8 @@ that contradiction is what this correction removes.
 | **`projectmapper` re-home** — `apps/` → `tools/`, then retire `apps/` and its registry scan path | 0032 (C1b) | Low — satisfies the STOP assertion by semantics; needs an operator decision, not urgent |
 | **ProjectMapper snapshots are not self-reproducible** — `regenerate_command` records only `action`/`root`/`name`, and the manifest's `generation` block records the ordinary folder-exclusion set but NOT user `exclude_paths`, `out` or `markdown`. Verified 2026-08-19 against a real snapshot | **PARITY closure gate** | *Retained-product requirement:* a snapshot must preserve enough generation-selection metadata to reproduce the same capture scope — including user deselections and output forms — without reconstructing the invocation from memory. A portable self-describing artifact that cannot describe its own scope is not yet portable. **Not repaired during T8** |
 | **ProjectMapper prunes ALL dot-directories unconditionally** — so a snapshot of this repository cannot capture `.bcc/`, which is normative product authority. Defensible for an ordinary user target; wrong for reviewing this repo's complete truth state | **PARITY closure gate** | Eventually: distinguish default-hidden dot infrastructure from explicitly includable dot folders, while ALWAYS hard-excluding `.git` and the installed sidecar **by identity**. **Not repaired during T8** |
-| **Should the governance ceiling fail open or closed?** A malformed or mistyped `governance.json` now warns loudly but still degrades to the permissive default | 0034 | **Operator decision.** The review fixed the invisibility, not the posture — changing a security default is not a review's call |
+| ~~**Should the governance ceiling fail open or closed?**~~ | 0034 | **ANSWERED in T8: closed for mutation.** The 0034 review deliberately fixed only the invisibility, on the grounds that a security posture is the operator's decision and not a review's. T8's declaration made that decision — a bench that can rewrite arbitrary target files must not read an unreadable mutation control as permission to mutate. The audibility work was the right first move: it is what made the posture question askable |
+| **Manifest-truth pass: 26 Apply tools declare no `writes` field** — measured 2026-08-19 against 94 manifests; 8 declare `target`. Several plainly write into the target (`git`, `test_scaffold`, `bd_index`, the `pdf_*` family) and are inferred `toolkit` | T8 (census only) | Medium. The declaration is the INPUT to measurement, so a mis-declared tool is invisible to anything keyed on `writes: target`. `patch` was corrected in T8 because it is on the Apply path; correcting the other 25 is a bounded audit of what each tool actually touches, and is **not** T8's business. Recorded so the class is not rediscovered later as if it were news |
 | **`dev_server_manager` imports `tools.command_profile.cli` directly** — route via `seam_call`, or extract a `*_shared` module? | 0034 | Medium. The call produces no ledger entry, so a capability is exercised without attribution. Behaviour-changing, and unrelated to T7 |
 | **`cartridge_conflicts` is referenced only in its own file** — built in T5 for the governance cartridge | 0034 | Low — `P-install-packaging` owns the decision; deleting work already done for a scheduled tranche is not a review's call |
 | **No layering policy declared**, so `domain_boundary_audit` can only report crossings as neutral facts rather than pass/fail | 0034 | Low — a `.uh-policy.json` would make it enforceable, but that is new architecture |

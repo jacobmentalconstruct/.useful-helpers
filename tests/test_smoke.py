@@ -3390,7 +3390,7 @@ class SpineSmokeTest(unittest.TestCase):
                     os.environ[k] = v
 
     def test_broken_governance_config_degrades_audibly(self):
-        """A governance ceiling that fails open must SAY SO.
+        """A governance ceiling that cannot be read must SAY SO and must WITHHOLD Apply.
 
         The defect this pins: `_config_ceiling` caught `Exception` and returned None, and
         an unrecognised value fell through the same way - so an operator who clamped a
@@ -3398,10 +3398,16 @@ class SpineSmokeTest(unittest.TestCase):
         ceiling with no indication whatever. Two distinct silent paths, one outcome:
         a governance control that is not in force and looks exactly like one that is.
 
-        The fail-open DEFAULT is deliberate and unchanged (a broken config must never
-        block the seam). What is asserted here is that the degradation is AUDIBLE, and
-        that a VALID clamp is still silent and still enforced - so the warning cannot be
-        satisfied by simply logging on every read.
+        AUDIBILITY WAS FIXED FIRST AND THE POSTURE DELIBERATELY LEFT ALONE, because
+        changing a security posture is the operator's decision and not a review's. T8
+        made that decision: a bench that can rewrite arbitrary target files must not read
+        an unreadable mutation control as permission to mutate. This test now pins the
+        new posture, and the cases that were ALREADY correct are unchanged.
+
+        Cases 3, 4 and 5 are the load-bearing half. Without them the degradation could be
+        implemented as "always clamp, always warn", which would satisfy 1 and 2 while
+        meaning nothing at all: absent, unspecified and valid must all stay permissive
+        and silent, because none of them is a broken control.
         """
         import json
         import logging
@@ -3422,15 +3428,25 @@ class SpineSmokeTest(unittest.TestCase):
                 got = policy.effective_ceiling(paths)
             return got, "\n".join(cm.output)
 
-        # 1. malformed JSON -> permissive, and it warns
+        # 1. malformed JSON -> DEGRADED, and it warns
         got, logs = ceiling_and_logs('{ "max_authority": "Observe"')
-        self.assertEqual(got, policy.DEFAULT_CEILING)
-        self.assertIn("NO CEILING IS IN FORCE", logs)
+        self.assertEqual(got, policy.DEGRADED_CEILING)
+        self.assertIn("DEGRADING", logs)
+        self.assertEqual(policy.decide(paths, "Apply")[0], False)
+        self.assertEqual(policy.decide(paths, "Observe")[0], True)
 
-        # 2. a value outside AUTHORITIES (lowercase typo) -> permissive, and it warns
+        # 2. a value outside AUTHORITIES (lowercase typo) -> DEGRADED, and it warns
         got, logs = ceiling_and_logs('{"max_authority": "observe"}')
-        self.assertEqual(got, policy.DEFAULT_CEILING)
+        self.assertEqual(got, policy.DEGRADED_CEILING)
         self.assertIn("not one of", logs)
+        self.assertEqual(policy.decide(paths, "Apply")[0], False)
+
+        # 2b. THE DEGRADATION IS NOT THE PERMISSIVE DEFAULT. Asserting only
+        #     `== DEGRADED_CEILING` would still pass if someone set DEGRADED_CEILING back
+        #     to "Apply", which is the exact regression this whole change exists to
+        #     prevent. Naming the relationship pins it independently of either constant.
+        self.assertNotEqual(policy.DEGRADED_CEILING, policy.DEFAULT_CEILING)
+        self.assertEqual(policy.DEGRADED_CEILING, "Observe")
 
         # 3. a VALID clamp is silent AND enforced. Without this the warning could be
         #    made unconditional, which would pass 1 and 2 while meaning nothing.
