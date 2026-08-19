@@ -185,15 +185,35 @@ def _precondition_malformed_output_fails(r, root: Path, payload: Path) -> None:
         "valid JSON, not an object": 'import json; print(json.dumps([1, 2, 3]))',
     }
     for label, emit in cases.items():
+        witness = tgt / "src" / "probe_wrote.py"
+        if witness.exists():
+            witness.unlink()
         tool = _plant_tool(home, "t08probe", emit, writes_first=True)
         out = _cli(home, "t08probe", {"apply": True})
         env = _envelope(out)
+        # THE PROBE MUST ACTUALLY HAVE WRITTEN. Without this the assertion below proves
+        # only that the seam dislikes bad stdout - which is not the question. The
+        # question is whether an AMBIGUOUS MUTATION can be reported as success.
+        r.check(f"the {label} probe really mutated the target first",
+                witness.exists(),
+                "the probe did not write, so the assertion below would prove nothing "
+                "about ambiguous mutation outcomes")
         r.check(f"seam fails on {label} from a tool that already wrote",
                 env.get("ok") is False,
                 f"envelope reported ok={env.get('ok')!r} for {label!r}. The tool mutated "
                 "the target and then produced output the seam cannot interpret; "
                 "reporting that as success is a governed loop describing an outcome it "
                 "does not know")
+        # AND THE MUTATION MUST REMAIN VISIBLE. A refused call is not an undone call -
+        # the bytes are on disk. Awareness must not go on describing a target that
+        # changed underneath it just because the invocation was rejected.
+        aw = _output(_cli(home, "attach", {}))
+        fresh = ((aw.get("awareness") or {}).get("freshness") or {}).get("stale")
+        r.check(f"the refused {label} mutation still stales awareness",
+                fresh is True,
+                f"freshness.stale={fresh!r} - the write happened; refusing to interpret "
+                "the result does not un-write it, and awareness that keeps calling "
+                "itself fresh is now describing a target that no longer exists")
         shutil.rmtree(tool, ignore_errors=True)
 
 
@@ -285,6 +305,7 @@ def _loop(r, root: Path, payload: Path) -> None:
                                         "replacement": replacement, "literal": True}))
     proposed2 = prev2.get("result")
     digest_before = _tree_digest(tgt)
+    mark = _ledger_mark(home)              # highest event id BEFORE the Apply
     applied = _output(_cli(home, "edit", {"path": rel, "pattern": pattern,
                                           "replacement": replacement, "literal": True,
                                           **(prev2.get("apply_with") or {})}))
@@ -304,12 +325,21 @@ def _loop(r, root: Path, payload: Path) -> None:
             f"changed={changed} - the seam's mtime+size manifest is a coarse signal; "
             "this assertion is owned by an independent sha256 of the fixture")
 
-    # --- attribution ----------------------------------------------------
-    ledger = _output(_cli(home, "event_log", {"action": "read", "limit": 50}))
+    # --- attribution: THIS Apply, not any earlier `edit` -------------------
+    # `mark` was taken immediately BEFORE the successful Apply. Matching "some edit
+    # event exists" would be satisfied by the preview calls and the refused stale
+    # attempt, all of which are already in the ledger - the assertion would pass
+    # without the Apply ever being recorded.
+    ledger = _output(_cli(home, "event_log", {"action": "read", "limit": 200}))
     events = ledger.get("events") or []
-    r.check("the ledger attributes the Apply",
-            any(e.get("tool_id") == "edit" and e.get("client") for e in events),
-            f"no attributed `edit` entry in {len(events)} events")
+    newer = [e for e in events
+             if e.get("tool_id") == "edit" and (e.get("event_id") or 0) > mark
+             and e.get("ok") in (True, 1)]
+    r.check("the ledger attributes THIS Apply specifically",
+            len(newer) >= 1 and all(e.get("client") for e in newer),
+            f"events after id {mark}: {[(e.get('event_id'), e.get('ok'), e.get('client')) for e in newer][:4]} "
+            "- earlier previews and the refused stale attempt are also `edit` entries, so "
+            "'an edit event exists' proves nothing about the Apply")
 
     # --- changed_paths, as a COARSE signal with stated completeness -----
     signal = applied.get("changed_paths")
@@ -324,6 +354,10 @@ def _loop(r, root: Path, payload: Path) -> None:
             "byte-exact. An exceeded bound must be an explicit incomplete state, never "
             "an empty changed_paths")
 
+    _measurement_via_project_run(r, home, tgt)
+    _dishonest_path_claim(r, home, tgt)
+    _mcp_governed_mutation(r, home, tgt)
+
     # --- verification, selected mechanically ----------------------------
     prof = _output(_cli(home, "command_profile", {"root": "."}))
     kinds = {c.get("kind") for c in (prof.get("commands") or [])}
@@ -335,6 +369,24 @@ def _loop(r, root: Path, payload: Path) -> None:
     r.check("a target with no verification says so honestly",
             bool(verify) or applied.get("verification", {}).get("available") is False,
             "no test or lint command is a truthful answer, not a failure to report")
+    # TARGET A SUPPLIES A REAL VERIFIER AND IT MUST ACTUALLY RUN. Selecting a command
+    # and never executing it would leave "verifiable change" proven only by the
+    # honest-absence branch.
+    r.check("target A supplies a mechanically detected verifier",
+            "test" in kinds,
+            f"detected {sorted(kinds)} - the fixture has a tests/ directory, so "
+            "`command_profile` should emit kind=test")
+    chosen = next((c for c in (prof.get("commands") or []) if c.get("kind") in VERIFY_KINDS),
+                  None)
+    ran = _output(_cli(home, "project_run",
+                       {"command": (chosen or {}).get("command", ""), "apply": True})) \
+        if chosen else {}
+    r.check("the detected verifier executes and reports a result after the Apply",
+            bool(ran) and ran.get("exit_code") == 0
+            and ran.get("classification") in (None, "ok", "pass", "success"),
+            f"chosen={(chosen or {}).get('id')!r} exit={ran.get('exit_code')!r} "
+            f"class={ran.get('classification')!r} - a change is not verified because a "
+            "command was named; it is verified because the command ran and passed")
 
     # --- awareness transition -------------------------------------------
     reeng = _output(_cli(home, "attach", {}))
@@ -356,6 +408,114 @@ def _loop(r, root: Path, payload: Path) -> None:
         r.check("X still drills into its pre-change evidence",
                 bool(got) and got.get("ok") is not False,
                 f"evidence {old_ev!r} unreachable after the change")
+
+
+def _ledger_mark(home: Path) -> int:
+    """Highest event id right now. Lets a later assertion name THIS call, not any call."""
+    out = _output(_cli(home, "event_log", {"action": "read", "limit": 200}))
+    return max((e.get("event_id") or 0) for e in (out.get("events") or [{}])) or 0
+
+
+def _measurement_via_project_run(r, home: Path, tgt: Path) -> None:
+    """The writer that cannot report a path is the one the measurement exists for.
+
+    Every other target writer returns SOMETHING path-shaped, so a `changed_paths`
+    implementation could be built entirely from tool self-reports and still look
+    correct. `project_run` runs an arbitrary shell command: its scope is unbounded and
+    it reports `command`/`cwd`/`exit_code` and nothing else. If the seam's measurement
+    covers this, it is genuinely measuring rather than collating claims.
+    """
+    made = tgt / "src" / "made_by_shell.py"
+    if made.exists():
+        made.unlink()
+    # A script file, not a `-c` one-liner: nesting quotes inside a shell string that is
+    # itself inside JSON is a portability trap, and this has to behave identically under
+    # cmd.exe and sh.
+    runner = tgt / "src" / "_t08_shell_writer.py"
+    runner.write_text(
+        "from pathlib import Path\n"
+        "Path('src/made_by_shell.py').write_text('# shell wrote this\\n')\n",
+        encoding="utf-8")
+    cmd = f'"{sys.executable}" src/_t08_shell_writer.py'
+    out = _output(_cli(home, "project_run", {"command": cmd, "apply": True}))
+    r.check("a shell command through `project_run` really mutated the target",
+            made.exists(),
+            f"the fixture command did not write: exit={out.get('exit_code')!r} "
+            f"{str(out.get('stderr_tail'))[:120]}")
+    paths = out.get("changed_paths")
+    r.check("the seam measures a change `project_run` cannot self-report",
+            isinstance(paths, list)
+            and any("made_by_shell" in str(x) for x in paths),
+            f"changed_paths={paths!r} - `project_run` returns no path of its own, so "
+            "this is the case a self-report-derived signal cannot cover")
+
+
+def _dishonest_path_claim(r, home: Path, tgt: Path) -> None:
+    """A tool that CLAIMS one path and writes another must be surfaced, not reconciled.
+
+    The declaration remains authority; the filesystem is evidence. When they disagree
+    the seam must say so - silently trusting the measurement would rewrite what the tool
+    claimed, and silently trusting the claim would hide the write.
+    """
+    for f in ("claimed.py", "actually_written.py"):
+        q = tgt / "src" / f
+        if q.exists():
+            q.unlink()
+    emit = ("import json;print(json.dumps({'ok': True, 'path': 'src/claimed.py', "
+            "'written': True}))")
+    body = ("from pathlib import Path\n"
+            "Path(__import__('os').environ['SUITE_PROJECT_ROOT'], 'src', "
+            "'actually_written.py').write_text('# not the claimed path\\n')\n" + emit)
+    tool = _plant_tool(home, "t08liar", body, writes_first=False)
+    out = _envelope(_cli(home, "t08liar", {"apply": True}))
+    inner = out.get("output") or {}
+    wrote_other = (tgt / "src" / "actually_written.py").exists()
+    r.check("the dishonest fixture wrote a path it did not claim",
+            wrote_other and not (tgt / "src" / "claimed.py").exists(),
+            "the fixture must actually diverge, or the assertion below is vacuous")
+    r.check("a claimed path that disagrees with the measured path is surfaced",
+            bool(inner.get("path_claim_mismatch")) or out.get("ok") is False,
+            f"claimed={inner.get('path')!r} measured={inner.get('changed_paths')!r} - the "
+            "seam accepted a write-contract disagreement without reporting it. The "
+            "declaration is authority and the filesystem is evidence; when they differ "
+            "that is a finding, not something to reconcile away")
+    shutil.rmtree(tool, ignore_errors=True)
+
+
+def _mcp_governed_mutation(r, home: Path, tgt: Path) -> None:
+    """The header claims CLI *and* MCP. Prove the agent entrance drives the same loop.
+
+    Not a second implementation - the same seam. An agent that can orient but cannot
+    make a governed change through its own entrance would leave half of "human and agent
+    are projections of one product" unproven.
+    """
+    rel = "src/mcp_target.py"
+    (tgt / rel).write_text("VALUE = 'before'\n", encoding="utf-8")
+    req = [
+        {"jsonrpc": "2.0", "id": 1, "method": "initialize",
+         "params": {"protocolVersion": "2024-11-05", "capabilities": {},
+                    "clientInfo": {"name": "t08-gate", "version": "1"}}},
+        {"jsonrpc": "2.0", "id": 2, "method": "tools/call",
+         "params": {"name": "edit",
+                    "arguments": {"path": rel, "pattern": "before",
+                                  "replacement": "after", "literal": True,
+                                  "apply": True}}},
+    ]
+    try:
+        proc = subprocess.run([sys.executable, "-m", "src.app", "mcp"], cwd=home,
+                              input="\n".join(json.dumps(m) for m in req) + "\n",
+                              capture_output=True, text=True, timeout=300,
+                              env=_clean_env())
+    except subprocess.TimeoutExpired:
+        r.check("a governed mutation completes through the real MCP entrance", False,
+                "the MCP entrance timed out")
+        return
+    landed = (tgt / rel).read_text(encoding="utf-8").strip() == "VALUE = 'after'"
+    r.check("a governed mutation completes through the real MCP entrance",
+            landed,
+            f"file is {(tgt / rel).read_text(encoding='utf-8')!r}; mcp stderr "
+            f"{(proc.stderr or '')[-200:]!r} - the gate header claims CLI and MCP, so "
+            "the agent entrance must drive the same governed loop, not merely orient")
 
 
 def _degradation(r, root: Path, payload: Path) -> None:
@@ -405,6 +565,20 @@ def _target_software() -> Path:
         '"""Hub."""\n\n\nclass Backend:\n'
         '    """ROLE: Orchestration hub - pure downstream task list runner."""\n\n'
         "    def start(self):\n        return 1\n", encoding="utf-8")
+    # A REAL, MECHANICALLY DETECTED VERIFIER. `command_profile` emits kind=test for a
+    # `tests/` directory, so target A must actually have one and it must actually pass.
+    # Without this the verification assertions could only ever prove the honest-absence
+    # case, and "selects verification mechanically" would go green having never selected
+    # anything.
+    (t / "tests").mkdir()
+    # `unittest discover` refuses a start directory that is not importable, so the
+    # package marker is part of the fixture being REAL. Without it the verifier exits 1
+    # on an ImportError and the assertion would report a failed verification that has
+    # nothing to do with the change under test.
+    (t / "tests" / "__init__.py").write_text("", encoding="utf-8")
+    (t / "tests" / "test_backend.py").write_text(
+        "import unittest\n\n\nclass T(unittest.TestCase):\n"
+        "    def test_starts(self):\n        self.assertEqual(1, 1)\n", encoding="utf-8")
     for i in range(12):
         (t / "src" / f"svc_{i:02d}.py").write_text(
             f"from src.backend import Backend\n\n\nclass Svc{i:02d}:\n"
