@@ -3062,7 +3062,15 @@ class SpineSmokeTest(unittest.TestCase):
             self.paths, "edit", {"path": str(probe), "pattern": "LEGACY", "replacement": "x"}
         )
         self.assertFalse(r.output.get("written"))
-        self.assertEqual(r.output.get("apply_with"), {"apply": True})
+        # `apply` is still the universal flag, and this test is about that convention.
+        # It is no longer the ONLY key: `edit` now carries the reviewed-source witness
+        # alongside it, so this asserts the convention holds rather than that the
+        # fragment is frozen. An exact-equality assertion here would make every future
+        # safety field a test failure, which would train the next person to delete the
+        # field rather than the assertion.
+        hint = r.output.get("apply_with") or {}
+        self.assertIs(hint.get("apply"), True)
+        self.assertEqual(hint.get("expected_source_sha256"), r.output.get("source_sha256"))
         # dry-run/confirm tool: preview hint + refusal hint
         # A dry-run/confirm tool - previously `sidecar_install`, retired in T6. The
         # INTENT here is the universal Apply seam (preview hint, refusal hint,

@@ -18,6 +18,7 @@
       "path": { "type": "string", "description": "file to edit (used if 'text' absent); confined to the roots" },
       "literal": { "type": "boolean", "default": false, "description": "match an exact string, not a regex" },
       "expected_replacements": { "type": "integer", "description": "refuse unless exactly this many matches are found (the safety belt)" },
+      "expected_source_sha256": { "type": "string", "description": "the reviewed-source witness: sha256 of the file bytes a preview reported. Refuse if the file has changed since. Omit to apply unwitnessed" },
       "write": { "type": "boolean", "description": "write back to path (else preview only)" },
       "apply": { "type": "boolean", "description": "execute for real (equivalent to write:true)" },
       "count": { "type": "integer", "default": 0, "description": "max replacements (0 = all)" },
@@ -47,6 +48,14 @@
       },
       "result": {
         "type": "string"
+      },
+      "source_sha256": {
+        "type": "string",
+        "description": "sha256 of the source bytes this call read (path source only)"
+      },
+      "apply_with": {
+        "type": "object",
+        "description": "send back unmodified to apply exactly what was previewed; carries the source witness"
       }
     }
   }

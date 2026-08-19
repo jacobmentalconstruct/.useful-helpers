@@ -207,7 +207,7 @@ Authority: `Observe` read-only | `Sandbox` temp/artifacts only | `Apply` writes 
 
 | tool | authority | writes | on | inputs | summary |
 |---|---|---|---|---|---|
-| `edit` | Apply | target | project | **pattern**, **replacement**, text, path, literal, expected_replacements, write, apply, +4 more | Find/replace on text or a file  -  regex or literal  -  with an expected-count guard; preview by default, writes only with write:true (or apply:true). |
+| `edit` | Apply | target | project | **pattern**, **replacement**, text, path, literal, expected_replacements, expected_source_sha256, write, +5 more | Find/replace on text or a file  -  regex or literal  -  with an expected-count guard; preview by default, writes only with write:true (or apply:true). |
 | `fs_op` | Apply | target | project | ops, op, path, dest, apply | Governed filesystem mutation: a BATCH of mkdir/touch/copy/move/delete ops (one plan, one approval). Paths confined to the roots. |
 | `linenumber` | Observe | none | project | action, text, path, style, start, width | Annotate text with parseable line numbers, strip them, or emit a line->hash integrity map. |
 | `patch` | Apply | target | project | action, patch, patch_json, text, path, write, force_indent | Surgical indentation-aware patching via JSON hunks (search/replace blocks); dry-run validate; preview by default. |

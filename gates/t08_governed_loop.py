@@ -328,6 +328,45 @@ def _loop(r, root: Path, payload: Path) -> None:
     r.check("the refused Apply left the file untouched",
             _sha(live) == interfered,
             "a refusal must not write")
+    # A REFUSAL MUST NOT ADVERTISE A ROUTE AROUND ITSELF. Found while implementing the
+    # witness: the toolkit appends `apply_with: {"apply": true}` to anything reporting
+    # `written: false`, so the refusal was handing back an UNWITNESSED retry. An agent
+    # doing the obvious thing - resend whatever the response suggested - would have gone
+    # straight through the check it had just tripped, and the whole binding would have
+    # been advisory. Offering the CURRENT witness would be worse still: a one-hop path
+    # from "refused, unreviewed" to "applied".
+    #
+    # THE REFUSAL MUST HAVE FIRED for this to mean anything. Without that clause the
+    # assertion goes green whenever the Apply SUCCEEDS - no refusal, no apply_with,
+    # nothing to bypass - which is the worst possible time to report a safety property
+    # as satisfied. Verified by mutation: with the witness check disabled this now goes
+    # red alongside its neighbours instead of quietly agreeing.
+    retry = stale.get("apply_with") or {}
+    r.check("the refusal offers no unwitnessed retry",
+            stale.get("ok") is False
+            and (not retry.get("apply") or bool(retry.get("expected_source_sha256"))),
+            f"refused={stale.get('ok') is False} apply_with={stale.get('apply_with')!r} "
+            "- a refusal that suggests its own bypass is not a refusal")
+
+    # THE WITNESS IS OVER BYTES, NOT OVER DECODED TEXT, and this is the case that tells
+    # the two apart. `read_text` maps CRLF to LF, so a line-ending rewrite leaves the
+    # decoded text identical while changing every line of the file on disk. A witness
+    # computed from the decoded text would hash the same before and after and cheerfully
+    # apply an approved diff to bytes nobody reviewed - passing every other assertion
+    # here, because none of them can see the difference.
+    crlf_preview = _output(_cli(home, "edit", {"path": rel, "pattern": pattern,
+                                               "replacement": replacement, "literal": True}))
+    crlf_witness = crlf_preview.get("apply_with") or {}
+    live.write_bytes(live.read_bytes().replace(b"\n", b"\r\n"))
+    crlf_applied = _output(_cli(home, "edit", {"path": rel, "pattern": pattern,
+                                               "replacement": replacement, "literal": True,
+                                               **crlf_witness}))
+    r.check("the witness detects a change that survives newline translation",
+            crlf_applied.get("ok") is False and crlf_applied.get("written") is not True,
+            f"{crlf_applied!r} - the decoded text is unchanged by a CRLF rewrite, so a "
+            "witness taken over parsed text cannot see this. The witness has to be as "
+            "sensitive as the filesystem, not as sensitive as the parser")
+    live.write_bytes(live.read_bytes().replace(b"\r\n", b"\n"))
 
     # --- re-preview against the new reality, then apply ----------------
     prev2 = _output(_cli(home, "edit", {"path": rel, "pattern": pattern,
