@@ -1,9 +1,9 @@
 # Tranche Plan
 
-Status: **ACTIVE.** **T0-T7 parked** (0036). Windows certification on `c58b77b`:
-**210/210 gate assertions, 86 tests with 1 skip, discovery PASS**. Development mode:
-**CONVERGENCE**. **Next: declare T8 gate-first**, then the two closure gates —
-parity and release — then STOP. The audit sized it: of `attach`'s 24 responsibilities T7 touches 8, discharges
+Status: **ACTIVE.** T0-T7 parked (0036). **T8 DECLARED** 2026-08-19 (0037) — gate
+written and **red: 19 pass, 16 fail**, three safety preconditions among them.
+Development mode: **CONVERGENCE**. Then the two closure gates — parity and release —
+then STOP. The audit sized it: of `attach`'s 24 responsibilities T7 touches 8, discharges
 **one** duplication, and depends on no live `apps/` member.
 Date: 2026-08-06, amended 2026-08-09, mode changed 2026-08-14, T6 reopened and
 re-parked 2026-08-14.
@@ -380,7 +380,7 @@ needs it, rather than displacing product work now.
 | — | ***convergence phase begins here*** | |
 | — | **Application Absorption Audit** (C1b) | *diagnostic, not a tranche.* What `apps/` actually owns, which primitives already provide it, what should become a chain, the safest retirement order, and whether T7 needs any live app |
 | T7 | Shared Project Awareness Prototype | **CLOSED 2026-08-19** (0036) — one compact evidence-backed orientation, persisted against the instance, same revision to human and agent. 40/40; measured reduction **133,477 B → 2,343 B (0.018)** on a real target; revision content-anchored, move-stable and write-once; handles round-trip; drill-down recovers the evidence actually used; freshness projected at read time |
-| T8 | Governed Work Loop Prototype | **NEXT — declare gate-first.** awareness → impact → preview/diff → approval → Apply → target-native verification → awareness refresh, as chains over existing tools and the existing seam. Begins from revision X + evidence X, a concrete object rather than a question |
+| T8 | Governed Work Loop Prototype | **DECLARED, gate red** (0037) — awareness → impact → `read_file` → preview → diff → witness-bound approval → Apply → measured changed paths → `test`/`lint` verification → refresh. Opens with **three safety preconditions**: `patch`'s absent write declaration, governance failing open on Apply, and uninterpretable tool output reported as success |
 | — | **Closure gate 1: PARITY certification** | every retained donor product reproduced through the common bench, and the suite still passes **with the parts bin absent** |
 | — | **Closure gate 2: RELEASE certification** | a release artifact from a clean clone installs and completes the whole walk on a clean machine, both platforms |
 | **STOP** | **Prototype stop / dogfood** | Architectural development halts. See below |
