@@ -1,0 +1,236 @@
+{
+  "schema": 1,
+  "verdict": "PASS",
+  "label": "",
+  "generated_at": "2026-08-19T23:10:48+00:00",
+  "seconds": 418.7,
+  "commit": "c728e99",
+  "branch": "main",
+  "dirty": false,
+  "allow_dirty": false,
+  "platform": {
+    "system": "Windows",
+    "release": "10",
+    "machine": "AMD64",
+    "python": "3.13.6"
+  },
+  "steps": {
+    "lint": {
+      "ok": true,
+      "exit": 0,
+      "detail": "All checks passed!",
+      "findings": []
+    },
+    "suite": {
+      "ok": true,
+      "exit": 0,
+      "tests": 87,
+      "seconds": 94.729,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "failed_tests": [],
+      "detail": "OK"
+    },
+    "gates": {
+      "ok": true,
+      "gates": [
+        {
+          "id": "t00_foundation",
+          "outcome": "one authority, one numbering, no inherited memory",
+          "passed": 25,
+          "failed": 0,
+          "skipped": 0,
+          "total": 25,
+          "verdict": "PASS",
+          "failures": [],
+          "skips": [],
+          "partial": [],
+          "seconds": 88.1
+        },
+        {
+          "id": "t01_ship_manifest",
+          "outcome": "one declared ship manifest, and a payload containing only the product",
+          "passed": 23,
+          "failed": 0,
+          "skipped": 0,
+          "total": 23,
+          "verdict": "PASS",
+          "failures": [],
+          "skips": [],
+          "partial": [
+            "no build-machine path or known predecessor sentinel ships",
+            "the payload fixture is produced"
+          ],
+          "seconds": 1.3
+        },
+        {
+          "id": "t02_ledger_presence",
+          "outcome": "two channels, one seam: a readable attributed ledger, ephemeral presence",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 0,
+          "total": 18,
+          "verdict": "PASS",
+          "failures": [],
+          "skips": [],
+          "partial": [],
+          "seconds": 0.4
+        },
+        {
+          "id": "t03_live_channel",
+          "outcome": "a change announces itself: each party sees the other act",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 0,
+          "total": 13,
+          "verdict": "PASS",
+          "failures": [],
+          "skips": [],
+          "partial": [],
+          "seconds": 0.4
+        },
+        {
+          "id": "t04_cancellation",
+          "outcome": "long work is observable while it runs, and can be stopped cleanly",
+          "passed": 12,
+          "failed": 0,
+          "skipped": 0,
+          "total": 12,
+          "verdict": "PASS",
+          "failures": [],
+          "skips": [],
+          "partial": [
+            "explicit cancel reaps the GRANDCHILD too",
+            "seam shutdown reaps the GRANDCHILD too"
+          ],
+          "seconds": 7.6
+        },
+        {
+          "id": "t05_ownership_model",
+          "outcome": "one authority per normative fact, and a stated deployment topology",
+          "passed": 52,
+          "failed": 0,
+          "skipped": 0,
+          "total": 52,
+          "verdict": "PASS",
+          "failures": [],
+          "skips": [],
+          "partial": [],
+          "seconds": 0.0
+        },
+        {
+          "id": "t06_instance_identity",
+          "outcome": "one instance identity, created by the product installer, resolved structurally",
+          "passed": 27,
+          "failed": 0,
+          "skipped": 0,
+          "total": 27,
+          "verdict": "PASS",
+          "failures": [],
+          "skips": [],
+          "partial": [],
+          "seconds": 17.2
+        },
+        {
+          "id": "t07_shared_awareness",
+          "outcome": "one compact evidence-backed awareness revision, persisted against the instance, identical for human and agent",
+          "passed": 40,
+          "failed": 0,
+          "skipped": 0,
+          "total": 40,
+          "verdict": "PASS",
+          "failures": [],
+          "skips": [],
+          "partial": [],
+          "seconds": 96.1
+        },
+        {
+          "id": "t08_governed_loop",
+          "outcome": "a reviewed, attributable, verifiable change against shared awareness, without losing the evidence of what was approved",
+          "passed": 52,
+          "failed": 0,
+          "skipped": 0,
+          "total": 52,
+          "verdict": "PASS",
+          "failures": [],
+          "skips": [],
+          "partial": [],
+          "seconds": 96.8
+        }
+      ],
+      "narrowed_to": null,
+      "total_assertions": 262,
+      "total_passed": 262
+    },
+    "discovery": {
+      "ok": true,
+      "exit": 0,
+      "target": "_UsefulHelperSCRIPTS",
+      "run_dir": "20260819-181731-_UsefulHelperSCRIPTS",
+      "scores": {
+        "precept": {
+          "pass": true,
+          "install_violations": 0,
+          "runtime_violations": 0
+        },
+        "front_door": {
+          "pass": false,
+          "mode": null,
+          "domain": null,
+          "domain_expected": null,
+          "domain_correct": null,
+          "mounted": 0
+        },
+        "composition": null,
+        "tool_health": {
+          "ran": 0,
+          "ok": 0,
+          "failed": 0,
+          "skipped": 0,
+          "rate": null,
+          "failures": []
+        },
+        "truthfulness": {
+          "false_positives": null,
+          "naive_false_positives": null,
+          "policy_prevented": null,
+          "missed_true_positives": null
+        },
+        "enforcement": {
+          "pass": false,
+          "rejected": false,
+          "detected_write": false
+        },
+        "cleanliness": {
+          "pass": true,
+          "hits": 0
+        }
+      },
+      "axes": {
+        "precept": {
+          "install": {
+            "added": [],
+            "removed": [],
+            "modified": [],
+            "total": 0
+          },
+          "runtime": {
+            "added": [],
+            "removed": [],
+            "modified": [],
+            "total": 0
+          }
+        },
+        "enforcement": {
+          "tested": true,
+          "rejected": false,
+          "detected_write": false,
+          "error": "unparseable envelope: error: SUITE_PROJECT_ROOT=C:\\Jacob\\_AppDesign\\_SANDBOX\\.useful-helpers-workbench conflicts with this instance's canonical target C:\\Jacob\\_AppDesign\\_SANDBOX\\.useful-helpers-workbench\\_harness\\targets\\_UsefulHelperSCRIPTS (identity 453510f7-4816-4b81-9def-6420915e5ec7). An installed instance is boun"
+        },
+        "lineage_hits": 0
+      },
+      "detail": ""
+    }
+  }
+}
