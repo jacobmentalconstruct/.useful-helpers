@@ -340,6 +340,22 @@ as composition on a target with no meaningful subsystems.
 and `score()` machinery already supply every field named above. **No new harness
 subsystem, ground-truth framework, target ontology or product mechanism.**
 
+##### Implemented and mutation-tested — `_docs/certification/acceptance.py` (0041)
+
+Both oracles were **scaffolded and run**, not assumed: `oracle-composite` scores
+`composite=True → correct, subsystems 3/3`; `oracle-python` scores
+`false_positives=0 (naive 1, prevented 1) missed=0`. Eight mutations over those real
+records all fail correctly, and **the rule itself was mutated**: with the discriminating
+clause removed, a hollow record (`fp 0, naive 0, prevented 0`) certifies as truthful.
+
+**Five states, none collapsing into PASS:** `PASS`, `FAIL`, `N/A`, `NO-ORACLE`
+(relevant but unmeasurable here), `NO-THRESHOLD` (measured, no bar declared).
+
+Known-honest reds today: **C4 coverage is 1 of 3** — only `_theCELL` is adopted; B and C
+are not. And `tool_health` on the composite oracle is 12/14 for two **fixture** reasons
+(`git_inspect` on a non-git scaffold; `pdf_info` on a 69-byte PDF stub with no xref),
+which is exactly why that axis must not be given a naive bar.
+
 ---
 
 ## End-State Scoreboard
