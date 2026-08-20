@@ -349,3 +349,70 @@ the good outcome — it is the only reason this was findable at all.**
 Verified: t02 leaks nothing and still passes 18/0; `_instance_env` drops exactly the three
 root vars and keeps `PATH`. Not verified here, and it is the operator's step: this mount
 is read-only for the harness targets, so the discovery pass must be re-run on Windows.
+
+
+---
+
+## 12. Addendum 2 — the repair worked, and my new rule then made a false accusation
+
+The harness repair landed and the three dead axes came back, **passing**:
+
+| axis | before | after |
+| --- | --- | --- |
+| `front_door` | `pass=false`, mode null, 0 mounted | **`pass=true`**, mode `mapped`, domain `python-app`, **24 mounted** |
+| `tool_health` | ran **0** | **ran 12, ok 12**, rate 1.0 |
+| `enforcement` | `pass=false` | **`pass=true`**, rejected **and** `detected_write` |
+
+`precept` and `cleanliness` pass. Gates 262/262, suite OK, lint clean.
+
+**And certification still reported FAIL — because of the rule I had just added.**
+
+### I turned the defect inside out
+
+The original defect was *absence looks like a pass*. My fix made **absence look like a
+failure**, and the second is no more truthful than the first. It failed the step on any
+axis lacking a `pass` key, which caught three that are not verdicts at all.
+
+The harness emits **two kinds of axis**, and `score()` says so plainly:
+
+- **verdict axes** carrying a `pass` boolean — `precept`, `front_door`, `enforcement`,
+  `cleanliness`
+- **measurement axes** carrying numbers only — `tool_health`, `truthfulness`,
+  `composition`
+
+`composition` is computed **only** when a `_ground_truth.json` declares
+`expected_composite` / `expected_subsystem_domains`; `truthfulness` only when it declares
+`false_positive_bait`. `_UsefulHelperSCRIPTS` is an **adopted real target with no
+ground-truth file**, so null is the correct and honest answer. Failing certification on
+those is a false accusation against a run that did exactly what it should.
+
+### The honest replacement is specific, not sweeping
+
+> Fail on an explicit `pass: false`, **or** if no tools were exercised.
+
+`tool_health.ran` was **0 in every broken run and 12 in every good one**. Zero tools
+exercised means the walk did not occur, whatever the exit code says. *That* — not a
+missing `pass` key — is what "the discovery pass did not run" actually looks like.
+
+Axes without a verdict are still **reported and printed**, because the original concern
+was right that absence must stay visible. Visible is not the same as failing.
+
+Re-scored under the corrected rule:
+
+```text
+c728e99  (the run that wrongly said PASS)  ok=False  failed=[enforcement, front_door]  tools=0
+623a741  (the repaired run)                ok=True   failed=[]                         tools=12
+```
+
+`no_verdict` is **identical in both records**, which is the proof it was never the
+discriminating signal — it was noise I was failing on.
+
+### Two findings recorded, neither repaired here
+
+1. **`tool_health` reports a rate nobody set a bar for.** 12/12 today; the harness has no
+   threshold, so it cannot pass or fail. A measurement without a bar is not a verdict, and
+   certification should not pretend otherwise.
+2. **`composition` and `truthfulness` are unexercised on adopted targets.** They need
+   planted ground truth. This matters for **C4's three acceptance targets** — if all three
+   are adopted, two whole axes of the acceptance walk never run, and the walk will look
+   green while measuring less than it claims.

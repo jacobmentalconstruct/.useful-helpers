@@ -186,26 +186,51 @@ def step_discovery(target: str) -> dict:
     # sitting in this very record, captured and unread. A certifier that collects
     # evidence it does not consult is worse than one that collects none, because the
     # record looks thorough.
+    # THE HARNESS EMITS TWO KINDS OF AXIS AND THEY MUST NOT BE JUDGED ALIKE.
+    #
+    #   VERDICT axes carry a `pass` boolean:  precept, front_door, enforcement, cleanliness
+    #   MEASUREMENT axes carry numbers only:  tool_health, truthfulness, composition
+    #
+    # My first version of this failed the step on any axis lacking `pass`, which turned
+    # the original defect inside out: "absence looks like a pass" became "absence looks
+    # like a failure", and the second is no more truthful than the first. `composition`
+    # and `truthfulness` are null BY DESIGN on an adopted target - `score()` computes
+    # them only when a `_ground_truth.json` declares expectations, and a real adopted
+    # target has none to declare. Failing certification on those is a false accusation
+    # against a run that did exactly what it should.
     failed_axes = sorted(k for k, v in scores.items()
                          if isinstance(v, dict) and v.get("pass") is False)
-    # Null is not false and is not pass either: it means the axis produced no verdict.
-    # Named separately so a reader can tell "checked and failed" from "never ran" -
-    # different findings with different repairs.
-    not_scored = sorted(k for k, v in scores.items()
-                        if v is None or (isinstance(v, dict) and v.get("pass") is None))
+
+    # DID THE PASS ACTUALLY HAPPEN? This is the honest replacement for the blanket rule,
+    # and it is specific rather than sweeping: `tool_health.ran` was 0 in every broken run
+    # and 12 in every good one. Zero tools exercised means the walk did not occur, whatever
+    # the exit code says. That - not a missing `pass` key - is what "the discovery pass did
+    # not run" actually looks like.
+    health = scores.get("tool_health") or {}
+    ran = health.get("ran")
+    did_not_run = bool(scores) and (ran == 0 or ran is None)
+
+    # Still reported, never fatal. Absence must stay VISIBLE - that part of the original
+    # concern was right - but visible is not the same as failing.
+    no_verdict = sorted(k for k, v in scores.items()
+                        if v is None or (isinstance(v, dict) and "pass" not in v))
     reasons = []
     if rc != 0:
         reasons.append(f"harness exited {rc}")
     if failed_axes:
         reasons.append("axes failed: " + ", ".join(failed_axes))
-    if not_scored:
-        reasons.append("axes produced no verdict: " + ", ".join(not_scored))
-    return {"ok": rc == 0 and not failed_axes and not not_scored,
+    if did_not_run:
+        reasons.append(f"no tools were exercised (tool_health.ran={ran!r})")
+    return {"ok": rc == 0 and not failed_axes and not did_not_run,
             "exit": rc, "target": target,
             "run_dir": fresh[-1].name if fresh else None,
             "scores": scores,
             "failed_axes": failed_axes,
-            "not_scored": not_scored,
+            "tools_exercised": ran,
+            # Informational. `composition`/`truthfulness` are N/A without planted ground
+            # truth; `tool_health` reports a rate the harness never set a bar for. Both
+            # are worth seeing and neither is a failure of this run.
+            "no_verdict_axes": no_verdict,
             "axes": {k: record.get(k) for k in
                      ("precept", "enforcement", "lineage_hits") if k in record},
             "detail": "; ".join(reasons) or ((err or out)[-400:] if rc else "")}
@@ -267,8 +292,9 @@ def main(argv=None) -> int:
         print(f"        {'ok' if disc['ok'] else 'FAILED'}  {disc.get('detail', '')}")
         for axis in disc.get("failed_axes") or []:
             print(f"          FAILED axis   {axis}")
-        for axis in disc.get("not_scored") or []:
-            print(f"          NOT SCORED    {axis}  (never ran; not a pass)")
+        for axis in disc.get("no_verdict_axes") or []:
+            print(f"          no verdict    {axis}  (measurement axis, or N/A without "
+                  f"planted ground truth - shown, not counted)")
 
     # A SKIP IS NOT A PASS, and this counted one as a pass while the flag's own help text
     # said "recorded as skipped, never as passing". `gates/run.py` has always reported
@@ -315,9 +341,10 @@ def main(argv=None) -> int:
     # Named at the bottom too. The gate totals are the line an eye goes to, and a
     # discovery pass whose axes never ran is exactly the thing a good-looking assertion
     # count hides.
-    if disc.get("failed_axes") or disc.get("not_scored"):
-        print(f"  discovery FAILED {disc.get('failed_axes') or []} "
-              f"| NOT SCORED {disc.get('not_scored') or []}")
+    if not ns.skip_discovery:
+        print(f"  discovery {'ok' if disc.get('ok') else 'FAILED'}  "
+              f"tools exercised {disc.get('tools_exercised')}"
+              + (f"  FAILED AXES {disc['failed_axes']}" if disc.get("failed_axes") else ""))
     print(f"  written  {path.relative_to(ROOT).as_posix()}")
     print()
     print("Commit and push that file; it is the whole certification record.")
