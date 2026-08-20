@@ -180,7 +180,7 @@ because it is absent.
 | 1.3 | Filedump markdown | ” | `projectmapper` | Retained — direct |
 | 1.4 | Combined tree + filedump markdown | ” | `projectmapper` | Retained — direct |
 | 1.5 | Snapshot manifest markdown | ” | `projectmapper` | Retained — direct |
-| 1.6 | Artifact preserves its own capture selection | ” | — | **Retained — FAILING** |
+| 1.6 | Artifact preserves its own capture selection | ” | `projectmapper` (records exclude_paths / output_path / markdown_requested + a scope-carrying regenerate_command) | Retained — direct ✔
 
 > ProjectMapper source was **not touched**. Row 1.6 is adjudicated from the finding
 > recorded on 2026-08-19; repair happens when the row is proved, not now.
@@ -193,7 +193,7 @@ because it is absent.
 | 2.2 | Preview a patch as a diff | ” | `patch` preview → `diff` | Retained — composed |
 | 2.3 | Apply a single-file patch preserving indentation intent | ” | `patch` (`force_indent`) | Retained — direct |
 | 2.4 | Detect missing / ambiguous / overlapping hunks before writes | duplicated line | `patch` — **run:** `"Ambiguous match (2 found)"`, `"Search block not found."` | Retained — direct ✔ |
-| 2.5 | Multi-file patch batch | several files | — | **Retained — FAILING** |
+| 2.5 | Multi-file patch batch | several files | `patch` (`patch.files` set, all-or-nothing) | Retained — direct ✔
 
 ### 03 — `_LineNUMBERIZER`
 
@@ -216,12 +216,12 @@ because it is absent.
 | # | Useful product | Fixture | Capability | Disposition |
 | --- | --- | --- | --- | --- |
 | 4.1 | Inspect repository state (branch / status / remote) | a git repo | `git_inspect`, `git status` | Retained — direct |
-| 4.2 | Stage **an explicit approved working set**, then commit | ” | `git` hardcodes `add .` | **Retained — FAILING** |
+| 4.2 | Stage **an explicit approved working set**, then commit | ” | `git` (`paths` stages the approved set) | Retained — direct ✔
 | 4.3 | Commit, and push | ” | `git` (`commit`, `sync`) | Retained — direct |
 | 4.4 | Safety gate before mutating operations | repo without `.gitignore` | `git` refuses `add .` without one | Retained — direct |
 | 4.5 | Record stdout / stderr / exit code for every git command | ” | `steps[]` per command + `event_log` | Retained — composed |
-| 4.6 | Pull before push | ” | no `pull` action | **Retained — FAILING** |
-| 4.7 | Branch management with dirty-state checks | ” | no branch action | **Retained — FAILING** |
+| 4.6 | Pull before push | ” | `git` (`pull: true` -> `pull --rebase` before push) | Retained — direct ✔
+| 4.7 | Branch management with dirty-state checks | ” | `git` (`action: branch`, dirty state reported) | Retained — direct ✔
 
 ### 05 — `_UiMAPPER`
 
@@ -240,7 +240,7 @@ because it is absent.
 | 6.1 | Create a UTF-8 text file in an approved folder | a target dir | `write_file` | Retained — direct |
 | 6.2 | Preview exact target path and overwrite decision | ” | `write_file` preview-first | Retained — direct |
 | 6.3 | Prevent writes outside the approved root | traversal attempt | `resolve_within_roots` | Retained — direct |
-| 6.4 | Uniquely named (timestamp-suffixed) file | ” | — | **Retained — FAILING** *(minor)* |
+| 6.4 | Uniquely named (timestamp-suffixed) file | ” | `write_file` (`unique: true`) | Retained — direct ✔
 
 ### 07 — `_ChatWindowKERNAL`
 
@@ -323,12 +323,39 @@ because it is absent.
 
 **68 rows.** Counted by script from the tables above.
 
+### CLOSED — 2026-08-20
+
 | disposition | rows |
 | --- | --- |
-| Retained — direct | 30 |
-| Retained — composed | 17 |
-| Superseded | 15 |
-| **Retained — FAILING** | **6** — rows 1.6, 2.5, 4.2, 4.6, 4.7, 6.4 |
+| Retained — direct | **36** |
+| Retained — composed | **17** |
+| Superseded | **15** |
+| Retained — FAILING | **0** |
+| open / deferred | **0** |
+| **TOTAL** | **68** |
+
+**53 retained rows executed through the governed runtime; 68 rows resolved; zero failing,
+zero open, zero deferred.**
+
+- 47 previously-satisfied rows — `_docs/parity/retained_rows.py`, **47/47**
+- 6 repaired rows + 5 discriminating checks — `_docs/parity/parity_check.py`, **11/11**
+- both suites **re-run with `.plans-and-parts_FOR-REFERENCE-ONLY` physically moved out of
+  the tree** — 47/47 and 11/11 again, plus the T8 gate PASS
+
+#### The arithmetic differs from the operator's projection, and the difference is the six repairs
+
+The closure instruction anticipated `68 = 30 direct + 17 composed + **21 Superseded**`.
+The counted result is `68 = **36** direct + 17 composed + **15** Superseded`.
+
+The six-row gap is the same six rows in both readings. The projection placed the repaired
+rows in **Superseded**; they were **repaired**, so each is now produced by exactly one
+tool and belongs in **Retained — direct**. Superseded means *deliberately replaced*, and
+nothing about these was replaced — `projectmapper`, `patch`, `git` and `write_file` each
+gained the missing behaviour. Recording them as Superseded would file six delivered
+capabilities under "no longer exists".
+
+30 + 6 = 36. Counted by script, not by hand — the two earlier hand-counts in this document
+were both wrong.
 
 *I hand-wrote these totals twice and got them wrong twice* — 25/17/14/10 in the first
 census, 27/17/18/6 here. Both were corrected by counting the tables with a script. The

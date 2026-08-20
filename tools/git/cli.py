@@ -5,7 +5,7 @@ DOMAIN:     tool
 DOES:       action=status: branch + porcelain status. action=branch: list, or switch/create
             with the dirty state reported. action=commit: stage an EXPLICIT `paths` set (or
             `add .` when none is given) then commit. action=sync: commit, optional
-            pull --ff-only, then push. Gates the whole-tree `add .` behind a
+            pull --rebase, then push. Gates the whole-tree `add .` behind a
             .gitignore-present check (override with allow_no_gitignore).
 DEPENDS ON: tools._toolkit, (stdlib) subprocess, pathlib
 WIRES TO:   invoked by src/core/invoke.py; described by sibling tool.json (Apply authority)
@@ -145,13 +145,32 @@ def run(args: dict) -> dict:
             # existing caller would be a behaviour change smuggled in under a parity fix.
             # The ORDER is the product here - a pull after a push proves nothing.
             if args.get("pull"):
-                pull = _step(repo, ["pull", "--ff-only"])
+                # `--rebase`, NOT `--ff-only`. This shipped as --ff-only and was safe but
+                # USELESS in the only flow that reaches it: sync commits first, so any
+                # remote advance is a divergence, so the pull always refused and the push
+                # never happened. "Pull before push" that can never integrate anything is
+                # a ceremony, not a product - the donor's outcome is that the push
+                # SUCCEEDS without clobbering upstream work.
+                #
+                # Rebase replays the local commits on top of the remote head: no merge
+                # commit, and the commits being rewritten are by construction the ones
+                # that have not been pushed yet.
+                #
+                # Found by a parity assertion that advanced the remote from a second clone
+                # and demanded the upstream file appear locally. Reading the step list
+                # would never have shown it: the verbs were add, commit, pull - and the
+                # pull had refused.
+                pull = _step(repo, ["pull", "--rebase"])
                 steps.append(pull)
                 if pull["code"] != 0:
+                    # A failed rebase leaves the repo mid-rebase, which is a worse state
+                    # than the one we started in. Put it back before reporting.
+                    steps.append(_step(repo, ["rebase", "--abort"]))
                     return {"ok": False, "action": action, "branch": _branch(repo),
                             "steps": steps,
-                            "error": "pull failed; refusing to push over a divergent "
-                                     "remote: " + (pull["err"] or pull["out"])}
+                            "error": "pull --rebase failed and was aborted; refusing to "
+                                     "push over a remote we could not integrate: "
+                                     + (pull["err"] or pull["out"])}
             push = _step(repo, ["push"])
             steps.append(push)
             if push["code"] != 0:

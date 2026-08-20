@@ -1,9 +1,10 @@
 {
   "id": "git",
-  "summary": "Git: init a repo, status, branch (with dirty state), stage an explicit approved set -> commit (-> pull --ff-only -> push).",
+  "summary": "Git: init a repo, status, branch (with dirty state), stage an explicit approved set -> commit (-> pull --rebase -> push).",
   "category": "git",
   "authority": "Apply",
   "operates_on": "project",
+  "writes": "target",
   "invocation": {
     "interpreter": "${ROOT_VENV_PYTHON}",
     "entry": "tools/git/cli.py"
@@ -44,7 +45,7 @@
       "pull": {
         "type": "boolean",
         "default": false,
-        "description": "sync only: run `git pull --ff-only` BEFORE pushing"
+        "description": "sync only: run `git pull --rebase` BEFORE pushing, so local commits replay on top of the remote instead of clobbering it"
       },
       "branch": {
         "type": "string",

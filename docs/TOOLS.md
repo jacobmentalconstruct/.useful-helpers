@@ -138,7 +138,7 @@ Authority: `Observe` read-only | `Sandbox` temp/artifacts only | `Apply` writes 
 
 | tool | authority | writes | on | inputs | summary |
 |---|---|---|---|---|---|
-| `git` | Apply | toolkit | project | repo, action, message, allow_no_gitignore, paths, pull, branch, create | Git: init a repo, status, branch (with dirty state), stage an explicit approved set -> commit (-> pull --ff-only -> push). |
+| `git` | Apply | target | project | repo, action, message, allow_no_gitignore, paths, pull, branch, create | Git: init a repo, status, branch (with dirty state), stage an explicit approved set -> commit (-> pull --rebase -> push). |
 | `git_inspect` | Observe | none | project | action, repo, n, path, paths, pattern, ref, cached, +1 more | Read-only git inspection: status, branches, log, ls-files, diff (stat/unified), grep, check-ignore  -  the verbs for reasoning about a repo through the governed seam. |
 
 ## governance  (1)

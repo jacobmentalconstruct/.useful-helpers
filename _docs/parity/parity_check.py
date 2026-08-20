@@ -122,6 +122,43 @@ def row_1_6(t: Path) -> None:
     # a snapshot that says "run this to reproduce me" while the command reproduces a WIDER
     # capture is worse than one that offers no command at all.
     regen = str(recorded.get("regenerate_command", ""))
+    # REGENERATE FROM THE RECORDED COMMAND and compare the capture, rather than admiring
+    # the metadata. A command that reproduces a DIFFERENT scope is the defect this row
+    # exists for, and only running it can tell.
+    first_checksum = recorded.get("content_checksum_sha256")
+    first_files = recorded.get("text_file_count")
+    regen_ok, regen_detail = False, "no regenerate_command recorded"
+    if regen.startswith("python -m src.app"):
+        import shlex
+        argv = shlex.split(regen)[1:]
+        rp = subprocess.run([sys.executable, *argv], cwd=str(ROOT), capture_output=True,
+                            text=True, timeout=300, env={
+                                **{k: v for k, v in os.environ.items()
+                                   if k not in ("SUITE_HOME", "SUITE_PROJECT_ROOT",
+                                                "SUITE_STATE_ROOT")},
+                                "SUITE_PROJECT_ROOT": str(t)})
+        again = {}
+        if db.is_file():
+            import sqlite3
+            con = sqlite3.connect(db)
+            try:
+                if _has_table(con, "snapshot_metadata"):
+                    again = dict(con.execute(
+                        "SELECT key, value FROM snapshot_metadata").fetchall())
+            finally:
+                con.close()
+        regen_ok = (again.get("content_checksum_sha256") == first_checksum
+                    and again.get("text_file_count") == first_files
+                    and again.get("exclude_paths") == recorded.get("exclude_paths"))
+        regen_detail = (f"rc={rp.returncode} checksum {first_checksum!r} -> "
+                        f"{again.get('content_checksum_sha256')!r}; files {first_files!r} "
+                        f"-> {again.get('text_file_count')!r}; deselection "
+                        f"{recorded.get('exclude_paths')!r} -> {again.get('exclude_paths')!r}")
+    record("1.6b regenerating from the recorded command reproduces the SAME capture",
+           regen_ok,
+           "a snapshot that offers a command reproducing a different scope is worse than "
+           f"one offering none; {regen_detail}")
+
     record("1.6 capture selection is reproducible from the artifact",
            "drop" in str(recorded.get("exclude_paths", ""))
            and "drop" in json.dumps(generation.get("exclude_paths"))
@@ -150,6 +187,21 @@ def row_2_5(t: Path) -> None:
         ]}})
     a = (t / "src" / "a.py").read_text(encoding="utf-8")
     b = (t / "src" / "b.py").read_text(encoding="utf-8")
+    # ALL OR NOTHING, kept as a standing assertion. A set that half-applies leaves the
+    # target in a state nobody designed while reporting that it "partly worked".
+    (t / "src" / "c.py").write_text("VALUE = 'c'\n", encoding="utf-8")
+    bad = call(t, "patch", {"action": "apply", "apply": True, "patch": {"files": [
+        {"path": "src/c.py",
+         "hunks": [{"search_block": "VALUE = 'c'", "replace_block": "VALUE = 'C'"}]},
+        {"path": "src/b.py",
+         "hunks": [{"search_block": "NOT PRESENT", "replace_block": "X"}]}]}})
+    record("2.5b a rejected file in the set leaves EVERY file untouched",
+           bad.get("ok") is False
+           and (t / "src" / "c.py").read_text(encoding="utf-8") == "VALUE = 'c'\n",
+           f"partial application is worse than refusal; refused={bad.get('ok') is False} "
+           f"c.py={(t / 'src' / 'c.py').read_text(encoding='utf-8').strip()!r} "
+           f"problems={out(bad).get('problems')!r}")
+
     record("2.5 one governed patch set spans multiple files",
            "VALUE = 'A'" in a and "VALUE = 'B'" in b,
            f"both files must change in ONE governed call; a={a.strip()!r} b={b.strip()!r} "
@@ -165,6 +217,15 @@ def row_4_2(repo: Path) -> None:
                              "paths": ["approved.txt"], "apply": True})
     committed = git(repo, "show", "--stat", "--name-only", "--format=", "HEAD")
     still_dirty = git(repo, "status", "--porcelain")
+    # THE INDEX ITSELF, not just the commit. `git status --porcelain` shows an unstaged
+    # file as " M"/"??" and a staged one as "M "/"A " - so this proves the unapproved
+    # change was never STAGED, which is the claim, rather than merely never committed.
+    staged_now = git(repo, "diff", "--cached", "--name-only")
+    record("4.2b the unapproved change was never staged in the index",
+           "unapproved.txt" not in staged_now
+           and any(ln.endswith("unapproved.txt") and not ln.startswith(("M ", "A "))
+                   for ln in still_dirty.splitlines()),
+           f"index after commit={staged_now.split()!r} porcelain={still_dirty.splitlines()!r}")
     record("4.2 commit stages ONLY the explicit approved working set",
            "approved.txt" in committed and "unapproved.txt" not in committed
            and "unapproved.txt" in still_dirty,
@@ -179,9 +240,25 @@ def row_4_6(repo: Path) -> None:
         subprocess.run(["git", "init", "-q", "--bare", str(bare)], check=False)
         git(repo, "remote", "add", "origin", str(bare))
         git(repo, "push", "-q", "-u", "origin", "HEAD")
+    # ADVANCE THE REMOTE behind our back, so a real pull has something to bring back.
+    # Command text is not evidence; a commit that could only have arrived via fetch is.
+    clone = repo.parent / "other"
+    subprocess.run(["git", "clone", "-q", str(bare), str(clone)], check=False)
+    git(clone, "config", "user.email", "other@local")
+    git(clone, "config", "user.name", "other")
+    (clone / "from_remote.txt").write_text("upstream\n", encoding="utf-8")
+    git(clone, "add", ".")
+    git(clone, "commit", "-qm", "upstream commit")
+    git(clone, "push", "-q")
+
     (repo / "second.txt").write_text("two\n", encoding="utf-8")
     env = call(repo, "git", {"repo": str(repo), "action": "sync",
                              "message": "second change", "pull": True, "apply": True})
+    record("4.6b the pull actually brought the remote commit down",
+           (repo / "from_remote.txt").is_file(),
+           "a file that exists only upstream must appear locally after sync(pull=true); "
+           f"present={(repo / 'from_remote.txt').is_file()} "
+           f"log={git(repo, 'log', '--oneline').splitlines()[:3]!r}")
     # THE SUBCOMMAND, NOT A SUBSTRING. This first read `"pull" in cmd`, and the fixture's
     # own commit message was "sync with pull first" - so the COMMIT step matched and the
     # assertion went green against a runtime with no pull at all. A false green caused
@@ -220,6 +297,19 @@ def row_6_4(t: Path) -> None:
     o = out(env)
     written = o.get("path") or ""
     others = sorted(p.name for p in t.glob("note*.txt"))
+    # REPEATED writes must not collide. A timestamp alone is not uniqueness: five writes
+    # inside one second would all resolve to the same name, and "unique" would be a claim
+    # rather than a property. This is the assertion the counter exists for.
+    repeats = []
+    for i in range(5):
+        r = out(call(t, "write_file", {"path": "note.txt", "content": f"r{i}\n",
+                                       "overwrite": False, "unique": True, "apply": True}))
+        repeats.append(r.get("path"))
+    record("6.4b repeated unique writes never resolve to the same path",
+           len(set(repeats)) == 5 and all(repeats),
+           f"a timestamp is not a uniqueness guarantee; paths="
+           f"{[str(x).rsplit('/', 1)[-1] for x in repeats]}")
+
     record("6.4 a uniquely named file is created rather than refused",
            bool(written) and Path(str(written)).name != "note.txt" and len(others) >= 2
            and (t / "note.txt").read_text(encoding="utf-8") == "original\n",

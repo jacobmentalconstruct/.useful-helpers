@@ -55,7 +55,7 @@
       },
       "markdown": {
         "type": "boolean",
-        "description": "also emit tree + filedump Markdown"
+        "description": "also emit the four markdown exports: tree, filedump, combined (tree+filedump), and manifest"
       },
       "title": {
         "type": "string"
