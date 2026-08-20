@@ -1,6 +1,6 @@
 {
   "id": "git",
-  "summary": "Git: init a repo, status, or add -> commit (-> push), with a .gitignore safety gate.",
+  "summary": "Git: init a repo, status, branch (with dirty state), stage an explicit approved set -> commit (-> pull --ff-only -> push).",
   "category": "git",
   "authority": "Apply",
   "operates_on": "project",
@@ -20,6 +20,7 @@
         "enum": [
           "init",
           "status",
+          "branch",
           "commit",
           "sync"
         ],
@@ -32,6 +33,27 @@
       "allow_no_gitignore": {
         "type": "boolean",
         "description": "override the no-.gitignore safety gate"
+      },
+      "paths": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "the EXPLICIT approved working set to stage; omit to stage the whole tree with `add .`"
+      },
+      "pull": {
+        "type": "boolean",
+        "default": false,
+        "description": "sync only: run `git pull --ff-only` BEFORE pushing"
+      },
+      "branch": {
+        "type": "string",
+        "description": "branch action: the branch to switch to"
+      },
+      "create": {
+        "type": "boolean",
+        "default": false,
+        "description": "branch action: create it (checkout -b)"
       }
     }
   },

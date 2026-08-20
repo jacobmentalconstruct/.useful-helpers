@@ -138,7 +138,7 @@ Authority: `Observe` read-only | `Sandbox` temp/artifacts only | `Apply` writes 
 
 | tool | authority | writes | on | inputs | summary |
 |---|---|---|---|---|---|
-| `git` | Apply | toolkit | project | repo, action, message, allow_no_gitignore | Git: init a repo, status, or add -> commit (-> push), with a .gitignore safety gate. |
+| `git` | Apply | toolkit | project | repo, action, message, allow_no_gitignore, paths, pull, branch, create | Git: init a repo, status, branch (with dirty state), stage an explicit approved set -> commit (-> pull --ff-only -> push). |
 | `git_inspect` | Observe | none | project | action, repo, n, path, paths, pattern, ref, cached, +1 more | Read-only git inspection: status, branches, log, ls-files, diff (stat/unified), grep, check-ignore  -  the verbs for reasoning about a repo through the governed seam. |
 
 ## governance  (1)
@@ -210,8 +210,8 @@ Authority: `Observe` read-only | `Sandbox` temp/artifacts only | `Apply` writes 
 | `edit` | Apply | target | project | **pattern**, **replacement**, text, path, literal, expected_replacements, expected_source_sha256, write, +5 more | Find/replace on text or a file  -  regex or literal  -  with an expected-count guard; preview by default, writes only with write:true (or apply:true). |
 | `fs_op` | Apply | target | project | ops, op, path, dest, apply | Governed filesystem mutation: a BATCH of mkdir/touch/copy/move/delete ops (one plan, one approval). Paths confined to the roots. |
 | `linenumber` | Observe | none | project | action, text, path, style, start, width | Annotate text with parseable line numbers, strip them, or emit a line->hash integrity map. |
-| `patch` | Apply | target | project | action, patch, patch_json, text, path, write, force_indent | Surgical indentation-aware patching via JSON hunks (search/replace blocks); dry-run validate; preview by default. |
-| `write_file` | Apply | target | project | **path**, **content**, overwrite, write, apply | Create or overwrite a file (preview-first). The sanctioned, audited way to write into the work target. |
+| `patch` | Apply | target | project | action, patch, patch_json, text, path, write, force_indent | Surgical indentation-aware patching via JSON hunks (search/replace blocks); one file or a multi-file set applied as one unit; dry-run validate; preview by default. |
+| `write_file` | Apply | target | project | **path**, **content**, overwrite, unique, write, apply | Create or overwrite a file (preview-first). The sanctioned, audited way to write into the work target. |
 
 ---
-_Generated 2026-08-19 from 94 manifests._
+_Generated 2026-08-20 from 94 manifests._

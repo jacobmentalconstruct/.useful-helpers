@@ -91,7 +91,61 @@ Superseded with no residual parity debt.
 
 ---
 
-## The failing retained rows — the only permitted implementation work
+## The six owed rows — REPAIRED, 6/6
+
+Each at its existing natural owner, smallest change first, every one backward compatible.
+
+| row | repair | owner |
+| --- | --- | --- |
+| 1.6 | record `exclude_paths` / `output_path` / `markdown_requested` in the database **and** the manifest, and rebuild `regenerate_command` from the values the scan actually used | `apps/projectmapper` |
+| 2.5 | `patch.files: [{path, hunks}]` — a patch SET validated in full before any file is written | `tools/patch` |
+| 4.2 | `paths: [...]` stages an explicit approved set instead of `add .` | `tools/git` |
+| 4.6 | `pull: true` runs `git pull --ff-only` **before** push in `sync` | `tools/git` |
+| 4.7 | `action: branch` — list, or switch/create, with the dirty state reported | `tools/git` |
+| 6.4 | `unique: true` creates a timestamp-suffixed sibling instead of refusing | `tools/write_file` |
+
+**Nothing was distorted to fit.** `stamp` stayed a tool-skeleton generator; playbooks gained
+no iteration engine; no Git subsystem or porcelain appeared; ProjectMapper was not
+redesigned, and **the dot-directory question stayed parked** — the donor capability is
+*"Manage Project Mapper Exclusions"*, about the user's exclusion set, so dot-folder
+semantics are not part of this row.
+
+### Two decisions worth naming
+
+**1.6 rebuilds the command from what the scan APPLIED, not from `args`.** Recording what
+was *asked for* rather than what was *used* would reintroduce the same gap one level down,
+since `exclude_paths` is normalised before use.
+
+**4.6 is opt-in.** A pull can produce a merge or a conflict; silently changing what `sync`
+does for every existing caller would be a behaviour change smuggled in under a parity fix.
+
+**4.7 reports the dirty state rather than refusing.** Git already refuses a switch that
+would destroy work; refusing the ones git permits would make the tool less capable than
+the thing it wraps. The donor's requirement is that the state be *visible*.
+
+### A safety defect found while implementing 2.5
+
+`tools/patch` resolved its path with `Path(args["path"])` and **no containment at all**,
+while `edit` and `write_file` both use `resolve_within_roots`. It could read and write
+anywhere the process could reach. That makes census row **11.5** — *"path containment on
+every file read and store write"*, disposition Retained — direct — **false as written for
+this tool**, so it was repaired rather than recorded: the row claimed a property the
+product did not have. Verified: `patch` now refuses a path escaping the roots.
+
+*This is the census contradicting itself under execution, which is exactly the condition
+the freeze allows for. The row's disposition does not change; the product now matches it.*
+
+### Recorded, not repaired
+
+`tools/git` still declares no `writes` field and is inferred `toolkit`, while it writes
+into the target repository — and this repair **enlarged** its mutating surface with
+`branch` and `pull`. It belongs to the bounded 26-tool manifest-truth pass, which the
+operator ruled is not parity work. Flagged because the declaration is now more visibly
+wrong than when the census recorded it.
+
+---
+
+## The failing retained rows — the origin of the six *(historical)*
 
 | row | owed useful outcome | evidence it is not implemented |
 | --- | --- | --- |

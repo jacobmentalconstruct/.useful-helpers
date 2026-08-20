@@ -275,14 +275,45 @@ def run(args: dict) -> dict:
         dir_count = sum(1 for r in tree if r["type"] == "directory")
         file_count = sum(1 for r in tree if r["type"] == "file")
         deselected_count = sum(1 for s in skipped if s["reason"] == "unchecked_by_user")
-        regen = (f'python -m src.app cli tool-call --tool projectmapper --args-json '
-                 f'\'{{"action":"compile","root":{json.dumps(str(root))},"name":{json.dumps(name)}}}\'')
+        # PARITY ROW 1.6 — the artifact must record the SELECTION that shaped it.
+        #
+        # `regenerate_command` carried only action/root/name, and the metadata recorded the
+        # ordinary folder-exclusion set but not the user's `exclude_paths` deselection, nor
+        # `out`, nor the markdown request. So a snapshot said "run this to reproduce me"
+        # and the command reproduced a DIFFERENT capture scope - wider than the one the
+        # artifact actually describes. A portable, self-describing artifact that cannot
+        # describe its own scope is not yet portable, and a regenerate command that
+        # silently regenerates something else is worse than none at all.
+        #
+        # Reconstructed from the same values the scan used, not from `args`: recording what
+        # was ASKED FOR rather than what was APPLIED would reintroduce the same gap one
+        # level down (`exclude_paths` is normalised before use).
+        regen_args = {"action": "compile", "root": str(root), "name": name}
+        if exclude_paths:
+            regen_args["exclude_paths"] = sorted(exclude_paths)
+        if args.get("exclude"):
+            regen_args["exclude"] = sorted(str(x) for x in args["exclude"])
+        if args.get("respect_gitignore"):
+            regen_args["respect_gitignore"] = True
+        if max_bytes != MAX_TEXT_FILE_SIZE_BYTES:
+            regen_args["max_bytes"] = max_bytes
+        if out_arg:
+            regen_args["out"] = str(out_arg)
+        if args.get("markdown"):
+            regen_args["markdown"] = args["markdown"]
+        regen = ("python -m src.app cli tool-call --tool projectmapper --args-json "
+                 f"'{json.dumps(regen_args, sort_keys=True)}'")
         meta = {
             "project_name": name, "source_root": str(root), "generated_by": f"apps/projectmapper {APP_VERSION}",
             "created_at": now, "max_text_file_size_bytes": max_bytes,
             "excluded_folders": json.dumps(sorted(excludes)), "dir_count": dir_count,
             "file_count": file_count, "text_file_count": len(files), "skipped_count": len(skipped),
             "deselected_count": deselected_count,
+            # The deselection itself, not merely how many there were. A count tells a
+            # reader that something was dropped; only the list says WHAT.
+            "exclude_paths": json.dumps(sorted(exclude_paths)),
+            "output_path": str(out_db),
+            "markdown_requested": json.dumps(args.get("markdown") or []),
             "content_checksum_sha256": checksum, "regenerate_command": regen,
         }
         conn.executemany("INSERT OR REPLACE INTO snapshot_metadata (key, value) VALUES (?, ?)",
@@ -304,8 +335,14 @@ def run(args: dict) -> dict:
     sidecar = {
         "identity": {"name": name, "type": "project_snapshot", "version": MANIFEST_VERSION, "created_at": now},
         "lineage": {"source_root": str(root), "content_checksum_sha256": checksum},
+        # The sidecar manifest carries the same selection as the database, so neither half
+        # of the artifact can describe a scope the other does not.
         "generation": {"tool": f"apps/projectmapper {APP_VERSION}", "max_text_file_size_bytes": max_bytes,
-                       "excluded_folders": sorted(excludes), "regenerate_command": meta["regenerate_command"]},
+                       "excluded_folders": sorted(excludes),
+                       "exclude_paths": sorted(exclude_paths),
+                       "output_path": str(out_db),
+                       "markdown_requested": args.get("markdown") or [],
+                       "regenerate_command": meta["regenerate_command"]},
         "schema": {"tables": ["snapshot_metadata", "snapshot_manifest", "project_tree",
                               "project_files", "snapshot_skipped_paths", "snapshot_errors"]},
         "volumetrics": {"dir_count": dir_count, "file_count": file_count,

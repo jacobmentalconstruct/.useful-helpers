@@ -15,6 +15,7 @@
       "path": { "type": "string", "description": "file path (relative to the work target, or absolute within the roots)" },
       "content": { "type": "string", "description": "the full file contents to write" },
       "overwrite": { "type": "boolean", "default": true, "description": "false = create-only; refuse if the file exists" },
+      "unique": { "type": "boolean", "default": false, "description": "if the path is taken, CREATE a timestamp-suffixed sibling instead of refusing; the preview names the resolved path and apply_with carries it" },
       "write": { "type": "boolean", "default": false },
       "apply": { "type": "boolean", "description": "execute for real (equivalent to write:true)" }
     },

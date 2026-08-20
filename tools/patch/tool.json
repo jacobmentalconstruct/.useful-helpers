@@ -1,6 +1,6 @@
 {
   "id": "patch",
-  "summary": "Surgical indentation-aware patching via JSON hunks (search/replace blocks); dry-run validate; preview by default.",
+  "summary": "Surgical indentation-aware patching via JSON hunks (search/replace blocks); one file or a multi-file set applied as one unit; dry-run validate; preview by default.",
   "category": "text",
   "authority": "Apply",
   "operates_on": "project",
@@ -22,7 +22,7 @@
       },
       "patch": {
         "type": "object",
-        "description": "{ hunks: [ { search_block, replace_block, use_patch_indent? } ] }"
+        "description": "{ hunks: [ { search_block, replace_block, use_patch_indent? } ] } for one file, OR { files: [ { path, hunks:[...] } ] } for a patch SET applied as one unit"
       },
       "patch_json": {
         "type": "string",
@@ -69,6 +69,18 @@
       },
       "preview": {
         "type": "string"
+      },
+      "files": {
+        "type": "array",
+        "description": "multi-file mode: per-file changed/hunks"
+      },
+      "written_paths": {
+        "type": "array",
+        "description": "multi-file mode: paths actually written"
+      },
+      "problems": {
+        "type": "array",
+        "description": "multi-file mode: every rejected file, named; nothing was written"
       }
     }
   }

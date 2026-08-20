@@ -2,13 +2,16 @@
 FILE:       tools/git/cli.py
 ROLE:       Git workflow tool  -  status, and the add -> commit -> push quick-push flow.
 DOMAIN:     tool
-DOES:       action=status: branch + porcelain status. action=commit: `add .` + commit.
-            action=sync: commit then push. Validates the target is a repo; gates `add .`
-            behind a .gitignore-present check (override with allow_no_gitignore).
+DOES:       action=status: branch + porcelain status. action=branch: list, or switch/create
+            with the dirty state reported. action=commit: stage an EXPLICIT `paths` set (or
+            `add .` when none is given) then commit. action=sync: commit, optional
+            pull --ff-only, then push. Gates the whole-tree `add .` behind a
+            .gitignore-present check (override with allow_no_gitignore).
 DEPENDS ON: tools._toolkit, (stdlib) subprocess, pathlib
 WIRES TO:   invoked by src/core/invoke.py; described by sibling tool.json (Apply authority)
-NOTES:      Quick-push verbs only (init/status/commit/sync). Read-only inspection
-            verbs live in tools/git_inspect.
+NOTES:      Quick-push verbs only (init/status/branch/commit/sync). Read-only inspection
+            verbs live in tools/git_inspect. `paths` and `pull` close parity rows 4.2 and
+            4.6; both are additive - omit them and behaviour is exactly what it was.
 """
 from __future__ import annotations
 
@@ -75,15 +78,59 @@ def run(args: dict) -> dict:
             "status": out.splitlines(),
         }
 
+    if action == "branch":
+        # PARITY ROW 4.7. The donor's product is branch management WITH THE DIRTY STATE
+        # VISIBLE - switching away from uncommitted work silently is how it gets lost.
+        # The state is REPORTED rather than used to refuse: git itself already refuses a
+        # switch that would destroy work, and refusing the ones git permits would make
+        # this tool less capable than the thing it wraps. Reporting is the donor's
+        # requirement; forbidding is not.
+        name = str(args.get("branch", "")).strip()
+        _, porcelain, _ = _git(repo, ["status", "--porcelain"])
+        state = {"tool": "git", "action": "branch", "repo": str(repo).replace("\\", "/"),
+                 "clean": not porcelain, "dirty_paths": porcelain.splitlines()}
+        if not name:
+            _, listing, _ = _git(repo, ["branch", "--format=%(refname:short)"])
+            return {**state, "branch": _branch(repo), "branches": listing.splitlines()}
+        steps = []
+        if args.get("create"):
+            steps.append(_step(repo, ["checkout", "-b", name]))
+        else:
+            steps.append(_step(repo, ["checkout", name]))
+        if steps[-1]["code"] != 0:
+            return {**state, "ok": False, "branch": _branch(repo), "steps": steps,
+                    "error": f"branch switch failed: {steps[-1]['err'] or steps[-1]['out']}"}
+        return {**state, "branch": _branch(repo), "steps": steps}
+
     if action in ("commit", "sync"):
         msg = str(args.get("message", "")).strip()
         if not msg:
             return {"ok": False, "error": "'message' is required for commit/sync"}
-        if not (repo / ".gitignore").is_file() and not args.get("allow_no_gitignore"):
-            return {"ok": False, "error": "no .gitignore present; refusing 'git add .' "
-                                          "(set allow_no_gitignore:true to override)"}
 
-        steps = [_step(repo, ["add", "."])]
+        # PARITY ROW 4.2. An explicit approved working set is staged INSTEAD OF `add .`.
+        # The donor contract is "stage and commit only an explicit user-approved working
+        # set", and `add .` is the opposite product: it commits whatever happens to be in
+        # the tree, including work the caller never looked at. The whole-tree path is
+        # unchanged when no paths are given, so existing callers are unaffected.
+        paths = args.get("paths")
+        if paths:
+            if not isinstance(paths, list) or not all(isinstance(p, str) for p in paths):
+                return {"ok": False, "error": "'paths' must be a list of strings"}
+            missing = [p for p in paths if not (repo / p).exists()]
+            if missing:
+                # Staging a path that is not there would silently commit LESS than was
+                # approved, which is the same class of defect as committing more.
+                return {"ok": False, "error": f"approved paths do not exist: {missing}"}
+            steps = [_step(repo, ["add", "--", *paths])]
+        else:
+            # `.gitignore` gates the WHOLE-TREE path only. An explicit set is already the
+            # caller naming what they reviewed, so the guard that exists to stop `add .`
+            # sweeping junk has nothing to protect against here.
+            if not (repo / ".gitignore").is_file() and not args.get("allow_no_gitignore"):
+                return {"ok": False, "error": "no .gitignore present; refusing 'git add .' "
+                                              "(set allow_no_gitignore:true to override)"}
+            steps = [_step(repo, ["add", "."])]
+
         commit = _step(repo, ["commit", "-m", msg])
         steps.append(commit)
         committed = commit["code"] == 0 or "nothing to commit" in (commit["out"] + commit["err"]).lower()
@@ -92,6 +139,19 @@ def run(args: dict) -> dict:
                     "steps": steps, "error": "commit failed"}
 
         if action == "sync":
+            # PARITY ROW 4.6. Pull BEFORE push, so a push cannot clobber work that landed
+            # upstream since the last fetch. Opt-in rather than default: a pull can produce
+            # a merge or a conflict, and silently changing what `sync` does to every
+            # existing caller would be a behaviour change smuggled in under a parity fix.
+            # The ORDER is the product here - a pull after a push proves nothing.
+            if args.get("pull"):
+                pull = _step(repo, ["pull", "--ff-only"])
+                steps.append(pull)
+                if pull["code"] != 0:
+                    return {"ok": False, "action": action, "branch": _branch(repo),
+                            "steps": steps,
+                            "error": "pull failed; refusing to push over a divergent "
+                                     "remote: " + (pull["err"] or pull["out"])}
             push = _step(repo, ["push"])
             steps.append(push)
             if push["code"] != 0:
@@ -104,4 +164,5 @@ def run(args: dict) -> dict:
             "branch": _branch(repo), "steps": steps,
         }
 
-    return {"ok": False, "error": f"unknown action {action!r}; use init|status|commit|sync"}
+    return {"ok": False, "error": f"unknown action {action!r}; use "
+            "init|status|branch|commit|sync"}

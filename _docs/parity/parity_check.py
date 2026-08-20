@@ -93,28 +93,44 @@ def git_fixture() -> Path:
 # --------------------------------------------------------------------------- the six
 def row_1_6(t: Path) -> None:
     """The artifact must record the selection that produced it."""
+    # An EXPLICIT `out` inside a dot-folder: the tool's source-integrity guard permits
+    # co-locating output in the project only within a sidecar the scan skips, and knowing
+    # where the artifact landed is the only way to read it back. `outputs.snapshot_db` is
+    # a FILENAME, not a path - I guessed three other key names before reading the output,
+    # which is the same reader-guessing this census keeps punishing.
+    db = t / ".parity-out" / "snap.sqlite3"
     env = call(t, "projectmapper",
                {"action": "compile", "root": ".", "name": "parity",
-                "exclude_paths": ["drop"], "apply": True})
-    o = out(env)
-    outputs = o.get("outputs") or {}
-    db = outputs.get("sqlite") or outputs.get("db") or outputs.get("snapshot")
-    recorded = ""
-    if db and Path(db).is_file():
+                "exclude_paths": ["drop"], "out": str(db), "apply": True})
+
+    recorded: dict[str, str] = {}
+    if db.is_file():
         import sqlite3
         con = sqlite3.connect(db)
         try:
-            rows = con.execute(
-                "SELECT key, value FROM meta"
-            ).fetchall() if _has_table(con, "meta") else []
-            recorded = json.dumps(rows)
+            if _has_table(con, "snapshot_metadata"):
+                recorded = dict(con.execute(
+                    "SELECT key, value FROM snapshot_metadata").fetchall())
         finally:
             con.close()
-    blob = recorded + json.dumps(o)
+    manifest_file = db.parent / (db.stem + ".manifest.json")
+    manifest = json.loads(manifest_file.read_text(encoding="utf-8")) \
+        if manifest_file.is_file() else {}
+    generation = manifest.get("generation") or {}
+
+    # BOTH HALVES MUST AGREE, and the regenerate command must actually carry the scope:
+    # a snapshot that says "run this to reproduce me" while the command reproduces a WIDER
+    # capture is worse than one that offers no command at all.
+    regen = str(recorded.get("regenerate_command", ""))
     record("1.6 capture selection is reproducible from the artifact",
-           "exclude_paths" in blob and "drop" in blob,
-           f"the snapshot must record the deselection that shaped it; ok={env.get('ok')} "
-           f"outputs={list(outputs)} recorded_meta={recorded[:200]!r}")
+           "drop" in str(recorded.get("exclude_paths", ""))
+           and "drop" in json.dumps(generation.get("exclude_paths"))
+           and "drop" in regen,
+           f"the snapshot must record the deselection that shaped it, in the database, in "
+           f"the manifest, and in the command it offers; ok={env.get('ok')} "
+           f"meta.exclude_paths={recorded.get('exclude_paths')!r} "
+           f"manifest.exclude_paths={generation.get('exclude_paths')!r} "
+           f"regenerate_command={regen[:160]!r}")
 
 
 def _has_table(con, name: str) -> bool:
