@@ -547,12 +547,73 @@ def removal(artifact: Path, work: Path) -> None:
           not (t / SIDECAR).exists(), "the instance directory is gone")
 
 
+# ============================================================ artifact identity
+def seal(dist: Path, clone: Path, out_dir: Path) -> dict:
+    """Archive the distribution once and give it an immutable identity.
+
+    ONE ARTIFACT, TWO PLATFORMS. Windows must exercise the BYTE-IDENTICAL distribution
+    Linux exercised; rebuilding from source on each machine would prove two different
+    distributions and call the pair a release. The zip is also the documented shape -
+    the installer README names `useful-helpers-toolkit.zip` - so sealing is not a new
+    packaging step, it is the one already declared.
+
+    The archive is written OUTSIDE the scratch workspace, because the workspace is
+    reclaimed and the artifact must outlive it.
+    """
+    commit = run(["git", "rev-parse", "HEAD"], cwd=clone).stdout.strip()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    base = out_dir / "useful-helpers-release"
+    if base.with_suffix(".zip").exists():
+        base.with_suffix(".zip").unlink()
+    archive = Path(shutil.make_archive(str(base), "zip", root_dir=str(dist)))
+    digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+    ident = {"source_commit": commit, "archive": archive.name,
+             "sha256": digest, "bytes": archive.stat().st_size}
+    (out_dir / "ARTIFACT.json").write_text(json.dumps(ident, indent=2), encoding="utf-8")
+    check("1 manufacture", "the distribution is sealed with an immutable identity",
+          bool(commit) and len(digest) == 64,
+          f"commit={commit[:12]} sha256={digest[:16]}… bytes={ident['bytes']}")
+    return ident
+
+
+def unseal(archive: Path, work: Path) -> tuple[Path, dict]:
+    """Consume a PREBUILT artifact instead of manufacturing one (the Windows leg)."""
+    ident = json.loads((archive.parent / "ARTIFACT.json").read_text(encoding="utf-8"))
+    digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+    check("1 manufacture", "the supplied artifact matches its recorded hash",
+          digest == ident.get("sha256"),
+          f"expected {ident.get('sha256')} got {digest}; Release is only PASS when both "
+          "platform records name the SAME artifact")
+    dist = work / "artifact"
+    shutil.unpack_archive(str(archive), str(dist))
+    return dist / "useful-helpers-toolkit", ident
+
+
 # ============================================================ main
-def main() -> int:
+def main(argv=None) -> int:
+    import argparse
+    ap = argparse.ArgumentParser(description="Closure Gate 2 - release verification")
+    ap.add_argument("--artifact", default="",
+                    help="consume this sealed .zip instead of manufacturing (Windows leg)")
+    ap.add_argument("--keep-workspace", action="store_true",
+                    help="DEBUGGING ONLY: do not reclaim the scratch workspace")
+    ns = ap.parse_args(argv)
+
+    out_dir = Path(__file__).parent / "artifact"
     work = Path(tempfile.mkdtemp(prefix="release-"))
     print(f"release verification on {platform.system()}  workspace={work}")
+    ident: dict = {}
     try:
-        clone, artifact = manufacture(work)
+        if ns.artifact:
+            artifact, ident = unseal(Path(ns.artifact).resolve(), work)
+            clone = work / "clean-clone"
+            p = run(["git", "clone", "--quiet", str(DEV), str(clone)], timeout=900)
+            check("1 manufacture", "a clean clone is available for the oracle controls",
+                  p.returncode == 0, f"rc={p.returncode} {((p.stderr or '')[-160:])}")
+        else:
+            clone, artifact = manufacture(work)
+            if artifact.is_dir():
+                ident = seal(artifact.parent, clone, out_dir)
         inspect(artifact, clone)
         if artifact.is_dir():
             walk(artifact, "A software", target_a(work, clone), full=True)
@@ -562,7 +623,28 @@ def main() -> int:
             oracles_from_clone(clone)
             removal(artifact, work)
     finally:
-        pass  # the workspace is kept for inspection; the OS reclaims temp
+        # RECLAIM BY DEFAULT, INCLUDING AFTER A FAILURE.
+        #
+        # This kept every workspace "for inspection". Four runs later the sandbox was out
+        # of disk, `git clone` died with "No space left on device", and the run recorded a
+        # verifier-resource failure that looked exactly like a product result. An
+        # instrument that consumes the bench it stands on eventually measures nothing.
+        #
+        # The diagnostic evidence a kept workspace was meant to provide is already in the
+        # run record - every check carries its own detail - and that record is written
+        # OUTSIDE the workspace, so reclaiming loses nothing that was being read anyway.
+        # `--keep-workspace` remains for deliberate debugging; ordinary certification
+        # never needs it.
+        #
+        # THE CLEAN-CLONE INVARIANT IS UNTOUCHED. Reclaiming is not reuse: every
+        # authoritative run still clones fresh into a new workspace. Solving the disk
+        # problem by keeping a clone around would trade a resource bug for an evidence
+        # bug, which is the worse of the two.
+        if ns.keep_workspace:
+            print(f"workspace KEPT for debugging: {work}")
+        else:
+            shutil.rmtree(work, ignore_errors=True)
+            print(f"workspace reclaimed: {work}")
 
     print("\nRELEASE — Closure Gate 2\n" + "=" * 78)
     step = None
@@ -577,10 +659,19 @@ def main() -> int:
     print("\n" + "=" * 78)
     print(f"{len(CHECKS) - len(bad)}/{len(CHECKS)} release checks pass on "
           f"{platform.system()}")
+    # VERIFIER HYGIENE, ASSERTED RATHER THAN ASSUMED. The repair above is only real if
+    # repeated runs stop accumulating clones, so the instrument proves it about itself.
+    leftovers = sorted(Path(tempfile.gettempdir()).glob("release-*"))
+    check("0 hygiene", "the verifier leaves no workspace behind",
+          ns.keep_workspace or not [d for d in leftovers if d.is_dir()],
+          f"stale workspaces: {[d.name for d in leftovers][:6]} - each holds a full "
+          "clone, and four of them exhausted the sandbox once already")
+
     rec = Path(__file__).parent / f"release-{platform.system().lower()}.json"
     rec.write_text(json.dumps(
         {"platform": platform.system(), "python": platform.python_version(),
-         "workspace": str(work), "checks": CHECKS}, indent=2), encoding="utf-8")
+         "artifact": ident, "workspace_reclaimed": not ns.keep_workspace,
+         "checks": CHECKS}, indent=2), encoding="utf-8")
     print(f"record: {rec}")
     return 0 if not bad else 1
 
