@@ -459,7 +459,7 @@ needs it, rather than displacing product work now.
 | — | **Application Absorption Audit** (C1b) | *diagnostic, not a tranche.* What `apps/` actually owns, which primitives already provide it, what should become a chain, the safest retirement order, and whether T7 needs any live app |
 | T7 | Shared Project Awareness Prototype | **CLOSED 2026-08-19** (0036) — one compact evidence-backed orientation, persisted against the instance, same revision to human and agent. 40/40; measured reduction **133,477 B → 2,343 B (0.018)** on a real target; revision content-anchored, move-stable and write-once; handles round-trip; drill-down recovers the evidence actually used; freshness projected at read time |
 | T8 | Governed Work Loop Prototype | **PARKED 2026-08-20** at certified `445a68c` (0037–0040) — 52/52; certification PASS on Windows at `445a68c`, **262/262 gate assertions, zero skips**, discovery pass clean with 12 tools exercised and all four verdict axes passing. awareness → impact → `read_file` → preview → diff → **witness-bound** approval → Apply → **measured** changed paths → `test`/`lint` verification → refresh. Three safety preconditions closed and mutation-tested. The first trustworthy green since 2026-08-18 — awareness → impact → `read_file` → preview → diff → witness-bound approval → Apply → measured changed paths → `test`/`lint` verification → refresh. Opens with **three safety preconditions**: `patch`'s absent write declaration, governance failing open on Apply, and uninterpretable tool output reported as success |
-| — | **Closure gate 1: PARITY certification** | every retained donor product reproduced through the common bench, and the suite still passes **with the parts bin absent** |
+| — | **Closure gate 1: PARITY certification** | **CERTIFIED 2026-08-20** (0042) at `3b2ecdb` — 68 rows resolved (36 direct / 17 composed / 15 superseded), **zero failing, zero open, zero deferred**; 53 retained rows executed through the governed runtime; both suites re-run with the parts bin **physically moved out of the tree**. PASS: 88 tests, 262/262 gate assertions zero-skip, discovery clean |
 | — | **Closure gate 2: RELEASE certification** | a release artifact from a clean clone installs and completes the whole walk on a clean machine, both platforms |
 | **STOP** | **Prototype stop / dogfood** | Architectural development halts. See below |
 
@@ -1167,7 +1167,17 @@ certification move **in front of** STOP rather than after it.
 **This adds no architecture tranche.** They are closure gates, not build phases. A red
 closure gate is fixed by repairing the specific red thing and re-running it.
 
-### Closure gate 1 — PARITY CERTIFICATION *(after T8, before STOP)*
+### Closure gate 1 — PARITY CERTIFICATION — **CERTIFIED 2026-08-20** *(0042)*
+
+> `3b2ecdb`: 68 rows resolved, **zero failing / open / deferred**. 53 retained rows
+> executed; independence proven by physically moving `.plans-and-parts_FOR-REFERENCE-ONLY`
+> out of the tree, not by adding it to an exclusion list. Full record:
+> `_docs/parity/PARITY_MATRIX.md`, `retained_rows.json`.
+>
+> Three defects were found by EXECUTING rows the census had marked satisfied — two of
+> `projectmapper`'s four declared markdown exports were never written, `patch` had no path
+> containment at all, and my own `pull --ff-only` could never integrate anything. Reading
+> would not have found any of them.
 
 One matrix over the donor contracts already written in the reference material. **Three
 valid outcomes, and "deferred" is not one of them:**
