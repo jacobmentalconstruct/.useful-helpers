@@ -1,0 +1,243 @@
+{
+  "schema": 1,
+  "verdict": "PASS",
+  "label": "",
+  "generated_at": "2026-08-20T01:50:43+00:00",
+  "seconds": 427.8,
+  "commit": "445a68c",
+  "branch": "main",
+  "dirty": false,
+  "allow_dirty": false,
+  "platform": {
+    "system": "Windows",
+    "release": "10",
+    "machine": "AMD64",
+    "python": "3.13.6"
+  },
+  "steps": {
+    "lint": {
+      "ok": true,
+      "exit": 0,
+      "detail": "All checks passed!",
+      "findings": []
+    },
+    "suite": {
+      "ok": true,
+      "exit": 0,
+      "tests": 87,
+      "seconds": 83.0,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "failed_tests": [],
+      "detail": "OK"
+    },
+    "gates": {
+      "ok": true,
+      "gates": [
+        {
+          "id": "t00_foundation",
+          "outcome": "one authority, one numbering, no inherited memory",
+          "passed": 25,
+          "failed": 0,
+          "skipped": 0,
+          "total": 25,
+          "verdict": "PASS",
+          "failures": [],
+          "skips": [],
+          "partial": [],
+          "seconds": 86.8
+        },
+        {
+          "id": "t01_ship_manifest",
+          "outcome": "one declared ship manifest, and a payload containing only the product",
+          "passed": 23,
+          "failed": 0,
+          "skipped": 0,
+          "total": 23,
+          "verdict": "PASS",
+          "failures": [],
+          "skips": [],
+          "partial": [
+            "no build-machine path or known predecessor sentinel ships",
+            "the payload fixture is produced"
+          ],
+          "seconds": 1.4
+        },
+        {
+          "id": "t02_ledger_presence",
+          "outcome": "two channels, one seam: a readable attributed ledger, ephemeral presence",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 0,
+          "total": 18,
+          "verdict": "PASS",
+          "failures": [],
+          "skips": [],
+          "partial": [],
+          "seconds": 0.4
+        },
+        {
+          "id": "t03_live_channel",
+          "outcome": "a change announces itself: each party sees the other act",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 0,
+          "total": 13,
+          "verdict": "PASS",
+          "failures": [],
+          "skips": [],
+          "partial": [],
+          "seconds": 0.4
+        },
+        {
+          "id": "t04_cancellation",
+          "outcome": "long work is observable while it runs, and can be stopped cleanly",
+          "passed": 12,
+          "failed": 0,
+          "skipped": 0,
+          "total": 12,
+          "verdict": "PASS",
+          "failures": [],
+          "skips": [],
+          "partial": [
+            "explicit cancel reaps the GRANDCHILD too",
+            "seam shutdown reaps the GRANDCHILD too"
+          ],
+          "seconds": 7.6
+        },
+        {
+          "id": "t05_ownership_model",
+          "outcome": "one authority per normative fact, and a stated deployment topology",
+          "passed": 52,
+          "failed": 0,
+          "skipped": 0,
+          "total": 52,
+          "verdict": "PASS",
+          "failures": [],
+          "skips": [],
+          "partial": [],
+          "seconds": 0.0
+        },
+        {
+          "id": "t06_instance_identity",
+          "outcome": "one instance identity, created by the product installer, resolved structurally",
+          "passed": 27,
+          "failed": 0,
+          "skipped": 0,
+          "total": 27,
+          "verdict": "PASS",
+          "failures": [],
+          "skips": [],
+          "partial": [],
+          "seconds": 16.8
+        },
+        {
+          "id": "t07_shared_awareness",
+          "outcome": "one compact evidence-backed awareness revision, persisted against the instance, identical for human and agent",
+          "passed": 40,
+          "failed": 0,
+          "skipped": 0,
+          "total": 40,
+          "verdict": "PASS",
+          "failures": [],
+          "skips": [],
+          "partial": [],
+          "seconds": 95.0
+        },
+        {
+          "id": "t08_governed_loop",
+          "outcome": "a reviewed, attributable, verifiable change against shared awareness, without losing the evidence of what was approved",
+          "passed": 52,
+          "failed": 0,
+          "skipped": 0,
+          "total": 52,
+          "verdict": "PASS",
+          "failures": [],
+          "skips": [],
+          "partial": [],
+          "seconds": 93.1
+        }
+      ],
+      "narrowed_to": null,
+      "total_assertions": 262,
+      "total_passed": 262
+    },
+    "discovery": {
+      "ok": true,
+      "exit": 0,
+      "target": "_UsefulHelperSCRIPTS",
+      "run_dir": "20260819-205707-_UsefulHelperSCRIPTS",
+      "scores": {
+        "precept": {
+          "pass": true,
+          "install_violations": 0,
+          "runtime_violations": 0
+        },
+        "front_door": {
+          "pass": true,
+          "mode": "mapped",
+          "domain": "python-app",
+          "domain_expected": null,
+          "domain_correct": null,
+          "mounted": 24
+        },
+        "composition": null,
+        "tool_health": {
+          "ran": 12,
+          "ok": 12,
+          "failed": 0,
+          "skipped": 12,
+          "rate": 1.0,
+          "failures": []
+        },
+        "truthfulness": {
+          "false_positives": null,
+          "naive_false_positives": null,
+          "policy_prevented": null,
+          "missed_true_positives": null
+        },
+        "enforcement": {
+          "pass": true,
+          "rejected": true,
+          "detected_write": true
+        },
+        "cleanliness": {
+          "pass": true,
+          "hits": 0
+        }
+      },
+      "failed_axes": [],
+      "tools_exercised": 12,
+      "no_verdict_axes": [
+        "composition",
+        "tool_health",
+        "truthfulness"
+      ],
+      "axes": {
+        "precept": {
+          "install": {
+            "added": [],
+            "removed": [],
+            "modified": [],
+            "total": 0
+          },
+          "runtime": {
+            "added": [],
+            "removed": [],
+            "modified": [],
+            "total": 0
+          }
+        },
+        "enforcement": {
+          "tested": true,
+          "rejected": true,
+          "detected_write": true,
+          "error": "precept violation: 'harnessevilprobe' (writes=none) modified the target it may not write to: ['C:\\\\Jacob\\\\_AppDesign\\\\_SANDBOX\\\\.useful-helpers-workbench\\\\_harness\\\\targets\\\\_UsefulHelperSCRIPTS\\\\HARNESS_PRECEPT_PROBE.txt']"
+        },
+        "lineage_hits": 0
+      },
+      "detail": ""
+    }
+  }
+}
