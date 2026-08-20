@@ -3613,6 +3613,167 @@ class SpineSmokeTest(unittest.TestCase):
                 for x in (env.get("limitations") or [])),
             f"limitations must name the failure; got {env.get('limitations')}")
 
+    def test_parity_behaviours_are_covered_by_the_certified_suite(self):
+        """The five capabilities parity added, guarded where certification can see them.
+
+        WHY THIS TEST EXISTS. Parity closure produced five new product behaviours -
+        `write_file unique`, `git paths`, `git pull --rebase`, `git branch`, and
+        `patch.files` - and every one of them was proven ONLY by
+        `_docs/parity/parity_check.py`. `certify.py` runs lint, the suite, the gates and
+        the discovery pass; it does not run the parity scripts. So the certified state had
+        ZERO coverage of the newest behaviour in the product, and a later change could have
+        broken any of it with every certification still green.
+
+        A closure gate proves a thing was delivered once. A regression guard proves it is
+        still there. Those are different jobs, and parity only did the first.
+
+        The parity scripts remain the fuller record - fixtures, expected product, observed
+        evidence per row. This is the thin standing guard over the same behaviour.
+        """
+        import shutil as _sh
+        import subprocess as _sp
+        import tempfile as _tf
+        from pathlib import Path as _P
+
+        from src.core import invoke as invoke_mod
+
+        # ---- write_file `unique`: creates rather than refuses, and never collides
+        probe_dir = self.paths.root / "_artifacts" / "_parity_unique"
+        probe_dir.mkdir(parents=True, exist_ok=True)
+        note = probe_dir / "note.txt"
+        note.write_text("original\n", encoding="utf-8")
+        self.addCleanup(lambda: _sh.rmtree(probe_dir, ignore_errors=True))
+        seen = set()
+        for i in range(3):
+            r = invoke_mod.invoke(self.paths, "write_file",
+                                  {"path": str(probe_dir / "note.txt"),
+                                   "content": f"u{i}\n", "overwrite": False,
+                                   "unique": True, "apply": True})
+            self.assertTrue(r.ok, msg=getattr(r, "error", None))
+            seen.add((r.output or {}).get("path"))
+        self.assertEqual(len(seen), 3,
+                         f"a timestamp alone is not uniqueness; got {seen}")
+        self.assertEqual(note.read_text(encoding="utf-8"), "original\n",
+                         "uniquifying must not touch the file whose name was taken")
+
+        # ---- patch multi-file: applied as ONE unit, or not at all
+        multi = probe_dir / "multi"
+        multi.mkdir()
+        (multi / "a.py").write_text("V = 'a'\n", encoding="utf-8")
+        (multi / "b.py").write_text("V = 'b'\n", encoding="utf-8")
+        r = invoke_mod.invoke(self.paths, "patch", {
+            "action": "apply", "apply": True, "patch": {"files": [
+                {"path": str(multi / "a.py"),
+                 "hunks": [{"search_block": "V = 'a'", "replace_block": "V = 'A'"}]},
+                {"path": str(multi / "b.py"),
+                 "hunks": [{"search_block": "V = 'b'", "replace_block": "V = 'B'"}]}]}})
+        self.assertTrue(r.ok, msg=getattr(r, "error", None))
+        self.assertIn("V = 'A'", (multi / "a.py").read_text(encoding="utf-8"))
+        self.assertIn("V = 'B'", (multi / "b.py").read_text(encoding="utf-8"))
+
+        (multi / "c.py").write_text("V = 'c'\n", encoding="utf-8")
+        r = invoke_mod.invoke(self.paths, "patch", {
+            "action": "apply", "apply": True, "patch": {"files": [
+                {"path": str(multi / "c.py"),
+                 "hunks": [{"search_block": "V = 'c'", "replace_block": "V = 'C'"}]},
+                {"path": str(multi / "a.py"),
+                 "hunks": [{"search_block": "NOT PRESENT", "replace_block": "X"}]}]}})
+        self.assertFalse(r.ok, "a set with a rejected file must not be reported ok")
+        self.assertEqual((multi / "c.py").read_text(encoding="utf-8"), "V = 'c'\n",
+                         "partial application is worse than refusal")
+
+        # ---- patch containment: it resolved paths with no roots check at all.
+        #
+        # ASSERT THE REASON, NOT MERELY THE REFUSAL. The first version asserted only
+        # `not r.ok`, and passed whether containment existed or not: without the guard the
+        # traversal path simply did not resolve, so the call failed as "not a file" - a
+        # refusal for a reason having nothing to do with containment. Mutation-verified.
+        #
+        # My second attempt wrote a real file "outside the roots" and asserted it was
+        # refused. It was not: THE SUITE REDIRECTS `tempfile` INTO THE REPO, so the file
+        # was inside the toolkit home and `patch` was right to accept it. A fixture that
+        # cannot produce the condition it names proves nothing about the guard.
+        #
+        # Requiring the containment WORDING discriminates without creating anything
+        # outside the tree: with the guard the error names the escape; without it, the
+        # error is about a missing file.
+        r = invoke_mod.invoke(self.paths, "patch", {
+            "action": "validate", "path": "../../../../etc/hostname",
+            "patch": {"hunks": [{"search_block": "x", "replace_block": "y"}]}})
+        self.assertFalse(r.ok, "patch must refuse a path outside the roots")
+        self.assertIn("escape", str(getattr(r, "error", "")).lower(),
+                      "the refusal must come from the roots check, not from the file "
+                      f"happening not to exist; got {r.error!r}")
+
+        # ---- git: explicit staging, branch, and pull-before-push
+        repo = _P(_tf.mkdtemp(prefix="parity-git-unit-"))
+        self.addCleanup(lambda: _sh.rmtree(repo, ignore_errors=True))
+
+        def _g(where, *a):
+            return _sp.run(["git", *a], cwd=str(where), capture_output=True, text=True)
+
+        if _g(repo, "init", "-q").returncode != 0:
+            self.skipTest("git is not available on PATH")
+        _g(repo, "config", "user.email", "p@l")
+        _g(repo, "config", "user.name", "p")
+        (repo / ".gitignore").write_text("*.log\n", encoding="utf-8")
+        (repo / "base.txt").write_text("b\n", encoding="utf-8")
+        _g(repo, "add", ".")
+        _g(repo, "commit", "-qm", "base")
+
+        (repo / "approved.txt").write_text("yes\n", encoding="utf-8")
+        (repo / "unapproved.txt").write_text("no\n", encoding="utf-8")
+        r = invoke_mod.invoke(self.paths, "git",
+                              {"repo": str(repo), "action": "commit",
+                               "message": "approved only", "paths": ["approved.txt"],
+                               "apply": True})
+        self.assertTrue(r.ok, msg=getattr(r, "error", None))
+        named = _g(repo, "show", "--name-only", "--format=", "HEAD").stdout
+        self.assertIn("approved.txt", named)
+        self.assertNotIn("unapproved.txt", named,
+                         "`add .` staged everything; the approved set is the product")
+
+        r = invoke_mod.invoke(self.paths, "git",
+                              {"repo": str(repo), "action": "branch",
+                               "branch": "topic", "create": True, "apply": True})
+        self.assertTrue(r.ok, msg=getattr(r, "error", None))
+        self.assertIs((r.output or {}).get("clean"), False,
+                      "switching with uncommitted work must report the dirty state")
+        self.assertEqual(
+            _g(repo, "rev-parse", "--abbrev-ref", "HEAD").stdout.strip(), "topic")
+
+        # PULL BEFORE PUSH, proven from repository evidence. The remote is advanced from a
+        # second clone, so the upstream commit can ONLY arrive by a real pull - and the
+        # ORDER matters, because a pull after a push proves nothing.
+        _g(repo, "checkout", "-q", "-")
+        bare = repo.parent / "origin.git"
+        _sp.run(["git", "init", "-q", "--bare", str(bare)], check=False)
+        _g(repo, "remote", "add", "origin", str(bare))
+        _g(repo, "push", "-q", "-u", "origin", "HEAD")
+        clone = repo.parent / "clone"
+        _sp.run(["git", "clone", "-q", str(bare), str(clone)], check=False)
+        self.addCleanup(lambda: _sh.rmtree(clone, ignore_errors=True))
+        self.addCleanup(lambda: _sh.rmtree(bare, ignore_errors=True))
+        _g(clone, "config", "user.email", "o@l")
+        _g(clone, "config", "user.name", "o")
+        (clone / "upstream.txt").write_text("u\n", encoding="utf-8")
+        _g(clone, "add", ".")
+        _g(clone, "commit", "-qm", "upstream")
+        _g(clone, "push", "-q")
+
+        (repo / "local.txt").write_text("l\n", encoding="utf-8")
+        r = invoke_mod.invoke(self.paths, "git",
+                              {"repo": str(repo), "action": "sync",
+                               "message": "local change", "pull": True, "apply": True})
+        self.assertTrue(r.ok, msg=getattr(r, "error", None))
+        verbs = [(s.get("cmd", "").split() + ["", ""])[1]
+                 for s in ((r.output or {}).get("steps") or [])]
+        self.assertIn("pull", verbs)
+        self.assertLess(verbs.index("pull"), verbs.index("push"),
+                        f"pull must precede push; verbs={verbs}")
+        self.assertTrue((repo / "upstream.txt").is_file(),
+                        "a pull that integrates nothing is a ceremony, not a product")
+
 
 if __name__ == "__main__":
     unittest.main()

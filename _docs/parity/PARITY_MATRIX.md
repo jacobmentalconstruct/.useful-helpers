@@ -100,7 +100,7 @@ Each at its existing natural owner, smallest change first, every one backward co
 | 1.6 | record `exclude_paths` / `output_path` / `markdown_requested` in the database **and** the manifest, and rebuild `regenerate_command` from the values the scan actually used | `apps/projectmapper` |
 | 2.5 | `patch.files: [{path, hunks}]` — a patch SET validated in full before any file is written | `tools/patch` |
 | 4.2 | `paths: [...]` stages an explicit approved set instead of `add .` | `tools/git` |
-| 4.6 | `pull: true` runs `git pull --ff-only` **before** push in `sync` | `tools/git` |
+| 4.6 | `pull: true` runs `git pull --rebase` **before** push in `sync`, aborting a failed rebase | `tools/git` |
 | 4.7 | `action: branch` — list, or switch/create, with the dirty state reported | `tools/git` |
 | 6.4 | `unique: true` creates a timestamp-suffixed sibling instead of refusing | `tools/write_file` |
 
@@ -116,8 +116,13 @@ semantics are not part of this row.
 was *asked for* rather than what was *used* would reintroduce the same gap one level down,
 since `exclude_paths` is normalised before use.
 
-**4.6 is opt-in.** A pull can produce a merge or a conflict; silently changing what `sync`
-does for every existing caller would be a behaviour change smuggled in under a parity fix.
+**4.6 is opt-in, and it is `--rebase`, not `--ff-only`.** Opt-in because a pull can merge
+or conflict, and changing `sync` for every existing caller would be a behaviour change
+smuggled in under a parity fix. `--rebase` because `--ff-only` shipped first and was safe
+but *useless in the only flow that reaches it*: `sync` commits before pulling, so any
+remote advance is a divergence, so the pull always refused and the push never happened.
+Caught by assertion **4.6b**, which advances the remote from a second clone and requires
+the upstream file to appear locally — command text would never have shown it.
 
 **4.7 reports the dirty state rather than refusing.** Git already refuses a switch that
 would destroy work; refusing the ones git permits would make the tool less capable than

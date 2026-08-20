@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """
 FILE:       _docs/parity/parity_check.py
-ROLE:       The bounded parity verifier - six assertions, one per FAILING census row.
+ROLE:       The bounded parity verifier - the six repaired rows, plus five
+            discriminating checks the operator required (11 assertions).
 DOMAIN:     factory
 DOES:       Drives the CURRENT governed runtime against a small fixture and asserts the
-            six owed useful outcomes from PARITY_MATRIX.md. Prints one line per row.
+            six owed useful outcomes from PARITY_MATRIX.md, and the harder second
+            question each one invites. Prints one line per assertion.
 DEPENDS ON: stdlib only. Calls the product through `src.app cli tool-call`.
 NOTES:      DELIBERATELY NOT A GATE FRAMEWORK. `gates/run.py` already exists and is the
             right home for tranche outcomes; parity is a finite closure list of six rows
-            that will be deleted from the "owed" column once green. Six assertions in one
-            file is the proportionate instrument. If this grows a plugin system, it has
+            that leave the "owed" column once green. Eleven assertions in one file is the
+            proportionate instrument. If this grows a plugin system, it has
             become the thing the C1 anti-scope-creep rule forbids.
 
             EVERY ASSERTION GOES THROUGH THE SEAM, not through an import. A parity row is
@@ -331,7 +333,8 @@ def main() -> int:
         for d in (soft.parent, repo.parent):
             shutil.rmtree(d, ignore_errors=True)
 
-    print("\nPARITY — the six owed rows\n" + "-" * 74)
+    print("\nPARITY — the six owed rows, and the checks that discriminate them\n"
+          + "-" * 74)
     for name, ok, detail in ROWS:
         print(f"  [{'PASS' if ok else 'FAIL'}] {name}")
         if not ok:

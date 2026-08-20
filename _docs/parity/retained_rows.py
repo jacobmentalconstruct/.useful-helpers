@@ -127,11 +127,10 @@ def make_repo() -> Path:
 def rows_01(t: Path) -> None:
     db = t / ".pm" / "snap.sqlite3"
     env = call(t, "projectmapper", {"action": "compile", "root": ".", "name": "parity",
-                                    "out": str(db), "markdown": ["tree", "filedump",
-                                                                 "combined", "manifest"],
+                                    "out": str(db), "markdown": True,
                                     "apply": True})
     o = out(env)
-    inv = "projectmapper compile root=. markdown=[tree,filedump,combined,manifest]"
+    inv = "projectmapper compile root=. markdown=true"
     import sqlite3
     tables, files = [], 0
     if db.is_file():
