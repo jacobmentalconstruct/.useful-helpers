@@ -2,8 +2,24 @@
 
 - **Date:** 2026-08-20
 - **Closure gate:** 1 of 2 (parity), after T8 parked at `445a68c`, before release certification.
-- **Stage:** **CENSUS RESOLVED.** Every row carries a disposition. No implementation work
-  has been done. No donor repaired, no workbench redesigned, no architecture added.
+- **Stage:** **CENSUS FROZEN 2026-08-20 — the parity baseline.** Every row carries a
+  disposition. **No further donor reinterpretation while implementing**, unless execution
+  produces contradictory evidence — in which case the contradiction is recorded here and
+  the row re-adjudicated, never quietly re-read.
+- **Verifier:** `_docs/parity/parity_check.py` — six assertions, one per failing row,
+  every one driven through the governed CLI entrance. Red baseline: **0/6**.
+
+### Operator rulings closing the two judgment calls, 2026-08-20
+
+- **3.4 — no seventh debt.** A literal AST-tree representation is not itself a retained
+  product requirement when the useful outcome (structural / code-relationship inspection)
+  is already reproduced. *Preserve the useful analytical outcome, not the donor's
+  particular intermediate representation.* Disposition stands: **Retained — composed**.
+- **8.8 — Superseded stands.** Where the donor contract itself defines the mechanism as
+  *replacing* recursive spawning, and the current governed runtime already embodies that
+  replacement, the obsolete mechanism is not recreated for parity's sake.
+
+**Superseded rows require rationale, not imitation.**
 
 ---
 
