@@ -278,6 +278,68 @@ and truthful degradation is.**
 An empty directory and a folder of PDFs are legitimate targets whose awareness is
 legitimately thinner. Forcing either into a software ontology is a defect.
 
+#### C4a. The three targets stay REAL. Oracles are added beside them, not into them.
+
+*Operator ruling, 2026-08-20, after 0038 §12 found that `composition` and `truthfulness`
+never execute on adopted targets.*
+
+**The obvious fix is the wrong one.** Seeding A, B or C with planted bait, or replacing
+them with synthetic scaffolds so every harness column obtains a number, would destroy the
+reason C4 exists. **The real adopted targets must remain real.**
+
+Two different proof requirements were being collapsed into one:
+
+| | question it answers | target kind |
+| --- | --- | --- |
+| **Product acceptance** | does the product stay useful where *we do not already know the answer*? | real / adopted A, B, C |
+| **Instrument calibration** | do `composition` and `truthfulness` actually **discriminate**, on a case where the answer *is* known? | scaffolded, oracle-bearing |
+
+Only synthetic targets risks a product exquisitely adapted to its own tests. Only real
+targets risks beautiful green reports where correctness was never measurable. **Both, or
+neither is worth much.**
+
+**No new fixtures are needed — the harness already has exactly the two controls.**
+Verified against source 2026-08-20:
+
+- `_composite` — Python backend + TypeScript frontend + records archive, with
+  `expected_composite: true` and `expected_subsystem_domains` naming all three. It
+  deliberately declares **no** `expected_domain`, because a composite target has no
+  meaningful whole-target domain. Its own comment records why it exists: the real
+  monorepo to hand was 13 homogeneous Python apps, so it could exercise subsystem
+  machinery without ever proving *heterogeneous* composite detection.
+- `_python_app` — five `false_positive_bait` entries across three `caught_by` classes
+  (`defaults`, `not-mounted`, `cartridge`) plus one `true_positives` entry
+  (`genuinely_unused`).
+
+##### The aggregate walk fails for COVERAGE, not only for per-run failures
+
+| requirement | rule |
+| --- | --- |
+| **C4 coverage** | A, B and C each executed successfully, with their differing richness reported honestly |
+| **Composition calibration** | ≥1 oracle-bearing heterogeneous target; the score **exists**; `composite_correct` true; every `expected_subsystem_domains` entry matched; `mismatches` empty |
+| **Truthfulness calibration** | ≥1 oracle-bearing bait target; numeric rather than null; `false_positives == 0`; `missed_true_positives == 0`; **and `naive_false_positives > 0` with `policy_prevented > 0`** |
+
+**A null axis cannot satisfy aggregate coverage.**
+
+**That last clause is the load-bearing one.** `false_positives == 0` on its own is also
+what "nothing meaningful was exercised" looks like. The chain *naive produced 1 → policy
+prevented 1 → faithful output produced 0 → the genuine positive was still found* proves
+the machinery had something to distinguish. It is the same discipline as T8's interference
+preserving the pattern's match count: **make the easy explanation impossible.**
+
+##### Report unscored, not N/A
+
+On an adopted target without a `_ground_truth.json`, those axes are reported as
+`unscored — no oracle`, never as N/A and never as pass. **Lack of an oracle is lack of
+measurement, not lack of relevance** — truthfulness matters on `_theCELL`; we simply
+cannot compute a false-positive rate there without independently establishing what is
+true. `not applicable` is reserved for where the property genuinely does not apply, such
+as composition on a target with no meaningful subsystems.
+
+*Smallest change only.* The existing `_composite`, `_python_app`, `_ground_truth.json`
+and `score()` machinery already supply every field named above. **No new harness
+subsystem, ground-truth framework, target ontology or product mechanism.**
+
 ---
 
 ## End-State Scoreboard
@@ -1413,7 +1475,7 @@ that contradiction is what this correction removes.
 | ~~**The discovery pass stopped executing three axes**~~ — `gates/t02` `setdefault`s `SUITE_PROJECT_ROOT` and never restores it; `certify.py` runs the gates IN-PROCESS then spawns the harness, which inherits it and is refused by T6's instance binding. `front_door`, `tool_health` (12 → 0 probes) and `enforcement` all derive from that path | 0038 §11 | **CLOSED in code, PENDING re-certification.** t02 now restores; the harness scrubs the three root vars so identity resolves. Dating confirms it: `certify.py` landed 08-18 09:26 and the 10:33 run was the first it drove and the first to go dark, while the T6 guard had run green since 08-13. My first attribution (`ro_probe_inner.py:32`) was wrong and is struck through in 0038 §5 |
 | ~~**`certify.py` reported PASS while the discovery pass had failing and unexecuted axes**~~ | 0038 | **CLOSED in 0038.** The step's verdict came from the harness exit code alone while the contradicting scores sat in the record it wrote. Now `pass: false` fails the step, no-verdict axes are listed as `not_scored`, and both print under the verdict. The same file also counted `--skip-discovery` as a PASS against its own help text; a skip is now `INCOMPLETE` |
 | **`tool_health` reports a rate with no threshold** — 12/12 on the current target, but the harness defines no bar, so the axis can neither pass nor fail | 0038 §12 | Low-medium. A measurement without a bar is not a verdict; certification now reports it rather than pretending. Set a bar deliberately, or state that it is informational by design |
-| **`composition` and `truthfulness` never run on ADOPTED targets** — both are computed only when a `_ground_truth.json` declares expectations, and adopted real targets have none | 0038 §12 | **Medium — matters for C4.** If all three acceptance targets are adopted, two whole axes of the acceptance walk never execute and the walk looks green while measuring less than it claims |
+| ~~**`composition` and `truthfulness` never run on ADOPTED targets**~~ | 0038 §12 | **RESOLVED as a rule, PENDING in the walk — see C4a.** The three C4 targets stay real; two existing scaffolded oracle controls are added beside them. Certification now reports these axes as `unscored — no oracle` with the reason, rather than as N/A or pass. The aggregate walk must fail for coverage if either axis was never measured on a control |
 | **Manifest-truth pass: 26 Apply tools declare no `writes` field** — measured 2026-08-19 against 94 manifests; 8 declare `target`. Several plainly write into the target (`git`, `test_scaffold`, `bd_index`, the `pdf_*` family) and are inferred `toolkit` | T8 (census only) | Medium. The declaration is the INPUT to measurement, so a mis-declared tool is invisible to anything keyed on `writes: target`. `patch` was corrected in T8 because it is on the Apply path; correcting the other 25 is a bounded audit of what each tool actually touches, and is **not** T8's business. Recorded so the class is not rediscovered later as if it were news |
 | **`dev_server_manager` imports `tools.command_profile.cli` directly** — route via `seam_call`, or extract a `*_shared` module? | 0034 | Medium. The call produces no ledger entry, so a capability is exercised without attribution. Behaviour-changing, and unrelated to T7 |
 | **`cartridge_conflicts` is referenced only in its own file** — built in T5 for the governance cartridge | 0034 | Low — `P-install-packaging` owns the decision; deleting work already done for a scheduled tranche is not a review's call |

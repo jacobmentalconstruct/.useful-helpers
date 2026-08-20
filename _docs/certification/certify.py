@@ -210,10 +210,38 @@ def step_discovery(target: str) -> dict:
     ran = health.get("ran")
     did_not_run = bool(scores) and (ran == 0 or ran is None)
 
-    # Still reported, never fatal. Absence must stay VISIBLE - that part of the original
-    # concern was right - but visible is not the same as failing.
-    no_verdict = sorted(k for k, v in scores.items()
-                        if v is None or (isinstance(v, dict) and "pass" not in v))
+    # ABSENCE HAS FOUR SHAPES AND THE FOURTH IS THE ONE THAT BITES.
+    #
+    #   not asked for              -> proceed
+    #   asked and failed           -> refuse                    (failed_axes, above)
+    #   NOT APPLICABLE             -> report, do not judge
+    #   APPLICABLE BUT UNMEASURED  -> report as UNSCORED, and never let it satisfy coverage
+    #
+    # The last two are not variants of each other, and collapsing them is the next false
+    # green waiting to happen. Truthfulness absolutely MATTERS on a real adopted target -
+    # we simply cannot compute a false-positive rate there without independently
+    # establishing what is true and what is false. Calling that "N/A" claims the property
+    # is irrelevant when it is merely unmeasured.
+    #
+    # Read from the record, not inferred: the harness writes `ground_truth` per run, and
+    # it is `{}` for an adopted target. So "there was no oracle" is EVIDENCE here.
+    truth = record.get("ground_truth") or {}
+    has_composition_oracle = bool(truth.get("expected_composite") is not None
+                                  or truth.get("expected_subsystem_domains"))
+    has_bait_oracle = bool(truth.get("false_positive_bait"))
+    reason_for = {
+        "composition": ("unscored - no composition oracle (target declares no "
+                        "expected_composite / expected_subsystem_domains)")
+        if not has_composition_oracle else "unscored - oracle present but no score produced",
+        "truthfulness": ("unscored - no truthfulness oracle (target plants no "
+                         "false_positive_bait)")
+        if not has_bait_oracle else "unscored - oracle present but no score produced",
+        "tool_health": "unscored - the harness defines no threshold for this rate",
+    }
+    unscored = {k: reason_for.get(k, "unscored - no verdict produced")
+                for k, v in sorted(scores.items())
+                if v is None or (isinstance(v, dict) and "pass" not in v)}
+    no_verdict = sorted(unscored)
     reasons = []
     if rc != 0:
         reasons.append(f"harness exited {rc}")
@@ -227,10 +255,13 @@ def step_discovery(target: str) -> dict:
             "scores": scores,
             "failed_axes": failed_axes,
             "tools_exercised": ran,
-            # Informational. `composition`/`truthfulness` are N/A without planted ground
-            # truth; `tool_health` reports a rate the harness never set a bar for. Both
-            # are worth seeing and neither is a failure of this run.
+            # Informational FOR A SINGLE RUN, and binding for the aggregate acceptance
+            # walk: a null axis cannot satisfy coverage there. Each carries WHY it is
+            # unscored, so "no oracle exists" is never mistaken for "measured and fine".
             "no_verdict_axes": no_verdict,
+            "unscored": unscored,
+            "has_oracle": {"composition": has_composition_oracle,
+                           "truthfulness": has_bait_oracle},
             "axes": {k: record.get(k) for k in
                      ("precept", "enforcement", "lineage_hits") if k in record},
             "detail": "; ".join(reasons) or ((err or out)[-400:] if rc else "")}
@@ -292,9 +323,8 @@ def main(argv=None) -> int:
         print(f"        {'ok' if disc['ok'] else 'FAILED'}  {disc.get('detail', '')}")
         for axis in disc.get("failed_axes") or []:
             print(f"          FAILED axis   {axis}")
-        for axis in disc.get("no_verdict_axes") or []:
-            print(f"          no verdict    {axis}  (measurement axis, or N/A without "
-                  f"planted ground truth - shown, not counted)")
+        for axis, why in (disc.get("unscored") or {}).items():
+            print(f"          UNSCORED      {axis}: {why}")
 
     # A SKIP IS NOT A PASS, and this counted one as a pass while the flag's own help text
     # said "recorded as skipped, never as passing". `gates/run.py` has always reported
