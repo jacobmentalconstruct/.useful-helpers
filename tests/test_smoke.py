@@ -91,8 +91,26 @@ class SpineSmokeTest(unittest.TestCase):
             return str(path)
 
         tempfile.mkdtemp = _suite_mkdtemp
+        # ONLY OVERRIDE WHEN THERE IS NO IDENTITY TO RESOLVE.
+        #
+        # The suite ships, and `run.sh smoke` is a documented product command - "verify
+        # this installation". Setting SUITE_PROJECT_ROOT unconditionally made that command
+        # fail in EVERY installed instance: the variable pointed at the instance directory
+        # while the instance is canonically bound to its target, so T6 refused it and the
+        # whole suite errored during collection. `Ran 0 tests ... FAILED (errors=1)` was
+        # the shipped self-check reporting the product broken because of the check itself.
+        #
+        # In the source factory there is no instance, so `_resolve_project_root` has no
+        # identity to read and genuinely needs the variable. Where an identity exists it
+        # is the authority - the same rule `config.py` applies one layer down, and the
+        # same distinction the harness needed: bind, do not override transport.
+        #
+        # Found by the release verifier, which is the first thing to run this command the
+        # way a user does: from an installed instance rather than from the checkout.
         prev = os.environ.get("SUITE_PROJECT_ROOT")
-        os.environ["SUITE_PROJECT_ROOT"] = str(home)
+        installed = (home / "instance.json").is_file()
+        if not installed:
+            os.environ["SUITE_PROJECT_ROOT"] = str(home)
         try:
             cls.paths = resolve_paths()
         finally:

@@ -14,7 +14,18 @@ import ast
 from collections import Counter, defaultdict
 
 from tools._toolkit import tool_main
-from tools.code_intel_shared import module_name, parse_python_files, python_import_names, resolve_root
+from tools.code_intel_shared import (
+    iter_python_files,
+    module_name,
+    parse_python_files,
+    python_import_names,
+    resolve_root,
+)
+
+#: How far the cheap PATH-ONLY module index may walk. Bounded like everything else, but
+#: an order above the parse cap: collecting names costs no read, so the thing that makes
+#: internal/external classification correct should not be the thing that runs out first.
+MODULE_INDEX_CAP = 5000
 
 
 def _resolve_internal(import_name: str, modules: set[str], aliases: dict[str, str]) -> str:
@@ -70,8 +81,28 @@ def run(args: dict) -> dict:
     cycle_limit = max(0, min(int(args.get("cycle_limit", 20)), 100))
     parsed = parse_python_files(root, max_files=max_files)
 
+    # THE MODULE UNIVERSE COMES FROM PATHS, NOT FROM PARSING.
+    #
+    # `modules` was built from the CAPPED parse set, so on a project larger than the cap
+    # every import pointing at an unparsed file was classified EXTERNAL. That does not
+    # degrade the answer, it INVERTS it: measured on a real 805-file target, the default
+    # cap of 500 produced `internal_edges: 0` and `hubs: []`, while the same target
+    # uncapped produced 681 edges and 50 hotspots. Zero is not a smaller version of 681 -
+    # it is the opposite claim, reported with the same confidence.
+    #
+    # Awareness promotes its canonical handles from those hubs, so the visible symptom was
+    # `attach` offering NO handles at all on a nontrivial software project - the T8 loop's
+    # first step, "start from a handle awareness promoted", had nothing to start from.
+    #
+    # A module NAME is derived from its path; it costs no read and no parse. So the index
+    # spans the whole tree while the expensive half stays bounded, and truncating the
+    # parse now loses edges it could not see rather than misclassifying the ones it could.
+    #
+    # Found by the release walk against a real target. Every fixture before it was smaller
+    # than the cap, which is exactly why none of them could see this.
+    index_paths = iter_python_files(root, max_files=MODULE_INDEX_CAP)
+    modules = {m for m in (module_name(root, p) for p in index_paths) if m}
     module_by_path = {p.rel: module_name(root, p.path) for p in parsed}
-    modules = set(module_by_path.values())
     aliases = {f"{root.name}.{mod}": mod for mod in modules if mod}
     imports = []
     internal_edges = []
