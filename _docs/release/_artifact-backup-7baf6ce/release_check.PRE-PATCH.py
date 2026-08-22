@@ -28,12 +28,9 @@ import json
 import os
 import platform
 import shutil
-import signal
-import stat
 import subprocess
 import sys
 import tempfile
-import time
 from pathlib import Path
 
 DEV = Path(__file__).resolve().parent.parent.parent
@@ -41,104 +38,15 @@ CHECKS: list[dict] = []
 SIDECAR = ".useful-helpers"
 
 
-_LAST_CHECK = time.monotonic()
-
-
-def check(step: str, name: str, ok: bool, detail: str = "", note: str = "") -> bool:
-    """EVERY CHECK IS PRINTED THE MOMENT IT IS DECIDED, not in a report at the end.
-
-    `note` IS EVIDENCE THAT SURVIVES A PASS. `detail` is only shown and only read when a
-    check fails, which meant the Windows smoke run - 184 seconds, `rc=0`, green - recorded
-    nothing at all. The launcher had lost the exit code in a parenthesized block and was
-    reporting success for a suite that failed; the test counts would have said so on the
-    first run, and they were thrown away because the check passed. A measurement is worth
-    keeping whichever way it came out.
-
-    The report used to be the only output, so a run that took thirty minutes and then
-    wedged showed a single workspace path and nothing else - no stage, no progress, no
-    way to tell a slow run from a dead one without a process explorer. The instrument
-    was unobservable exactly when observing it mattered, and the operator paid for that
-    in wall-clock. The elapsed figure is the gap since the previous check, which is what
-    makes the expensive step name itself.
-
-    The formal report at the end is unchanged. This is the live feed, not a replacement.
-    """
-    global _LAST_CHECK
-    CHECKS.append({"step": step, "name": name, "ok": bool(ok),
-                   "detail": detail, "note": note})
-    now = time.monotonic()
-    print(f"  [{'PASS' if ok else 'FAIL'}] {step} | {name}  ({now - _LAST_CHECK:.1f}s)",
-          flush=True)
-    if note:
-        print(f"         {note}", flush=True)
-    if not ok:
-        print(f"         {detail}", flush=True)
-    _LAST_CHECK = now
+def check(step: str, name: str, ok: bool, detail: str = "") -> bool:
+    CHECKS.append({"step": step, "name": name, "ok": bool(ok), "detail": detail})
     return bool(ok)
 
 
-def _kill_tree(p: subprocess.Popen) -> None:
-    """Kill the child AND everything it spawned.
-
-    `Popen.kill()` kills one process. On Windows a `.bat` is run by cmd.exe, so the
-    python.exe doing the actual work is a GRANDCHILD: killing the child leaves it alive,
-    still holding the inherited stdout pipe, and the wait for that pipe to close then
-    blocks forever - past the timeout, with no output, indefinitely. A timeout that
-    cannot end the thing it timed out on is not a timeout.
-    """
-    if os.name == "nt":
-        subprocess.run(["taskkill", "/F", "/T", "/PID", str(p.pid)],
-                       capture_output=True)
-    else:
-        try:
-            os.killpg(os.getpgid(p.pid), signal.SIGKILL)
-        except (ProcessLookupError, PermissionError):
-            p.kill()
-
-
 def run(cmd, cwd=None, timeout=600, env=None):
-    """STDIN IS CLOSED, NEVER THE OPERATOR'S CONSOLE - and a timeout really ends things.
-
-    Without `stdin=DEVNULL` every child inherits whatever the verifier was launched
-    with, and the MCP entrance check - `run.bat mcp`, a STDIO server - reads stdin until
-    EOF. Launched from an interactive Windows console that EOF never comes. The Linux
-    leg could never see it: under `nohup` stdin is already /dev/null, so the server got
-    its EOF and the check passed. A verifier whose result depends on how the operator
-    started it is measuring the operator, not the product.
-
-    The timeout path is spelled out rather than left to `subprocess.run`, because the
-    convenience wrapper kills only the direct child and then waits on pipes the survivors
-    still hold. A slow `run.bat smoke` therefore hung the whole gate with no output and
-    no record - the SAME failure the MCP check produced, reached by a different road.
-    Here the tree is killed and rc=124 is recorded, so a step that runs too long becomes
-    a FINDING instead of a lockup.
-
-    Every invocation narrates itself. The run is long and mostly silent otherwise, and
-    a subprocess that never returns should be identifiable by name from the console.
-    """
-    label = " ".join(str(c) for c in cmd)
-    print(f"    · {label if len(label) <= 110 else label[:107] + '…'}", flush=True)
-    t0 = time.monotonic()
-    kw = {} if os.name == "nt" else {"start_new_session": True}
-    p = subprocess.Popen([str(c) for c in cmd], cwd=str(cwd) if cwd else None,
-                         stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE, text=True, env=env,
-                         encoding="utf-8", errors="replace", **kw)
-    timed_out = False
-    try:
-        so, se = p.communicate(timeout=timeout)
-    except subprocess.TimeoutExpired:
-        timed_out = True
-        _kill_tree(p)
-        try:
-            so, se = p.communicate(timeout=120)
-        except subprocess.TimeoutExpired:
-            so, se = "", ""
-        se = (se or "") + f"\n[verifier] TIMED OUT after {timeout}s; process tree killed"
-    rc = 124 if timed_out else p.returncode
-    print(f"      rc={rc} in {time.monotonic() - t0:.1f}s"
-          + ("  TIMED OUT" if timed_out else ""), flush=True)
-    return subprocess.CompletedProcess(cmd, rc, so, se)
+    return subprocess.run([str(c) for c in cmd], cwd=str(cwd) if cwd else None,
+                          capture_output=True, text=True, timeout=timeout,
+                          env=env, encoding="utf-8", errors="replace")
 
 
 def clean_env(target: Path | None = None) -> dict:
@@ -170,61 +78,16 @@ def launcher(home: Path) -> list:
 
 
 def tool_call(home: Path, target: Path, tool: str, args: dict, timeout: int = 400) -> dict:
-    """Through the launcher's DOCUMENTED tool verb - WHICH IS NOT THE SAME WORD ON BOTH
-    PLATFORMS.
+    """Through the launcher's DOCUMENTED `call` verb.
 
-    This first used `tool-call`, which is the module's argument, not the launcher's, and
-    the launcher answered "unknown mode: tool-call" fourteen times. Using the module's
-    vocabulary against the launcher proves the module works and leaves the documented
-    surface untested, which is the opposite of what this gate is for.
-
-    THEN IT MADE THE SAME MISTAKE ONE LEVEL UP. `call` was hardcoded - and `call` is
-    run.sh's verb. `run.bat` has no `call`; it documents `tool <id> <args-json>`, so
-    every tool invocation on Windows fell through run.bat's catch-all to
-    `python -m src.app call ...`, drew "unknown mode: call", and exited 2. Fifteen
-    checks went red against a product that was never asked anything. Reading run.sh's
-    help and calling the result "the documented surface" is exactly the error the
-    paragraph above describes, committed against the other platform's launcher.
-
-    Each launcher's own help is the contract for that launcher. run.sh says
-    `call --tool X --args-json J`; run.bat says `tool <id> <args-json>`. Both are used
-    here as written. That the two disagree is a product finding, recorded as one - it is
-    not something this verifier gets to paper over by picking a favourite.
+    This first used `tool-call`, which is the module's argument, not the launcher's.
+    The launcher takes a MODE - `attach | list | call | mcp | ui | smoke | cli` - and
+    answered "unknown mode: tool-call" fourteen times. Using the module's vocabulary
+    against the launcher proves the module works and leaves the documented surface
+    untested, which is the opposite of what this gate is for.
     """
-    payload = json.dumps(args)
-    # @FILE ON WINDOWS, ALWAYS; INLINE ON POSIX, ALWAYS.
-    #
-    # `run.bat tool diff <json>` returned rc=1 on the Windows leg while the identical call
-    # passed on Linux, and the first explanation - cmd.exe's 32,767-character command line
-    # - turned out to be wrong: the payload measures ~11KB. rc=1 is the shared runner's
-    # code for a tool that raised, which is what a tool does when handed JSON that no
-    # longer parses. Somewhere between `list2cmdline` quoting the argument, cmd.exe
-    # re-parsing it and `%~3` unwrapping it, an escaped payload stops being the payload.
-    # A hand-typed call with hand-written escapes works; a programmatic one does not
-    # reliably, and this verifier is a programmatic one.
-    #
-    # So the walk stops routing its work through a channel that cannot promise to deliver
-    # it. POSIX passes an argument vector with no intermediary and needs no file. What
-    # inline can and cannot carry on Windows is asserted separately, once, rather than
-    # silently decided here - see `the launcher carries an inline payload intact`.
-    argfile = None
-    if platform.system() == "Windows":
-        fd, argfile = tempfile.mkstemp(prefix="uh-check-args-", suffix=".json")
-        with os.fdopen(fd, "w", encoding="utf-8") as fh:
-            fh.write(payload)
-        payload = "@" + argfile
-    try:
-        if platform.system() == "Windows":
-            cmd = [*launcher(home), "tool", tool, payload]
-        else:
-            cmd = [*launcher(home), "call", "--tool", tool, "--args-json", payload]
-        p = run(cmd, cwd=home, timeout=timeout, env=clean_env(target))
-    finally:
-        if argfile:
-            try:
-                os.unlink(argfile)
-            except OSError:
-                pass
+    p = run([*launcher(home), "call", "--tool", tool, "--args-json",
+             json.dumps(args)], cwd=home, timeout=timeout, env=clean_env(target))
     try:
         return json.loads(p.stdout)
     except ValueError:
@@ -247,34 +110,6 @@ def tree_digest(root: Path, skip: set[str]) -> dict[str, str]:
             continue
         d[rel.as_posix()] = hashlib.sha256(p.read_bytes()).hexdigest()
     return d
-
-
-def reclaim(work: Path) -> bool:
-    """Delete the workspace, and REPORT HONESTLY whether it went.
-
-    `shutil.rmtree(work, ignore_errors=True)` printed "workspace reclaimed" and left the
-    directory sitting in %TEMP%. Git's object files are read-only on Windows, rmtree
-    cannot unlink them, and `ignore_errors` swallowed the failure - so the console
-    asserted something false and the next run inherited the debris. The hygiene check
-    caught it, which is the only reason anyone found out.
-
-    Clearing the read-only bit is what the deletion actually needs; returning the truth
-    is what the caller actually needs.
-    """
-    def force(func, path, _exc):
-        try:
-            os.chmod(path, stat.S_IWRITE)
-            func(path)
-        except OSError:
-            pass
-
-    kw = {"onexc": force} if sys.version_info >= (3, 12) else {"onerror": force}
-    for _ in range(3):
-        shutil.rmtree(work, **kw)
-        if not work.exists():
-            return True
-        time.sleep(0.5)
-    return not work.exists()
 
 
 # ============================================================ 1. manufacture
@@ -343,7 +178,6 @@ FORBIDDEN = {
     "_state": "accumulated durable memory",
     ".git": "source history",
     "_trash": "development scrap",
-    "tests": "the toolkit's own self-test suite, which asserts the FACTORY's layout",
 }
 
 
@@ -463,98 +297,8 @@ def install_into(artifact: Path, target: Path) -> tuple[Path, str]:
     return target / SIDECAR, (p.stdout or "") + (p.stderr or "")
 
 
-def synopsis_truthfulness(step: str, att: dict, target: Path) -> None:
-    """Extracted so it can be exercised without standing up a whole walk.
-
-    A check that decides whether an instrument told the truth is itself an instrument,
-    and the first version of this one passed while testing nothing. It gets unit tests.
-    """
-    # THE ONE PLACE IN THE ORDINARY WALK WHERE THE RIGHT ANSWER IS KNOWN.
-    #
-    # C is the nascent target, and what it can support is knowable without seeding it
-    # with bait: a citation naming a README or a module docstring that is not there is
-    # false whatever the prose around it says, and a purpose statement about a target
-    # with no files at all is fabrication by construction. This is checked HERE rather
-    # than in the bait oracle because the oracle proves discrimination on a CONTROLLED
-    # target and this proves truthfulness on a real one.
-    #
-    # SCORED-NESS IS PART OF THE ASSERTION, in the shape the oracle checks already use
-    # ("ACTUALLY SCORED and correct"). The first version of this check went green on a
-    # machine with no summary backend: no synopsis was produced, so nothing could be
-    # wrong with one, so it passed having tested nothing. That is "forbidden names not
-    # found" committed by the verifier itself, and C4 is explicit - a missing oracle
-    # stays UNSCORED and never reads as PASS.
-    #
-    # Which of the two it is comes from the PRODUCT'S OWN limit strings, not from this
-    # file going looking for a model runtime. "No summary backend reachable" is an
-    # environment gap. "This target is empty, so there is no purpose to state" is the
-    # product declining on purpose, which is the behaviour being verified - and it is
-    # only unambiguous because the product probes availability BEFORE it decides.
-    pmap = att.get("project_map") or {}
-    syn = pmap.get("synopsis") or {}
-    # THE PRODUCT OWNS THE VOCABULARY OF ITS OWN REASONS, so this reads the ONE
-    # distinction that matters and does not try to enumerate the rest: could the feature
-    # run at all? Everything else it says about withholding is a decision it made, which
-    # is the behaviour under test. Matching on each individual reason would make this
-    # check silently unscored every time the product worded a new one.
-    absent = [ln for ln in (pmap.get("limits") or [])
-              if ln.startswith("No semantic synopsis")]
-    gap = any(("no summary backend reachable" in ln) or ("no usable answer" in ln)
-              for ln in absent)
-    declined = bool(absent) and not gap
-    scored = bool(syn) or declined
-
-    grounded = syn.get("grounded_in") or ""
-    # THE WALK POLLUTES THE TARGET BEFORE THIS RUNS, so "is there a .py here" is not the
-    # same question as "was there a .py for the reader to read". `run smoke` executes
-    # first, and the shipped suite wrote scratch into
-    # `<target>/_artifacts/test_tmp/.../scaffold/src/app.py` - five Python files the
-    # product never observed, sitting in the target, enough to make a false citation of
-    # "module docstrings" look satisfied. This check passed a fabricated synopsis on
-    # Windows for exactly that reason, having been tested only against a clean synthetic
-    # target where the situation cannot arise. Excluding one directory by name would have
-    # been robust against the last scratch path, not the next one.
-    #
-    # Dot- and underscore-prefixed directories are this project's convention for
-    # "generated, or ours, not the target's": `.useful-helpers`, `_artifacts`, `_state`,
-    # `__pycache__`. The class is what gets excluded.
-    def target_own(q: Path) -> bool:
-        return not any(part[:1] in (".", "_")
-                       for part in q.relative_to(target).parts[:-1])
-
-    present = {
-        "README": any(q.name.lower().startswith("readme")
-                      for q in target.glob("*") if q.is_file()),
-        "module docstrings": any(q for q in target.rglob("*.py") if target_own(q)),
-    }
-    uncited = [c for c, there in present.items() if c in grounded and not there]
-    no_files = (pmap.get("shape") or {}).get("file_count", 0) == 0
-    # A PURPOSE GROUNDED IN SHAPE ALONE IS NOT GROUNDED. When `structure` is the only
-    # source named, the reader was handed file counts and directory names and asked what
-    # the project is FOR. Nothing in that input can answer the question, so whatever came
-    # back came from somewhere else. Asserted independently of whether the product happens
-    # to guard it, because that guard is one of the things under test.
-    sources = [x.strip() for x in grounded.split("(")[0].split("+") if x.strip()]
-    shape_only = bool(syn) and sources == ["structure"]
-    truthful = not uncited and not (syn and no_files) and not shape_only
-
-    shape = pmap.get("shape") or {}
-    check(step, "the synopsis is ACTUALLY SCORED and asserts nothing the evidence "
-                "cannot support",
-          scored and truthful,
-          f"UNSCORED - no synopsis, and no recorded decision to withhold one, so "
-          f"nothing about truthfulness was tested here; "
-          f"last limit={(pmap.get('limits') or ['(none)'])[-1][:90]!r}"
-          if not scored else
-          f"density={pmap.get('evidence_density')!r} files={shape.get('file_count')} "
-          f"grounded_in={grounded!r} cites-but-absent={uncited} "
-          f"shape_only={shape_only} "
-          f"purpose={(syn.get('purpose') or '(withheld)')[:110]!r}")
-
-
 # ============================================================ 3. the walk
-def walk(artifact: Path, label: str, target: Path, *, full: bool,
-         synopsis_probe: bool = False) -> Path | None:
+def walk(artifact: Path, label: str, target: Path, *, full: bool) -> Path | None:
     step = f"3 walk[{label}]"
     home, log = install_into(artifact, target)
     if not check(step, "the real Setup produces one installed instance",
@@ -586,66 +330,10 @@ def walk(artifact: Path, label: str, target: Path, *, full: bool,
           v.returncode == 0 and "usefulhelpers" in (v.stdout or "").lower(),
           f"rc={v.returncode} out={(v.stdout or '')[:120]!r}")
 
-    # WHAT THE INLINE ROUTE CAN ACTUALLY CARRY, ASSERTED RATHER THAN ASSUMED.
-    #
-    # `tool_call` sends payloads through a file on Windows because an inline one arrived
-    # corrupted. That is a reasonable thing for a verifier to do and a terrible thing for
-    # it to do QUIETLY: routing around a broken channel while reporting nothing turns a
-    # product defect into an implementation detail of the test harness. So the channel is
-    # measured directly, with the payload shape that breaks it - nested quotes and a
-    # backslash path, the same probe the T-seam gate uses - and `ping` echoes back exactly
-    # what it received.
-    hostile = {"message": 'nested "quotes" and C:\\win\\style\\path',
-               "arr": [1, {"k": True}]}
-    if platform.system() == "Windows":
-        inline_cmd = [*launcher(home), "tool", "ping", json.dumps(hostile)]
-    else:
-        inline_cmd = [*launcher(home), "call", "--tool", "ping",
-                      "--args-json", json.dumps(hostile)]
-    ip = run(inline_cmd, cwd=home, timeout=300, env=clean_env(target))
-    try:
-        echoed = ((json.loads(ip.stdout).get("output") or {}).get("echo"))
-    except ValueError:
-        echoed = None
-    check(step, "the launcher carries an inline payload intact",
-          echoed == hostile["message"],
-          f"rc={ip.returncode} sent={hostile['message']!r} got={echoed!r} - the documented "
-          "inline form is what an operator types; a payload that does not survive it is "
-          "corrupted in transit, not rejected",
-          note=f"inline round-trip {'intact' if echoed == hostile['message'] else 'CORRUPTED'}")
-
-    # THE LAUNCHER MUST BE ABLE TO SAY "NO", NOT JUST "FINE".
-    #
-    # Ten checks on the Windows leg rested on a zero exit code from a launcher whose
-    # ability to return a NON-zero one had never been exercised. `run.bat` expanded
-    # `%ERRORLEVEL%` inside a parenthesized block - at parse time, before the command ran -
-    # so eight of its modes reported success unconditionally. `run smoke` sat for 184
-    # seconds watching 88 tests fail and exited 0, and every check that trusted it was
-    # recording the launcher's optimism rather than the product's behaviour.
-    #
-    # A channel that can only report success has not been tested. This asks for a tool
-    # that cannot exist and requires the failure to come back through the same door the
-    # successes do - deliberately through `cli`, which is one of the modes that was broken.
-    bad = run([*launcher(home), "cli", "tool-call", "--tool", "__no_such_tool__",
-               "--args-json", "{}"], cwd=home, timeout=300, env=clean_env(target))
-    check(step, "the launcher reports FAILURE as well as success",
-          bad.returncode != 0,
-          f"rc={bad.returncode} for a tool that does not exist; a launcher that cannot "
-          "return non-zero makes every exit-code check above meaningless",
-          note=f"unknown-tool rc={bad.returncode} (want non-zero)")
-
     sm = run([*launcher(home), "smoke"], cwd=home, timeout=600, env=clean_env(target))
-    sm_all = (sm.stdout or "") + (sm.stderr or "")
-    # KEEP THE COUNTS WHETHER IT PASSED OR NOT. `rc` alone is a claim by the launcher;
-    # the suite's own tally is the measurement, and on a launcher that cannot report a
-    # non-zero code the tally is the ONLY thing that distinguishes 88 passes from 88
-    # failures.
-    tally = " · ".join(ln.strip() for ln in sm_all.splitlines()
-                       if ln.startswith(("Ran ", "OK", "FAILED"))) or "(no unittest tally)"
     check(step, "the installed product can verify itself (`run smoke`)",
           sm.returncode == 0,
-          f"rc={sm.returncode} tail={sm_all[-200:]!r}",
-          note=f"rc={sm.returncode} · {tally[:150]}")
+          f"rc={sm.returncode} tail={((sm.stdout or '') + (sm.stderr or ''))[-200:]!r}")
 
     att = out(tool_call(home, target, "attach", {"refresh": True}))
     aw = att.get("awareness") or {}
@@ -657,9 +345,6 @@ def walk(artifact: Path, label: str, target: Path, *, full: bool,
           isinstance(aw.get("limitations"), list) or "limitations" in aw
           or bool(att.get("project_map")),
           f"a thin target is a legitimate map; got {sorted(aw)[:8]}")
-
-    if synopsis_probe:
-        synopsis_truthfulness(step, att, target)
 
     if not full:
         return home
@@ -699,24 +384,12 @@ def walk(artifact: Path, label: str, target: Path, *, full: bool,
     # value rather than hoping it does.
     before = out(tool_call(home, target, "attach", {"refresh": True})).get("awareness") or {}
     rev_x = before.get("revision")
-    # HANDLES ARE OBJECTS, NOT STRINGS. This filtered with `isinstance(h, str)` against a
-    # contributor that returns {"tool", "id", "kind", "resolve_with"} dicts, so every handle
-    # awareness promoted was discarded, the check below always read empty, and the loop fell
-    # back to guessing a file - defeating the exact property the paragraph above says this
-    # fixture has. The product was never asked; it offers five handles on this target.
-    raw = before.get("handles") or []
-    handles = [h.get("id") if isinstance(h, dict) else h for h in raw]
-    handles = [h for h in handles if isinstance(h, str) and h]
-    rel, live, via = None, None, "fallback scan"
+    handles = [h for h in (before.get("handles") or []) if isinstance(h, str)]
+    rel, live = None, None
     for h in handles:
-        parts = [seg for seg in h.strip(".").split(".") if seg]
-        for cand in (target.joinpath(*parts).with_suffix(".py"),
-                     target.joinpath(*parts, "__init__.py")):
-            if cand.is_file() and "ROLE:" in cand.read_text(encoding="utf-8",
-                                                            errors="replace"):
-                rel, live, via = cand.relative_to(target).as_posix(), cand, f"handle {h!r}"
-                break
-        if live is not None:
+        cand = target / (h.replace(".", "/") + ".py")
+        if cand.is_file() and "ROLE:" in cand.read_text(encoding="utf-8", errors="replace"):
+            rel, live = cand.relative_to(target).as_posix(), cand
             break
     if live is None:
         cand = next((q for q in sorted((target / "src").rglob("*.py"))
@@ -725,44 +398,11 @@ def walk(artifact: Path, label: str, target: Path, *, full: bool,
             if (target / "src").is_dir() else None
         rel = cand.relative_to(target).as_posix() if cand else "README.md"
         live = target / rel
-    # "CAN ACT ON" IS PART OF THE ASSERTION. A handle that names nothing this loop can
-    # open is not a handle the loop can act on, and passing on `bool(handles)` alone would
-    # let the fixture quietly go back to guessing while reporting the mechanism healthy.
     check(step, "T8: awareness names a handle the loop can act on",
-          bool(handles) and via.startswith("handle"),
-          f"handles={handles[:5]} chosen={rel!r} via={via}",
-          note=f"source={rel!r} via={via}")
+          bool(handles), f"handles={handles[:5]} chosen={rel!r}")
     original = live.read_text(encoding="utf-8", errors="replace")
-
-    # EDIT SOMETHING THE PRODUCT SAYS IT OBSERVED, not something that merely lives in an
-    # observed file.
-    #
-    # This edited "ROLE:" because that token is safe to mangle. It is also invisible to
-    # identity. `canonical_observation` projects `report` down to one PURPOSE LINE per
-    # module, and `_module_purposes` takes the first line of the module docstring when the
-    # module has no documented class - which in this codebase's header convention is
-    # always `FILE:`, never `ROLE:`. So the fixture changed a byte the projection
-    # deliberately excludes and then asserted the projection had changed. `X == Y` was the
-    # correct answer to the question actually being asked.
-    #
-    # The paragraph above promises that choosing the file by handle makes the edit
-    # "guaranteed to touch an observed value". Choosing the FILE by handle guarantees the
-    # file is observed; it says nothing about the edit. Asking the product for the purpose
-    # it recorded, and editing THAT string, is what makes the promise true - the same move
-    # as the handle, one level down.
-    observed = out(tool_call(home, target, "report", {"path": rel}))
-    purpose = next((str(m.get("purpose") or "")
-                    for m in (observed.get("modules") or [])), "")
-    token = next((w for w in purpose.split() if len(w) > 3 and w in original), None)
-    if token is None:
-        token = "ROLE:" if "ROLE:" in original else next(
-            (w for w in ("project", "New", "#") if w in original), None)
-    check(step, "T8: the loop can edit a value the product reports observing",
-          bool(purpose) and token is not None and token in purpose,
-          f"purpose={purpose[:80]!r} token={token!r} - an edit outside the observed "
-          "projection cannot make a revision change, and asserting that it does tests "
-          "nothing",
-          note=f"observed purpose={purpose[:60]!r} editing token={token!r}")
+    token = "ROLE:" if "ROLE:" in original else next(
+        (w for w in ("project", "New", "#") if w in original), None)
     prev = out(tool_call(home, target, "edit",
                          {"path": rel, "pattern": token, "replacement": token + "X",
                           "literal": True, "count": 1}))
@@ -949,69 +589,6 @@ def unseal(archive: Path, work: Path) -> tuple[Path, dict]:
     return dist / "useful-helpers-toolkit", ident
 
 
-# ============================================================ the stop condition
-def verifier_fingerprint() -> str:
-    """WHICH INSTRUMENT PRODUCED THIS RECORD.
-
-    Comparing the artifact across the two legs is not enough on its own: the same
-    artifact measured by two different verifiers is two different experiments, and the
-    artifact comparison cannot see the difference. This file is the instrument, so this
-    file's digest is the instrument's identity.
-    """
-    return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
-
-
-def stop_condition(rec_dir: Path, ident: dict) -> None:
-    """The two-platform stop condition, ASSERTED rather than described.
-
-    THIS USED TO BE PROSE. `seal()` says "ONE ARTIFACT, TWO PLATFORMS" in a docstring and
-    `unseal()` says "Release is only PASS when both platform records name the SAME
-    artifact" inside a FAILURE DETAIL STRING - text that is only ever read when some
-    OTHER check has already failed. Nothing loaded the two records and compared them, so
-    the one condition the whole gate turns on was the one condition no code enforced.
-
-    The failure this closes is not hypothetical. `seal()` unlinks and rebuilds the
-    archive on every manufacturing run, so a Linux re-run after Windows has passed
-    silently replaces the artifact the Windows record refers to. Both records then say
-    PASS, both name a real artifact, and they are not the same artifact. Only a
-    comparison catches that, and a comparison is what was missing.
-
-    Read only the OTHER platform's record; this run's identity comes from memory, so the
-    check does not depend on its own record having been written yet.
-    """
-    me = platform.system().lower()
-    other = "windows" if me == "linux" else "linux"
-    mine = (ident or {}).get("sha256") or ""
-    p = rec_dir / f"release-{other}.json"
-    mine_v = verifier_fingerprint()
-    theirs, theirs_v, note = "", "", "that leg has not run"
-    if p.is_file():
-        try:
-            d = json.loads(p.read_text(encoding="utf-8"))
-        except ValueError:
-            note = "record is not readable JSON"
-        else:
-            theirs = ((d.get("artifact") or {}).get("sha256") or "")
-            theirs_v = d.get("verifier") or ""
-            failing = [c for c in d.get("checks", []) if not c.get("ok")]
-            note = ("record carries no artifact identity - it predates sealing"
-                    if not theirs else
-                    f"{len(failing)} failing check(s) there" if failing else
-                    "all checks pass there")
-    check("3 stop condition",
-          f"the {other} record names the SAME artifact this run exercised",
-          bool(mine) and mine == theirs,
-          f"this run={mine[:16] or '(none)'}… {other}={theirs[:16] or '(none)'}… "
-          f"({note}) - one leg alone is not a release, and two legs naming different "
-          "artifacts is not a release either")
-    check("3 stop condition",
-          f"the {other} record was produced by the SAME verifier source",
-          bool(theirs_v) and mine_v == theirs_v,
-          f"this run={mine_v[:16]}… {other}={theirs_v[:16] or '(none)'}… - the artifact "
-          "comparison above cannot detect a changed instrument, so the instrument names "
-          "itself")
-
-
 # ============================================================ main
 def main(argv=None) -> int:
     import argparse
@@ -1023,85 +600,51 @@ def main(argv=None) -> int:
     ns = ap.parse_args(argv)
 
     out_dir = Path(__file__).parent / "artifact"
-    rec = Path(__file__).parent / f"release-{platform.system().lower()}.json"
     work = Path(tempfile.mkdtemp(prefix="release-"))
     print(f"release verification on {platform.system()}  workspace={work}")
     ident: dict = {}
-
-    def write_record() -> None:
-        """WRITTEN FROM A `finally`, NOT FROM THE END OF THE HAPPY PATH.
-
-        The workspace reclaim was already protected this way; the evidence was not. A run
-        that stopped mid-walk therefore left a sealed artifact on disk and NO record at
-        all - the artifact said a run had happened and nothing said what it found. The
-        record is the only thing that outlives the run, so it is the last thing that
-        should be conditional on the run finishing.
-        """
-        rec.write_text(json.dumps(
-            {"platform": platform.system(), "python": platform.python_version(),
-             "artifact": ident, "verifier": verifier_fingerprint(),
-             "workspace_reclaimed": not ns.keep_workspace,
-             "checks": CHECKS}, indent=2), encoding="utf-8")
-
     try:
-        try:
-            if ns.artifact:
-                artifact, ident = unseal(Path(ns.artifact).resolve(), work)
-                clone = work / "clean-clone"
-                p = run(["git", "clone", "--quiet", str(DEV), str(clone)], timeout=900)
-                check("1 manufacture", "a clean clone is available for the oracle controls",
-                      p.returncode == 0, f"rc={p.returncode} {((p.stderr or '')[-160:])}")
-            else:
-                clone, artifact = manufacture(work)
-                if artifact.is_dir():
-                    ident = seal(artifact.parent, clone, out_dir)
-            inspect(artifact, clone)
+        if ns.artifact:
+            artifact, ident = unseal(Path(ns.artifact).resolve(), work)
+            clone = work / "clean-clone"
+            p = run(["git", "clone", "--quiet", str(DEV), str(clone)], timeout=900)
+            check("1 manufacture", "a clean clone is available for the oracle controls",
+                  p.returncode == 0, f"rc={p.returncode} {((p.stderr or '')[-160:])}")
+        else:
+            clone, artifact = manufacture(work)
             if artifact.is_dir():
-                walk(artifact, "A software", target_a(work, clone), full=True)
-                walk(artifact, "B records", target_b(work), full=False)
-                walk(artifact, "C empty", target_c(work), full=False,
-                     synopsis_probe=True)
-                oracles(artifact, work)
-                oracles_from_clone(clone)
-                removal(artifact, work)
-        finally:
-            # RECLAIM BY DEFAULT, INCLUDING AFTER A FAILURE.
-            #
-            # This kept every workspace "for inspection". Four runs later the sandbox was out
-            # of disk, `git clone` died with "No space left on device", and the run recorded a
-            # verifier-resource failure that looked exactly like a product result. An
-            # instrument that consumes the bench it stands on eventually measures nothing.
-            #
-            # The diagnostic evidence a kept workspace was meant to provide is already in the
-            # run record - every check carries its own detail - and that record is written
-            # OUTSIDE the workspace, so reclaiming loses nothing that was being read anyway.
-            # `--keep-workspace` remains for deliberate debugging; ordinary certification
-            # never needs it.
-            #
-            # THE CLEAN-CLONE INVARIANT IS UNTOUCHED. Reclaiming is not reuse: every
-            # authoritative run still clones fresh into a new workspace. Solving the disk
-            # problem by keeping a clone around would trade a resource bug for an evidence
-            # bug, which is the worse of the two.
-            if ns.keep_workspace:
-                print(f"workspace KEPT for debugging: {work}")
-            elif reclaim(work):
-                print(f"workspace reclaimed: {work}", flush=True)
-            else:
-                print(f"workspace NOT fully reclaimed: {work} - the hygiene check "
-                      "below is the authority on this", flush=True)
-
-        # THE LAST TWO CHECKS RUN BEFORE THE SUMMARY IS PRINTED, not after it. They used
-        # to be appended once the report had already been rendered, so they counted
-        # toward the exit status and toward the record while never appearing in the
-        # output a human reads. A check nobody sees is not a check.
-        leftovers = sorted(Path(tempfile.gettempdir()).glob("release-*"))
-        check("0 hygiene", "the verifier leaves no workspace behind",
-              ns.keep_workspace or not [d for d in leftovers if d.is_dir()],
-              f"stale workspaces: {[d.name for d in leftovers][:6]} - each holds a full "
-              "clone, and four of them exhausted the sandbox once already")
-        stop_condition(Path(__file__).parent, ident)
+                ident = seal(artifact.parent, clone, out_dir)
+        inspect(artifact, clone)
+        if artifact.is_dir():
+            walk(artifact, "A software", target_a(work, clone), full=True)
+            walk(artifact, "B records", target_b(work), full=False)
+            walk(artifact, "C empty", target_c(work), full=False)
+            oracles(artifact, work)
+            oracles_from_clone(clone)
+            removal(artifact, work)
     finally:
-        write_record()
+        # RECLAIM BY DEFAULT, INCLUDING AFTER A FAILURE.
+        #
+        # This kept every workspace "for inspection". Four runs later the sandbox was out
+        # of disk, `git clone` died with "No space left on device", and the run recorded a
+        # verifier-resource failure that looked exactly like a product result. An
+        # instrument that consumes the bench it stands on eventually measures nothing.
+        #
+        # The diagnostic evidence a kept workspace was meant to provide is already in the
+        # run record - every check carries its own detail - and that record is written
+        # OUTSIDE the workspace, so reclaiming loses nothing that was being read anyway.
+        # `--keep-workspace` remains for deliberate debugging; ordinary certification
+        # never needs it.
+        #
+        # THE CLEAN-CLONE INVARIANT IS UNTOUCHED. Reclaiming is not reuse: every
+        # authoritative run still clones fresh into a new workspace. Solving the disk
+        # problem by keeping a clone around would trade a resource bug for an evidence
+        # bug, which is the worse of the two.
+        if ns.keep_workspace:
+            print(f"workspace KEPT for debugging: {work}")
+        else:
+            shutil.rmtree(work, ignore_errors=True)
+            print(f"workspace reclaimed: {work}")
 
     print("\nRELEASE — Closure Gate 2\n" + "=" * 78)
     step = None
@@ -1116,6 +659,19 @@ def main(argv=None) -> int:
     print("\n" + "=" * 78)
     print(f"{len(CHECKS) - len(bad)}/{len(CHECKS)} release checks pass on "
           f"{platform.system()}")
+    # VERIFIER HYGIENE, ASSERTED RATHER THAN ASSUMED. The repair above is only real if
+    # repeated runs stop accumulating clones, so the instrument proves it about itself.
+    leftovers = sorted(Path(tempfile.gettempdir()).glob("release-*"))
+    check("0 hygiene", "the verifier leaves no workspace behind",
+          ns.keep_workspace or not [d for d in leftovers if d.is_dir()],
+          f"stale workspaces: {[d.name for d in leftovers][:6]} - each holds a full "
+          "clone, and four of them exhausted the sandbox once already")
+
+    rec = Path(__file__).parent / f"release-{platform.system().lower()}.json"
+    rec.write_text(json.dumps(
+        {"platform": platform.system(), "python": platform.python_version(),
+         "artifact": ident, "workspace_reclaimed": not ns.keep_workspace,
+         "checks": CHECKS}, indent=2), encoding="utf-8")
     print(f"record: {rec}")
     return 0 if not bad else 1
 

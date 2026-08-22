@@ -1,0 +1,19 @@
+{
+  "platform": "Linux",
+  "python": "3.10.12",
+  "workspace": "/sessions/wizardly-loving-goodall/tmp/release-cr4m4868",
+  "checks": [
+    {
+      "step": "1 manufacture",
+      "name": "a clean clone of the certified source is obtained",
+      "ok": false,
+      "detail": "rc=128  on device\nwarning: Clone succeeded, but checkout failed.\nYou can inspect what was checked out with 'git status'\nand retry with 'git restore --source=HEAD :/'\n\n"
+    },
+    {
+      "step": "2 inspect",
+      "name": "the artifact exists to inspect",
+      "ok": false,
+      "detail": "no artifact"
+    }
+  ]
+}

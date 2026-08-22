@@ -77,6 +77,21 @@ NEVER_SHIP = frozenset({
     ".plans-and-parts_FOR-REFERENCE-ONLY",   # parts bin: predecessor apps and their plans
     ".useful-helpers-test-tmp",              # suite scratch
     "requirements-dev.txt",                  # dev-only dependency declaration
+    "tests",                                 # the TOOLKIT'S OWN self-test, not the
+                                             # installation's. Its 89 methods assert this
+                                             # repository's layout - src/core, a git repo,
+                                             # requirements.txt, tests/fixtures - against
+                                             # whatever target the instance is bound to,
+                                             # because in sidecar use the work target IS
+                                             # the user's project. Shipped, `run smoke`
+                                             # therefore ran the factory's suite against
+                                             # the customer's folder and reported the
+                                             # customer's folder deficient. There is no
+                                             # subset to keep: 245 of its assertions go
+                                             # through the work target. What the operator
+                                             # was promised - "verify this installation" -
+                                             # is a different suite, and it is now the one
+                                             # `smoke_test.py` runs when installed.
 })
 
 # ------------------------------------------------- optional governance cartridge

@@ -7,17 +7,10 @@ target-version = "py311"
 # them reports thousands of findings about code this project did not write and will
 # delete. Before the sidecar was collapsed to the repository root these were outside
 # the lint root and the exclusion was unnecessary.
-#
-# `_docs` USED TO BE EXCLUDED WHOLESALE, which quietly exempted the five gate
-# instruments - certify.py, acceptance.py, parity_check.py, retained_rows.py and
-# release_check.py - from `ruff check .`. Those are this project's own code, held to
-# this project's own bar; the rationale above covers code we did not write, and it does
-# not cover the instruments that decide whether the work is done. Only the development
-# history stays excluded, because it is a journal and not a source tree.
 extend-exclude = [
     "_artifacts", "_exports", "tests/fixtures", "__pycache__",
     ".plans-and-parts_FOR-REFERENCE-ONLY", "_harness", "_trash",
-    ".bcc", "_docs/AppJOURNAL", ".useful-helpers-test-tmp",
+    ".bcc", "_docs", ".useful-helpers-test-tmp",
 ]
 
 [lint]

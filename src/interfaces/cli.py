@@ -3,7 +3,7 @@ FILE:       src/interfaces/cli.py
 ROLE:       CLI entrance  -  one-shot subcommand dispatch for humans and scripts.
 DOMAIN:     interface
 DOES:       version | tool-list | registry-refresh | tool-call --tool <id>
-            (--args-json <json> | --args-file <path|->). Maps onto core.registry /
+            (--args-json <json|@path> | --args-file <path|->). Maps onto core.registry /
             core.invoke; prints structured JSON to stdout. --args-file/- (stdin) is the
             reliable route for programmatic callers (no shell-escaping of nested JSON).
 DEPENDS ON: src.core.registry, src.core.invoke, src.lib.common
@@ -92,7 +92,22 @@ def _load_call_args(opts: dict):
     Returns the args dict, or a 1-tuple wrapping an error dict."""
     import sys
     src = opts.get("args-file")
-    if src and opts.get("args-json"):
+    inline = opts.get("args-json")
+    # `--args-json @<path>` IS `--args-file <path>`, RESOLVED HERE SO THE LAUNCHERS DO NOT
+    # HAVE TO. The operator surface is `run.sh tool <id> <args-json>` / `run.bat tool <id>
+    # <args-json>`, and on Windows that argument travels the command line, which cmd.exe
+    # caps at 32,767 characters against a POSIX shell's ~2MB. A `diff` of two file texts
+    # exceeds it, so the documented way to review a change failed on one platform and not
+    # the other. Teaching each launcher to detect a path would mean string surgery on a
+    # value that is JSON - quotes, ampersands, carets - in a shell that has no argument
+    # vector. One resolution point, in the place that already owns argument resolution,
+    # and both launchers inherit it without touching either dispatcher.
+    #
+    # No collision: JSON args must be an object, so a real value never begins with `@`.
+    if isinstance(inline, str) and inline.startswith("@"):
+        src, inline = inline[1:], None
+        opts = {**opts, "args-file": src, "args-json": None}
+    if src and inline:
         return ({"ok": False, "error": "use --args-json OR --args-file, not both"},)
     try:
         if src == "-":
@@ -100,7 +115,7 @@ def _load_call_args(opts: dict):
         elif src:
             raw = Path(src).read_text(encoding="utf-8")
         else:
-            raw = opts.get("args-json", "{}")
+            raw = inline if inline is not None else "{}"
         args = json.loads(raw or "{}")
     except (OSError, json.JSONDecodeError) as e:
         which = "--args-file" if src else "--args-json"

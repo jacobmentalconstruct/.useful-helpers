@@ -1,0 +1,404 @@
+{
+  "platform": "Windows",
+  "python": "3.13.6",
+  "artifact": {
+    "source_commit": "7baf6ce64437d78e03dfcacf21765510595af8e7",
+    "archive": "useful-helpers-release.zip",
+    "sha256": "ccb5e354f991d7f23eb4e03f5ccb5913988a2f806f28bd11d932b7a83aeff0ce",
+    "bytes": 537063
+  },
+  "verifier": "c082e3cab3bf920d568e111bdacfcb6ed8abe5110942a3ccab67745f61be0dbf",
+  "workspace_reclaimed": true,
+  "checks": [
+    {
+      "step": "1 manufacture",
+      "name": "the supplied artifact matches its recorded hash",
+      "ok": true,
+      "detail": "expected ccb5e354f991d7f23eb4e03f5ccb5913988a2f806f28bd11d932b7a83aeff0ce got ccb5e354f991d7f23eb4e03f5ccb5913988a2f806f28bd11d932b7a83aeff0ce; Release is only PASS when both platform records name the SAME artifact"
+    },
+    {
+      "step": "1 manufacture",
+      "name": "a clean clone is available for the oracle controls",
+      "ok": true,
+      "detail": "rc=0 "
+    },
+    {
+      "step": "2 inspect",
+      "name": "the artifact excludes `.plans-and-parts_FOR-REFERENCE-ONLY` (the donor reference corpus)",
+      "ok": true,
+      "detail": "present in the payload root"
+    },
+    {
+      "step": "2 inspect",
+      "name": "the artifact excludes `_harness` (the factory proving ground)",
+      "ok": true,
+      "detail": "present in the payload root"
+    },
+    {
+      "step": "2 inspect",
+      "name": "the artifact excludes `gates` (factory-only tranche material)",
+      "ok": true,
+      "detail": "present in the payload root"
+    },
+    {
+      "step": "2 inspect",
+      "name": "the artifact excludes `.bcc` (the builder constraint contract)",
+      "ok": true,
+      "detail": "present in the payload root"
+    },
+    {
+      "step": "2 inspect",
+      "name": "the artifact excludes `_projectmapper` (generated inspection state)",
+      "ok": true,
+      "detail": "present in the payload root"
+    },
+    {
+      "step": "2 inspect",
+      "name": "the artifact excludes `_state` (accumulated durable memory)",
+      "ok": true,
+      "detail": "present in the payload root"
+    },
+    {
+      "step": "2 inspect",
+      "name": "the artifact excludes `.git` (source history)",
+      "ok": true,
+      "detail": "present in the payload root"
+    },
+    {
+      "step": "2 inspect",
+      "name": "the artifact excludes `_trash` (development scrap)",
+      "ok": true,
+      "detail": "present in the payload root"
+    },
+    {
+      "step": "2 inspect",
+      "name": "the artifact excludes the development journal",
+      "ok": true,
+      "detail": "development history is not product"
+    },
+    {
+      "step": "2 inspect",
+      "name": "the artifact excludes certification evidence",
+      "ok": true,
+      "detail": "the record of how it was proven is not part of what ships"
+    },
+    {
+      "step": "2 inspect",
+      "name": "the artifact contains run.sh",
+      "ok": true,
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-glgwlg6g\\artifact\\useful-helpers-toolkit\\run.sh"
+    },
+    {
+      "step": "2 inspect",
+      "name": "the artifact contains run.bat",
+      "ok": true,
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-glgwlg6g\\artifact\\useful-helpers-toolkit\\run.bat"
+    },
+    {
+      "step": "2 inspect",
+      "name": "the artifact contains the seam",
+      "ok": true,
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-glgwlg6g\\artifact\\useful-helpers-toolkit\\src\\core\\invoke.py"
+    },
+    {
+      "step": "2 inspect",
+      "name": "the artifact contains the app entrypoint",
+      "ok": true,
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-glgwlg6g\\artifact\\useful-helpers-toolkit\\src\\app.py"
+    },
+    {
+      "step": "2 inspect",
+      "name": "the artifact contains the installer identity module",
+      "ok": true,
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-glgwlg6g\\artifact\\useful-helpers-toolkit\\src\\core\\instance.py"
+    },
+    {
+      "step": "2 inspect",
+      "name": "the artifact contains the MCP entrance",
+      "ok": true,
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-glgwlg6g\\artifact\\useful-helpers-toolkit\\src\\interfaces\\mcp_server.py"
+    },
+    {
+      "step": "2 inspect",
+      "name": "every tool the artifact declares has its entry file",
+      "ok": true,
+      "detail": "94 manifests; missing bodies: []"
+    },
+    {
+      "step": "2 inspect",
+      "name": "no build-machine absolute path appears in the artifact",
+      "ok": true,
+      "detail": "the development root 'C:\\\\Jacob\\\\_AppDesign\\\\_SANDBOX\\\\.useful-helpers-workbench' leaked into: []"
+    },
+    {
+      "step": "2 inspect",
+      "name": "the artifact is bounded",
+      "ok": true,
+      "detail": "entries=399; a vend once shipped 4,009 files"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "the real Setup produces one installed instance",
+      "ok": true,
+      "detail": "expected .useful-helpers/instance.json; installer said: \\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\release-glgwlg6g\\\\target-a-software\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "the instance carries an identity bound to this target",
+      "ok": true,
+      "detail": "instance.json={'schema': 1, 'uuid': '8e0200e7-f1e9-4434-9fd0-a1e83adcf26e', 'target': '..', 'created': '2026-08-21T12:18:44+00:00'}"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "the DOCUMENTED launcher runs from the TARGET ROOT",
+      "ok": true,
+      "detail": "`C:\\Users\\jacob\\AppData\\Local\\Temp\\release-glgwlg6g\\target-a-software\\.useful-helpers\\run.bat attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-21 07:18:45,528 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "the installed product reports its own version",
+      "ok": true,
+      "detail": "rc=0 out='{\\n  \"suite\": \"usefulhelpers\",\\n  \"version\": \"0.1.0\"\\n}\\n'"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "the installed product can verify itself (`run smoke`)",
+      "ok": true,
+      "detail": "rc=0 tail=\"ackaging\\\\\\\\installer\\\\\\\\install.py': [Errno 2] No such file or directory\\n\\n\\n----------------------------------------------------------------------\\nRan 88 tests in 184.120s\\n\\nFAILED (failures=12, errors=4)\\n\""
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "`attach` produces awareness of THIS target",
+      "ok": false,
+      "detail": "keys=[] revision=None"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "awareness reports its own limitations rather than inventing detail",
+      "ok": false,
+      "detail": "a thin target is a legitimate map; got []"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "the real MCP entrance starts and exits cleanly",
+      "ok": true,
+      "detail": "rc=0 '2026-08-21 07:22:07,506 INFO suite.interfaces.mcp: MCP stdio server starting: usefulhelpers-suite v0.1.0\\n2026-08-21 07:22:07,506 INFO suite.interfaces.mcp: MCP stdio server exiting\\n'"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "a retained parity product runs from the installed artifact",
+      "ok": false,
+      "detail": "file_tree returned 0 rows"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "the ProjectMapper parity products build from the artifact",
+      "ok": false,
+      "detail": "outputs=[]"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "T8: awareness names a handle the loop can act on",
+      "ok": false,
+      "detail": "handles=[] chosen='src/app.py'"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "T8: a preview proposes a change and binds it to the reviewed source",
+      "ok": false,
+      "detail": "apply_with=None"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "T8: the change is reviewable as a diff before approval",
+      "ok": false,
+      "detail": "identical=None"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "T8: the approved Apply lands exactly what was previewed",
+      "ok": false,
+      "detail": "written=None"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "T8: the seam measures what changed",
+      "ok": false,
+      "detail": "changed_paths=None measurement=None"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "T8: verification is selected mechanically, or honestly absent",
+      "ok": false,
+      "detail": "detected kinds=[] (no test/lint is a truthful answer)"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "T8: the Apply makes the prior awareness stale",
+      "ok": false,
+      "detail": "freshness=None"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "T8: refresh produces a NEW revision reflecting the new evidence",
+      "ok": false,
+      "detail": "X=None Y=None"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "update preserves the instance UUID",
+      "ok": true,
+      "detail": "8e0200e7-f1e9-4434-9fd0-a1e83adcf26e -> 8e0200e7-f1e9-4434-9fd0-a1e83adcf26e; {\n  \"ok\": false,\n  \"error\": \"a sidecar already exists here; choose reinstall (wipe) or update (keep memory)\",\n  \"status\": \"exists\"\n}\n"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "update preserves product-owned state",
+      "ok": true,
+      "detail": "a marker written into the instance's _state must survive an update"
+    },
+    {
+      "step": "3 walk[B records]",
+      "name": "the real Setup produces one installed instance",
+      "ok": true,
+      "detail": "expected .useful-helpers/instance.json; installer said: :\\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\release-glgwlg6g\\\\target-b-records\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n"
+    },
+    {
+      "step": "3 walk[B records]",
+      "name": "the instance carries an identity bound to this target",
+      "ok": true,
+      "detail": "instance.json={'schema': 1, 'uuid': 'd3f9bd6c-83dc-4065-92e7-c44549c9aa25', 'target': '..', 'created': '2026-08-21T12:22:08+00:00'}"
+    },
+    {
+      "step": "3 walk[B records]",
+      "name": "the DOCUMENTED launcher runs from the TARGET ROOT",
+      "ok": true,
+      "detail": "`C:\\Users\\jacob\\AppData\\Local\\Temp\\release-glgwlg6g\\target-b-records\\.useful-helpers\\run.bat attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-21 07:22:09,474 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'"
+    },
+    {
+      "step": "3 walk[B records]",
+      "name": "the installed product reports its own version",
+      "ok": true,
+      "detail": "rc=0 out='{\\n  \"suite\": \"usefulhelpers\",\\n  \"version\": \"0.1.0\"\\n}\\n'"
+    },
+    {
+      "step": "3 walk[B records]",
+      "name": "the installed product can verify itself (`run smoke`)",
+      "ok": true,
+      "detail": "rc=0 tail=\"cords target.\\\\n' : clean_app README is not the swapped product template\\n\\n----------------------------------------------------------------------\\nRan 88 tests in 88.718s\\n\\nFAILED (failures=24, errors=3)\\n\""
+    },
+    {
+      "step": "3 walk[B records]",
+      "name": "`attach` produces awareness of THIS target",
+      "ok": false,
+      "detail": "keys=[] revision=None"
+    },
+    {
+      "step": "3 walk[B records]",
+      "name": "awareness reports its own limitations rather than inventing detail",
+      "ok": false,
+      "detail": "a thin target is a legitimate map; got []"
+    },
+    {
+      "step": "3 walk[C empty]",
+      "name": "the real Setup produces one installed instance",
+      "ok": true,
+      "detail": "expected .useful-helpers/instance.json; installer said:  C:\\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\release-glgwlg6g\\\\target-c-empty\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n"
+    },
+    {
+      "step": "3 walk[C empty]",
+      "name": "the instance carries an identity bound to this target",
+      "ok": true,
+      "detail": "instance.json={'schema': 1, 'uuid': '55e86e02-3c67-4cbf-b75f-4c5b129e1d17', 'target': '..', 'created': '2026-08-21T12:23:49+00:00'}"
+    },
+    {
+      "step": "3 walk[C empty]",
+      "name": "the DOCUMENTED launcher runs from the TARGET ROOT",
+      "ok": true,
+      "detail": "`C:\\Users\\jacob\\AppData\\Local\\Temp\\release-glgwlg6g\\target-c-empty\\.useful-helpers\\run.bat attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-21 07:23:49,975 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'"
+    },
+    {
+      "step": "3 walk[C empty]",
+      "name": "the installed product reports its own version",
+      "ok": true,
+      "detail": "rc=0 out='{\\n  \"suite\": \"usefulhelpers\",\\n  \"version\": \"0.1.0\"\\n}\\n'"
+    },
+    {
+      "step": "3 walk[C empty]",
+      "name": "the installed product can verify itself (`run smoke`)",
+      "ok": true,
+      "detail": "rc=0 tail=\"# New project\\\\n' : clean_app README is not the swapped product template\\n\\n----------------------------------------------------------------------\\nRan 88 tests in 96.096s\\n\\nFAILED (failures=24, errors=3)\\n\""
+    },
+    {
+      "step": "3 walk[C empty]",
+      "name": "`attach` produces awareness of THIS target",
+      "ok": false,
+      "detail": "keys=[] revision=None"
+    },
+    {
+      "step": "3 walk[C empty]",
+      "name": "awareness reports its own limitations rather than inventing detail",
+      "ok": false,
+      "detail": "a thin target is a legitimate map; got []"
+    },
+    {
+      "step": "4 oracles",
+      "name": "the oracle controls are runnable for this release",
+      "ok": true,
+      "detail": "the harness is factory-only and correctly absent from the artifact; the oracle controls therefore run from the CLEAN CLONE, which is the source of the artifact, not from the development working tree"
+    },
+    {
+      "step": "4 oracles",
+      "name": "composition is ACTUALLY SCORED and correct on the oracle",
+      "ok": true,
+      "detail": "rc=0 composition={'composite': True, 'composite_expected': True, 'composite_correct': True, 'subsystems_correct': 3, 'subsystems_expected': 3, 'source': 'top-level-dirs', 'source_expected': None, 'source_correct': None, 'mismatches': {}}"
+    },
+    {
+      "step": "4 oracles",
+      "name": "truthfulness DISCRIMINATION is actually scored on the oracle",
+      "ok": true,
+      "detail": "rc=0 naive=1 -> prevented=1 -> faithful=0, missed=0. Zero false positives with nothing prevented is indistinguishable from an analysis that found nothing"
+    },
+    {
+      "step": "5 removal",
+      "name": "the sidecar installs into the untouched target",
+      "ok": true,
+      "detail": "ppData\\\\Local\\\\Temp\\\\release-glgwlg6g\\\\target-removal\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n"
+    },
+    {
+      "step": "5 removal",
+      "name": "using the sidecar did not modify target-owned content",
+      "ok": true,
+      "detail": "changed=[]"
+    },
+    {
+      "step": "5 removal",
+      "name": "removing the sidecar leaves target content BYTE-FOR-BYTE unchanged",
+      "ok": true,
+      "detail": "before=2 files, after=2; diff=[]"
+    },
+    {
+      "step": "5 removal",
+      "name": "removing the sidecar leaves no residue behind",
+      "ok": true,
+      "detail": "the instance directory is gone"
+    },
+    {
+      "step": "0 hygiene",
+      "name": "the verifier leaves no workspace behind",
+      "ok": false,
+      "detail": "stale workspaces: ['release-4rdyqn18', 'release-5av8d782', 'release-glgwlg6g', 'release-vattcjhl'] - each holds a full clone, and four of them exhausted the sandbox once already"
+    },
+    {
+      "step": "3 stop condition",
+      "name": "the linux record names the SAME artifact this run exercised",
+      "ok": true,
+      "detail": "this run=ccb5e354f991d7f2\u2026 linux=ccb5e354f991d7f2\u2026 (7 failing check(s) there) - one leg alone is not a release, and two legs naming different artifacts is not a release either"
+    },
+    {
+      "step": "3 stop condition",
+      "name": "the linux record was produced by the SAME verifier source",
+      "ok": true,
+      "detail": "this run=c082e3cab3bf920d\u2026 linux=c082e3cab3bf920d\u2026 - the artifact comparison above cannot detect a changed instrument, so the instrument names itself"
+    }
+  ]
+}

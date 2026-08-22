@@ -1,13 +1,13 @@
 {
-  "platform": "Linux",
-  "python": "3.11.15",
+  "platform": "Windows",
+  "python": "3.13.6",
   "artifact": {
     "source_commit": "7baf6ce64437d78e03dfcacf21765510595af8e7",
     "archive": "useful-helpers-release.zip",
     "sha256": "ccb5e354f991d7f23eb4e03f5ccb5913988a2f806f28bd11d932b7a83aeff0ce",
     "bytes": 537063
   },
-  "verifier": "fc41f4b88962bd1f59445738bc49904b9162e4527b932bcea7a4a77fea75191b",
+  "verifier": "ba771a23d8f3abfa4558032265b81e0595e3d1d49f13864629051e28fcafd577",
   "workspace_reclaimed": true,
   "checks": [
     {
@@ -82,6 +82,13 @@
     },
     {
       "step": "2 inspect",
+      "name": "the artifact excludes `tests` (the toolkit's own self-test suite, which asserts the FACTORY's layout)",
+      "ok": false,
+      "detail": "present in the payload root",
+      "note": ""
+    },
+    {
+      "step": "2 inspect",
       "name": "the artifact excludes the development journal",
       "ok": true,
       "detail": "development history is not product",
@@ -98,42 +105,42 @@
       "step": "2 inspect",
       "name": "the artifact contains run.sh",
       "ok": true,
-      "detail": "/tmp/release-w1udzsjl/artifact/useful-helpers-toolkit/run.sh",
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-0zqf9lre\\artifact\\useful-helpers-toolkit\\run.sh",
       "note": ""
     },
     {
       "step": "2 inspect",
       "name": "the artifact contains run.bat",
       "ok": true,
-      "detail": "/tmp/release-w1udzsjl/artifact/useful-helpers-toolkit/run.bat",
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-0zqf9lre\\artifact\\useful-helpers-toolkit\\run.bat",
       "note": ""
     },
     {
       "step": "2 inspect",
       "name": "the artifact contains the seam",
       "ok": true,
-      "detail": "/tmp/release-w1udzsjl/artifact/useful-helpers-toolkit/src/core/invoke.py",
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-0zqf9lre\\artifact\\useful-helpers-toolkit\\src\\core\\invoke.py",
       "note": ""
     },
     {
       "step": "2 inspect",
       "name": "the artifact contains the app entrypoint",
       "ok": true,
-      "detail": "/tmp/release-w1udzsjl/artifact/useful-helpers-toolkit/src/app.py",
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-0zqf9lre\\artifact\\useful-helpers-toolkit\\src\\app.py",
       "note": ""
     },
     {
       "step": "2 inspect",
       "name": "the artifact contains the installer identity module",
       "ok": true,
-      "detail": "/tmp/release-w1udzsjl/artifact/useful-helpers-toolkit/src/core/instance.py",
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-0zqf9lre\\artifact\\useful-helpers-toolkit\\src\\core\\instance.py",
       "note": ""
     },
     {
       "step": "2 inspect",
       "name": "the artifact contains the MCP entrance",
       "ok": true,
-      "detail": "/tmp/release-w1udzsjl/artifact/useful-helpers-toolkit/src/interfaces/mcp_server.py",
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-0zqf9lre\\artifact\\useful-helpers-toolkit\\src\\interfaces\\mcp_server.py",
       "note": ""
     },
     {
@@ -147,7 +154,7 @@
       "step": "2 inspect",
       "name": "no build-machine absolute path appears in the artifact",
       "ok": true,
-      "detail": "the development root '/root/work/repo' leaked into: []",
+      "detail": "the development root 'C:\\\\Jacob\\\\_AppDesign\\\\_SANDBOX\\\\.useful-helpers-workbench' leaked into: []",
       "note": ""
     },
     {
@@ -161,21 +168,21 @@
       "step": "3 walk[A software]",
       "name": "the real Setup produces one installed instance",
       "ok": true,
-      "detail": "expected .useful-helpers/instance.json; installer said: reserved\": false,\n  \"next\": \"cd /tmp/release-w1udzsjl/target-a-software\\n  sh .useful-helpers/run.sh attach     (what is this target, and what next)\\n  sh .useful-helpers/run.sh list       (every tool available here)\"\n}\n",
+      "detail": "expected .useful-helpers/instance.json; installer said: \\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\release-0zqf9lre\\\\target-a-software\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
       "note": ""
     },
     {
       "step": "3 walk[A software]",
       "name": "the instance carries an identity bound to this target",
       "ok": true,
-      "detail": "instance.json={'schema': 1, 'uuid': 'fbab0eb1-3ca3-4146-acf7-74305a71120d', 'target': '..', 'created': '2026-08-22T10:28:32+00:00'}",
+      "detail": "instance.json={'schema': 1, 'uuid': 'aa58054f-d2ff-4acd-9552-6a1d90e23503', 'target': '..', 'created': '2026-08-22T11:56:57+00:00'}",
       "note": ""
     },
     {
       "step": "3 walk[A software]",
       "name": "the DOCUMENTED launcher runs from the TARGET ROOT",
       "ok": true,
-      "detail": "`sh .useful-helpers/run.sh attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-22 10:28:32,948 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'",
+      "detail": "`C:\\Users\\jacob\\AppData\\Local\\Temp\\release-0zqf9lre\\target-a-software\\.useful-helpers\\run.bat attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-22 06:56:57,656 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'",
       "note": ""
     },
     {
@@ -187,16 +194,23 @@
     },
     {
       "step": "3 walk[A software]",
-      "name": "the installed product can verify itself (`run smoke`)",
+      "name": "the launcher reports FAILURE as well as success",
       "ok": false,
-      "detail": "rc=1 tail=\"/installer/install.py': [Errno 2] No such file or directory\\n\\n\\n----------------------------------------------------------------------\\nRan 88 tests in 64.027s\\n\\nFAILED (failures=12, errors=4, skipped=7)\\n\"",
-      "note": "rc=1 \u00b7 Ran 88 tests in 64.027s \u00b7 FAILED (failures=12, errors=4, skipped=7)"
+      "detail": "rc=0 for a tool that does not exist; a launcher that cannot return non-zero makes every exit-code check above meaningless",
+      "note": "unknown-tool rc=0 (want non-zero)"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "the installed product can verify itself (`run smoke`)",
+      "ok": true,
+      "detail": "rc=0 tail=\"ackaging\\\\\\\\installer\\\\\\\\install.py': [Errno 2] No such file or directory\\n\\n\\n----------------------------------------------------------------------\\nRan 88 tests in 233.009s\\n\\nFAILED (failures=12, errors=4)\\n\"",
+      "note": "rc=0 \u00b7 Ran 88 tests in 233.009s \u00b7 FAILED (failures=12, errors=4)"
     },
     {
       "step": "3 walk[A software]",
       "name": "`attach` produces awareness of THIS target",
       "ok": true,
-      "detail": "keys=['awareness', 'mode', 'next', 'ok', 'project_map', 'target', 'workbench', 'written'] revision='1dfc943b14d48989'",
+      "detail": "keys=['awareness', 'mode', 'next', 'ok', 'project_map', 'target', 'workbench', 'written'] revision='984eb292577bc974'",
       "note": ""
     },
     {
@@ -210,7 +224,7 @@
       "step": "3 walk[A software]",
       "name": "the real MCP entrance starts and exits cleanly",
       "ok": true,
-      "detail": "rc=0 '2026-08-22 10:29:54,648 INFO suite.interfaces.mcp: MCP stdio server starting: usefulhelpers-suite v0.1.0\\n2026-08-22 10:29:54,649 INFO suite.interfaces.mcp: MCP stdio server exiting\\n'",
+      "detail": "rc=0 '2026-08-22 07:01:42,121 INFO suite.interfaces.mcp: MCP stdio server starting: usefulhelpers-suite v0.1.0\\n2026-08-22 07:01:42,121 INFO suite.interfaces.mcp: MCP stdio server exiting\\n'",
       "note": ""
     },
     {
@@ -230,22 +244,29 @@
     {
       "step": "3 walk[A software]",
       "name": "T8: awareness names a handle the loop can act on",
+      "ok": false,
+      "detail": "handles=[] chosen='src/app.py' via=fallback scan",
+      "note": "source='src/app.py' via=fallback scan"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "T8: the loop can edit a value the product reports observing",
       "ok": true,
-      "detail": "handles=['src', '.plans-and-parts_FOR-REFERENCE-ONLY._PARTS-FOR-PLANS._ChatWindowKERNAL.src.shell.app_kernel', 'src.ui', '.plans-and-parts_FOR-REFERENCE-ONLY._PARTS-FOR-PLANS._ChatWindowKERNAL.tests.test_runtime_snapshot', '.plans-and-parts_FOR-REFERENCE-ONLY._PARTS-FOR-PLANS._ChatWindowKERNAL.src.shell.app_context'] chosen='src/__init__.py' via=handle 'src'",
-      "note": "source='src/__init__.py' via=handle 'src'"
+      "detail": "purpose='FILE:       src/app.py' token='FILE:' - an edit outside the observed projection cannot make a revision change, and asserting that it does tests nothing",
+      "note": "observed purpose='FILE:       src/app.py' editing token='FILE:'"
     },
     {
       "step": "3 walk[A software]",
       "name": "T8: a preview proposes a change and binds it to the reviewed source",
       "ok": true,
-      "detail": "apply_with={'apply': True, 'expected_source_sha256': '7d78bc79c9cc3d08a67a6b7747f2c63e785f7980c7724b0b73e2eb1b5553c3c8'}",
+      "detail": "apply_with={'apply': True, 'expected_source_sha256': '3eaaab1e6bb9e5e4b971ef62d81786e665d6cf6ad6bb4131c9938a7b1d747531'}",
       "note": ""
     },
     {
       "step": "3 walk[A software]",
       "name": "T8: the change is reviewable as a diff before approval",
-      "ok": true,
-      "detail": "identical=False",
+      "ok": false,
+      "detail": "identical=None",
       "note": ""
     },
     {
@@ -259,7 +280,7 @@
       "step": "3 walk[A software]",
       "name": "T8: the seam measures what changed",
       "ok": true,
-      "detail": "changed_paths=['src/__init__.py'] measurement=mtime+size",
+      "detail": "changed_paths=['src/app.py'] measurement=mtime+size",
       "note": ""
     },
     {
@@ -280,14 +301,14 @@
       "step": "3 walk[A software]",
       "name": "T8: refresh produces a NEW revision reflecting the new evidence",
       "ok": false,
-      "detail": "X='1dfc943b14d48989' Y='1dfc943b14d48989'",
+      "detail": "X='984eb292577bc974' Y='984eb292577bc974'",
       "note": ""
     },
     {
       "step": "3 walk[A software]",
       "name": "update preserves the instance UUID",
       "ok": true,
-      "detail": "fbab0eb1-3ca3-4146-acf7-74305a71120d -> fbab0eb1-3ca3-4146-acf7-74305a71120d; {\n  \"ok\": false,\n  \"error\": \"a sidecar already exists here; choose reinstall (wipe) or update (keep memory)\",\n  \"status\": \"exists\"\n}\n",
+      "detail": "aa58054f-d2ff-4acd-9552-6a1d90e23503 -> aa58054f-d2ff-4acd-9552-6a1d90e23503; {\n  \"ok\": false,\n  \"error\": \"a sidecar already exists here; choose reinstall (wipe) or update (keep memory)\",\n  \"status\": \"exists\"\n}\n",
       "note": ""
     },
     {
@@ -301,21 +322,21 @@
       "step": "3 walk[B records]",
       "name": "the real Setup produces one installed instance",
       "ok": true,
-      "detail": "expected .useful-helpers/instance.json; installer said: preserved\": false,\n  \"next\": \"cd /tmp/release-w1udzsjl/target-b-records\\n  sh .useful-helpers/run.sh attach     (what is this target, and what next)\\n  sh .useful-helpers/run.sh list       (every tool available here)\"\n}\n",
+      "detail": "expected .useful-helpers/instance.json; installer said: :\\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\release-0zqf9lre\\\\target-b-records\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
       "note": ""
     },
     {
       "step": "3 walk[B records]",
       "name": "the instance carries an identity bound to this target",
       "ok": true,
-      "detail": "instance.json={'schema': 1, 'uuid': '39d52780-a592-4fce-b23e-656cd564387f', 'target': '..', 'created': '2026-08-22T10:30:14+00:00'}",
+      "detail": "instance.json={'schema': 1, 'uuid': '177ca7d8-9297-43ef-92c8-fe485a9f219e', 'target': '..', 'created': '2026-08-22T12:02:56+00:00'}",
       "note": ""
     },
     {
       "step": "3 walk[B records]",
       "name": "the DOCUMENTED launcher runs from the TARGET ROOT",
       "ok": true,
-      "detail": "`sh .useful-helpers/run.sh attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-22 10:30:14,557 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'",
+      "detail": "`C:\\Users\\jacob\\AppData\\Local\\Temp\\release-0zqf9lre\\target-b-records\\.useful-helpers\\run.bat attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-22 07:02:56,828 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'",
       "note": ""
     },
     {
@@ -327,16 +348,23 @@
     },
     {
       "step": "3 walk[B records]",
-      "name": "the installed product can verify itself (`run smoke`)",
+      "name": "the launcher reports FAILURE as well as success",
       "ok": false,
-      "detail": "rc=1 tail=\"t.\\\\n' : clean_app README is not the swapped product template\\n\\n----------------------------------------------------------------------\\nRan 88 tests in 17.944s\\n\\nFAILED (failures=23, errors=3, skipped=7)\\n\"",
-      "note": "rc=1 \u00b7 Ran 88 tests in 17.944s \u00b7 FAILED (failures=23, errors=3, skipped=7)"
+      "detail": "rc=0 for a tool that does not exist; a launcher that cannot return non-zero makes every exit-code check above meaningless",
+      "note": "unknown-tool rc=0 (want non-zero)"
+    },
+    {
+      "step": "3 walk[B records]",
+      "name": "the installed product can verify itself (`run smoke`)",
+      "ok": true,
+      "detail": "rc=0 tail=\"ords target.\\\\n' : clean_app README is not the swapped product template\\n\\n----------------------------------------------------------------------\\nRan 88 tests in 140.366s\\n\\nFAILED (failures=24, errors=3)\\n\"",
+      "note": "rc=0 \u00b7 Ran 88 tests in 140.366s \u00b7 FAILED (failures=24, errors=3)"
     },
     {
       "step": "3 walk[B records]",
       "name": "`attach` produces awareness of THIS target",
       "ok": true,
-      "detail": "keys=['awareness', 'mode', 'next', 'ok', 'project_map', 'target', 'workbench', 'written'] revision='649f365fdd8e5a96'",
+      "detail": "keys=['awareness', 'mode', 'next', 'ok', 'project_map', 'target', 'workbench', 'written'] revision='c2ff6e929509489a'",
       "note": ""
     },
     {
@@ -350,21 +378,21 @@
       "step": "3 walk[C empty]",
       "name": "the real Setup produces one installed instance",
       "ok": true,
-      "detail": "expected .useful-helpers/instance.json; installer said: y_preserved\": false,\n  \"next\": \"cd /tmp/release-w1udzsjl/target-c-empty\\n  sh .useful-helpers/run.sh attach     (what is this target, and what next)\\n  sh .useful-helpers/run.sh list       (every tool available here)\"\n}\n",
+      "detail": "expected .useful-helpers/instance.json; installer said:  C:\\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\release-0zqf9lre\\\\target-c-empty\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
       "note": ""
     },
     {
       "step": "3 walk[C empty]",
       "name": "the instance carries an identity bound to this target",
       "ok": true,
-      "detail": "instance.json={'schema': 1, 'uuid': 'e4d33fb3-0663-4c9d-81be-7d06b37ca239', 'target': '..', 'created': '2026-08-22T10:30:33+00:00'}",
+      "detail": "instance.json={'schema': 1, 'uuid': 'c72b4cde-077a-4a92-ba53-752d761cedb8', 'target': '..', 'created': '2026-08-22T12:05:48+00:00'}",
       "note": ""
     },
     {
       "step": "3 walk[C empty]",
       "name": "the DOCUMENTED launcher runs from the TARGET ROOT",
       "ok": true,
-      "detail": "`sh .useful-helpers/run.sh attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-22 10:30:33,950 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'",
+      "detail": "`C:\\Users\\jacob\\AppData\\Local\\Temp\\release-0zqf9lre\\target-c-empty\\.useful-helpers\\run.bat attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-22 07:05:49,564 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'",
       "note": ""
     },
     {
@@ -376,16 +404,23 @@
     },
     {
       "step": "3 walk[C empty]",
-      "name": "the installed product can verify itself (`run smoke`)",
+      "name": "the launcher reports FAILURE as well as success",
       "ok": false,
-      "detail": "rc=1 tail=\"ct\\\\n' : clean_app README is not the swapped product template\\n\\n----------------------------------------------------------------------\\nRan 88 tests in 18.140s\\n\\nFAILED (failures=23, errors=3, skipped=7)\\n\"",
-      "note": "rc=1 \u00b7 Ran 88 tests in 18.140s \u00b7 FAILED (failures=23, errors=3, skipped=7)"
+      "detail": "rc=0 for a tool that does not exist; a launcher that cannot return non-zero makes every exit-code check above meaningless",
+      "note": "unknown-tool rc=0 (want non-zero)"
+    },
+    {
+      "step": "3 walk[C empty]",
+      "name": "the installed product can verify itself (`run smoke`)",
+      "ok": true,
+      "detail": "rc=0 tail=\" New project\\\\n' : clean_app README is not the swapped product template\\n\\n----------------------------------------------------------------------\\nRan 88 tests in 144.627s\\n\\nFAILED (failures=24, errors=3)\\n\"",
+      "note": "rc=0 \u00b7 Ran 88 tests in 144.627s \u00b7 FAILED (failures=24, errors=3)"
     },
     {
       "step": "3 walk[C empty]",
       "name": "`attach` produces awareness of THIS target",
       "ok": true,
-      "detail": "keys=['awareness', 'mode', 'next', 'ok', 'project_map', 'target', 'workbench', 'written'] revision='73dc8045d4eed100'",
+      "detail": "keys=['awareness', 'mode', 'next', 'ok', 'project_map', 'target', 'workbench', 'written'] revision='47c0bc51753b8c4c'",
       "note": ""
     },
     {
@@ -398,8 +433,8 @@
     {
       "step": "3 walk[C empty]",
       "name": "the synopsis is ACTUALLY SCORED and asserts nothing the evidence cannot support",
-      "ok": false,
-      "detail": "UNSCORED - no synopsis, and no recorded decision to withhold one, so nothing about truthfulness was tested here; last limit='No semantic synopsis: no summary backend reachable. This map is structural only; it descri'",
+      "ok": true,
+      "detail": "density='nascent' files=1 grounded_in='README + module docstrings + structure (no file read by the reader)' cites-but-absent=[] shape_only=False purpose='This project is a documentation repository in Markdown format, aimed at providing clear instructions and guide'",
       "note": ""
     },
     {
@@ -427,7 +462,7 @@
       "step": "5 removal",
       "name": "the sidecar installs into the untouched target",
       "ok": true,
-      "detail": "\n  \"next\": \"cd /tmp/release-w1udzsjl/target-removal\\n  sh .useful-helpers/run.sh attach     (what is this target, and what next)\\n  sh .useful-helpers/run.sh list       (every tool available here)\"\n}\n",
+      "detail": "ppData\\\\Local\\\\Temp\\\\release-0zqf9lre\\\\target-removal\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
       "note": ""
     },
     {
@@ -460,16 +495,16 @@
     },
     {
       "step": "3 stop condition",
-      "name": "the windows record names the SAME artifact this run exercised",
+      "name": "the linux record names the SAME artifact this run exercised",
       "ok": true,
-      "detail": "this run=ccb5e354f991d7f2\u2026 windows=ccb5e354f991d7f2\u2026 (17 failing check(s) there) - one leg alone is not a release, and two legs naming different artifacts is not a release either",
+      "detail": "this run=ccb5e354f991d7f2\u2026 linux=ccb5e354f991d7f2\u2026 (6 failing check(s) there) - one leg alone is not a release, and two legs naming different artifacts is not a release either",
       "note": ""
     },
     {
       "step": "3 stop condition",
-      "name": "the windows record was produced by the SAME verifier source",
+      "name": "the linux record was produced by the SAME verifier source",
       "ok": false,
-      "detail": "this run=fc41f4b88962bd1f\u2026 windows=c082e3cab3bf920d\u2026 - the artifact comparison above cannot detect a changed instrument, so the instrument names itself",
+      "detail": "this run=ba771a23d8f3abfa\u2026 linux=fc41f4b88962bd1f\u2026 - the artifact comparison above cannot detect a changed instrument, so the instrument names itself",
       "note": ""
     }
   ]

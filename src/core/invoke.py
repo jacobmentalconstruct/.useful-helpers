@@ -23,6 +23,7 @@ import os
 import signal
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import uuid
@@ -396,7 +397,29 @@ def _dispatch(paths: Paths, tool, tool_id: str, args: dict,
         return InvokeResult(False, tool_id, None, f"entry not found: {entry_rel}", None)
 
     interpreter = _resolve_interpreter(paths, tool.invocation.get("interpreter", ""))
-    cmd = [interpreter, str(entry), "--args-json", safe_json_dumps(args or {})]
+
+    # ARGUMENTS TRAVEL IN A FILE, NOT ON THE COMMAND LINE.
+    #
+    # This was `--args-json <json>`, which made the operating system's argv limit part of
+    # the seam's contract. A tool composing another tool's output - `awareness` attaching a
+    # ~900KB `report` observation as evidence - exceeded it, and the failure surfaced four
+    # layers away as `attach --refresh` returning the same revision forever, because the
+    # dropped contributor was the only one that could notice a change. Windows caps a
+    # command line at 32,767 characters against Linux's ~2MB, so the same defect bit about
+    # thirty times sooner there.
+    #
+    # Every tool reads its arguments through one shared runner (`tools._toolkit.run_cli`),
+    # so the receiving half of this is a single edit that reaches all of them.
+    argfd, argpath = tempfile.mkstemp(prefix="uh-args-", suffix=".json")
+    with os.fdopen(argfd, "w", encoding="utf-8") as fh:
+        fh.write(safe_json_dumps(args or {}))
+    cmd = [interpreter, str(entry), "--args-file", argpath]
+
+    def _drop_args() -> None:
+        try:
+            os.unlink(argpath)
+        except OSError:
+            pass
     log.info("invoke tool=%s authority=%s category=%s", tool_id, tool.authority, tool.category)
 
     # Put the TOOLKIT HOME on the child's PYTHONPATH so tools can import the shared substrate
@@ -433,6 +456,7 @@ def _dispatch(paths: Paths, tool, tool_id: str, args: dict,
             **proctree.spawn_kwargs(),
         )
     except OSError as e:
+        _drop_args()
         return InvokeResult(False, tool_id, None, f"subprocess error: {e}", None)
 
     # Adopt BEFORE registering: a tree that is registered but unowned is exactly the
@@ -452,6 +476,9 @@ def _dispatch(paths: Paths, tool, tool_id: str, args: dict,
         return InvokeResult(False, tool_id, None,
                             _clean(paths, f"timeout after {limit}s"), None)
     finally:
+        # The child has read its arguments by the time communicate() returns, on the
+        # timeout path as well as the clean one.
+        _drop_args()
         with _RUNNING_LOCK:
             _RUNNING.pop(handle.op_id, None)
         # Release the job handle. On Windows KILL_ON_JOB_CLOSE means this also ends

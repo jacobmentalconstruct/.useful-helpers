@@ -740,9 +740,14 @@ def _module_docstring(path: Path) -> str:
     return " ".join(lines[:5])[:400]
 
 
-def _gather_signals(target: Path, pmap: dict, probe: dict) -> str:
+def _gather_signals(target: Path, pmap: dict, probe: dict) -> tuple[str, list[str]]:
     """Assemble cheap, bounded signals for one summary call  -  no per-file LLM work, and no second
-    filesystem walk: representative files come from the paths the probe already collected."""
+    filesystem walk: representative files come from the paths the probe already collected.
+
+    RETURNS WHAT IT ACTUALLY FOUND, not just the prompt. The caller used to advertise
+    "README + module docstrings + structure" as the grounding for every synopsis it
+    produced, on targets that had neither a README nor a docstring. Naming a source that
+    was not consulted is the part a reader has no way to check."""
     subs = pmap.get("subsystems", [])
     parts: list[str] = [
         f"Detected kind: {pmap.get('domain')} - {pmap.get('domain_summary', '')}",
@@ -758,8 +763,11 @@ def _gather_signals(target: Path, pmap: dict, probe: dict) -> str:
     # README at the root, from the already-collected paths.
     readme = next((r for r in rel_paths
                    if "/" not in r and r.lower().startswith("readme")), None)
+    used = ["structure"]
+    structural = len("\n".join(parts))
     if readme:
         parts.append("README:\n" + _module_docstring(target / readme))
+        used.append("README")
 
     # One representative .py per top subsystem, plus the entry points  -  from rel_paths, no re-walk.
     doc_files = list(pmap.get("entry_points", []))
@@ -779,21 +787,78 @@ def _gather_signals(target: Path, pmap: dict, probe: dict) -> str:
         doc = _module_docstring(target / rel)
         if doc:
             parts.append(f"{rel}: {doc}")
-    return "\n".join(p for p in parts if p)
+            if "module docstrings" not in used:
+                used.append("module docstrings")
+    text = "\n".join(p for p in parts if p)
+    # How much of this is DESCRIPTION rather than shape. The four structural lines are
+    # emitted for every target, including ones that have nothing in them, so their length
+    # says nothing about whether there is anything to describe.
+    return text, used, max(0, len(text) - structural)
 
 
-def _synopsis(target: Path, pmap: dict, probe: dict) -> dict | None:
-    """A short, model-written PURPOSE statement grounded in gathered signals  -  or None when no
-    summary backend is reachable (attach then stays structural). Bounded to one call; the caller
-    persists it in the map so re-engage never re-summarizes (Gf)."""
+# Enough gathered description for one real sentence about the target. Below this the
+# signals are structure plus a title, and a purpose statement can only come from the
+# model's prior. Observed: a one-line README yielded 22.
+MIN_SYNOPSIS_SUBSTANCE = 80
+
+
+def _synopsis(target: Path, pmap: dict, probe: dict) -> tuple[dict | None, str]:
+    """A short, model-written PURPOSE statement grounded in gathered signals  -  or None, with the
+    reason, when there is nothing to ground it in. Bounded to one call; the caller persists it in
+    the map so re-engage never re-summarizes (Gf).
+
+    AN EMPTY TARGET GETS NO SYNOPSIS. Release verification attached to a directory that
+    contained nothing at all - file_count 0, every domain score 0.0, evidence_density
+    "empty" - and the map correctly said so in seven separate fields. The signals handed
+    to the model were four explicit negatives: no subsystems, no entry points, no file
+    types, no confident kind. The model answered that the project was "a database
+    management system designed to store and manage customer information efficiently,
+    with main parts including user authentication for secure access, data validation to
+    ensure accuracy, and reporting tools for analytics."
+
+    None of that existed. A model asked to summarize nothing does not return nothing, it
+    returns something plausible, and a plausible purpose sitting beside an otherwise
+    scrupulously honest map is worse than no purpose at all - the surrounding honesty is
+    what makes the invention credible. So the call is not made. The absence is recorded
+    as a limit, in the map's own voice, alongside the ones it already tells the truth in.
+    """
+    # AVAILABILITY IS PROBED FIRST, THEN THE DECISION NOT TO CALL. The order matters to a
+    # reader: "no backend was reachable" and "a backend was reachable and this target did
+    # not warrant asking it" are different facts, and only the second is a statement about
+    # the target. Testing the target first would make the declining limit ambiguous about
+    # whether anything was even available to decline. The probe is cached and makes no
+    # model call, so asking costs nothing.
     if not summarize_shared.available():
-        return None
-    signals = _gather_signals(target, pmap, probe)
+        return None, ("No semantic synopsis: no summary backend reachable. This map is "
+                      "structural only; it describes SHAPE, not PURPOSE.")
+    if pmap.get("evidence_density") == "empty":
+        return None, ("No semantic synopsis: this target is empty, so there is no purpose "
+                      "to state. A model asked to summarize nothing invents something "
+                      "plausible; an invented purpose is worse than an absent one.")
+    signals, used, substance = _gather_signals(target, pmap, probe)
+    # THE EMPTY GUARD ABOVE IS NOT ENOUGH, and the walk's own nascent target proves it.
+    # A directory holding one README that reads "# New project" is not empty - it is
+    # `nascent`, file_count 1 - and the description available to summarize from is four
+    # words. That is twenty-two characters of substance against four structural lines
+    # saying "(none)" three times, which is the same situation as the empty target wearing
+    # a hat. The threshold is a judgement, not a measurement: enough for one real sentence
+    # about the thing, below which there is nothing to be specific about and the model has
+    # only its prior to answer from.
+    if substance < MIN_SYNOPSIS_SUBSTANCE:
+        return None, (f"No semantic synopsis: the gathered signal is {substance} characters "
+                      "of description, which is too thin to state a purpose from. What "
+                      "little is here is in the structural map above.")
     purpose = summarize_shared.summarize_project(signals)
-    if not purpose:
-        return None
+    if purpose is None:
+        return None, ("No semantic synopsis: the summary backend returned no usable "
+                      "answer. This map is structural only; it describes SHAPE, not "
+                      "PURPOSE.")
+    if purpose == "":
+        return None, ("No semantic synopsis: the reader was asked and declined - these "
+                      "signals do not describe a project. A declined answer is a real "
+                      "answer, and it is this one.")
     return {"purpose": purpose, "model": summarize_shared.probe().get("model"),
-            "grounded_in": "README + module docstrings + structure (no file read by the reader)"}
+            "grounded_in": " + ".join(used) + " (no file read by the reader)"}, ""
 
 
 def _next_steps(mode: str, cart: dict, stale: bool, *, nascent: bool = False,
@@ -1041,13 +1106,11 @@ def run(args: dict) -> dict:
     # Gf: a model-written PURPOSE grounded in cheap signals, so a fresh agent can state what the
     # target IS without reading a file. One bounded call; persisted in the map, so re-engage
     # reuses it for free. Absent a summary backend, the map stays structural (limit noted).
-    synopsis = _synopsis(target, pmap, probe)
+    synopsis, no_synopsis_because = _synopsis(target, pmap, probe)
     if synopsis:
         pmap["synopsis"] = synopsis
     else:
-        pmap["limits"].append(
-            "No semantic synopsis: no summary backend reachable. This map is structural only; "
-            "it describes SHAPE, not PURPOSE.")
+        pmap["limits"].append(no_synopsis_because)
     workbench = _build_workbench(chosen, comp)
     profile = {
         "target": str(target),

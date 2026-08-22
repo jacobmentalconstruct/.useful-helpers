@@ -61,14 +61,39 @@ def apply_with() -> dict:
 
 
 def run_cli(run: Callable[[dict], dict], argv: list[str]) -> int:
-    """Parse --args-json, call run(args), print the JSON envelope, return an exit code."""
+    """Parse --args-json or --args-file, call run(args), print the JSON envelope, return an
+    exit code.
+
+    `--args-file` EXISTS BECAUSE argv IS NOT A TRANSPORT. The seam handed every tool its
+    arguments on the command line, so the size of one tool's output silently became a
+    limit on what another tool could be given: `report` on a real project produces ~900KB,
+    the exec died with "Argument list too long", and the caller recorded the observation as
+    uncapturable. Nothing crashed. The product just knew less, and the awareness fingerprint
+    it fed stopped being able to change.
+
+    Both spellings are accepted so an operator can still type `--args-json` by hand, and
+    every programmatic caller uses the file. This is the one place tool argument parsing
+    lives, which is why one edit here reaches all 94 tools."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("--args-json", default="{}")
+    parser.add_argument("--args-json", default=None)
+    parser.add_argument("--args-file", default=None,
+                        help="path to a JSON file, or - for stdin")
     ns = parser.parse_args(argv)
+    if ns.args_file and ns.args_json:
+        print(json.dumps({"ok": False,
+                          "error": "use --args-json OR --args-file, not both"}))
+        return 2
     try:
-        args = json.loads(ns.args_json)
-    except json.JSONDecodeError as e:
-        print(json.dumps({"ok": False, "error": f"bad --args-json: {e}"}))
+        if ns.args_file == "-":
+            raw = sys.stdin.read()
+        elif ns.args_file:
+            raw = Path(ns.args_file).read_text(encoding="utf-8")
+        else:
+            raw = ns.args_json or "{}"
+        args = json.loads(raw or "{}")
+    except (OSError, json.JSONDecodeError) as e:
+        which = "--args-file" if ns.args_file else "--args-json"
+        print(json.dumps({"ok": False, "error": f"bad {which}: {e}"}))
         return 2
     if not isinstance(args, dict):
         print(json.dumps({"ok": False, "error": "args must be a JSON object"}))
@@ -268,11 +293,24 @@ def attach_evidence(summary: str, body: str, kind: str = "tool_output") -> "str 
         cli = suite_home() / "tools" / "evidence" / "cli.py"
         if not cli.is_file():
             return None
-        proc = _sp.run(
-            [_sys.executable, str(cli), "--args-json",
-             _json.dumps({"action": "attach", "kind": kind,
-                          "summary": str(summary)[:200], "body": str(body)})],
-            capture_output=True, text=True, encoding="utf-8", timeout=30)
+        # Through a file, not argv: the whole point of this helper is that tools ground
+        # LARGE output, and a body big enough to be worth citing is big enough to blow
+        # past the command-line limit.
+        import os as _os
+        import tempfile as _tf
+        fd, argpath = _tf.mkstemp(prefix="seam-args-", suffix=".json")
+        try:
+            with _os.fdopen(fd, "w", encoding="utf-8") as fh:
+                _json.dump({"action": "attach", "kind": kind,
+                            "summary": str(summary)[:200], "body": str(body)}, fh)
+            proc = _sp.run(
+                [_sys.executable, str(cli), "--args-file", argpath],
+                capture_output=True, text=True, encoding="utf-8", timeout=30)
+        finally:
+            try:
+                _os.unlink(argpath)
+            except OSError:
+                pass
         return _json.loads(proc.stdout).get("evidence_id")
     except Exception:
         return None
@@ -340,15 +378,47 @@ def seam_call(tool: str, args: dict, *, timeout: int = 120) -> dict:
     this is the sanctioned way for one tool to COMPOSE another - the nested call still passes
     through the seam, so it is authority-checked and audit-logged like any other. Used by the
     orchestrators (delegate, genesis, plan). Degrades to ok:False on any subprocess/parse error."""
+    import os
     import subprocess
+    import tempfile
 
+    # THE PAYLOAD GOES THROUGH A FILE, NOT THROUGH argv.
+    #
+    # This passed `--args-json <json>` on the command line, so the size of one tool's
+    # output became a limit on whether another tool could receive it. `report` on a real
+    # software target produces ~900KB; the exec died with `Argument list too long`, the
+    # OSError below swallowed it, and `awareness` recorded the contributor as
+    # unobservable. Nothing crashed and nothing lied - the product simply, quietly, knew
+    # less. Downstream, the evidence fingerprint could no longer change when a docstring
+    # changed, so `attach --refresh` returned the same revision forever and the T8 loop
+    # became unfalsifiable. Four layers between the cause and the symptom.
+    #
+    # Windows caps a command line at 32,767 characters against Linux's ~2MB, so this
+    # degraded roughly thirty times sooner there - the same defect on both platforms,
+    # reached at wildly different payload sizes.
+    #
+    # `--args-file` already existed for exactly this, and says so: "the reliable route
+    # for programmatic callers - no shell-escaping of nested JSON, field report F0".
+    # `seam_call` is THE programmatic caller and was the one place not using it. Every
+    # payload goes through the file, not just the large ones: escaping is a hazard at any
+    # size, and one code path is worth more than a size heuristic nobody re-tests.
+    fd, argpath = tempfile.mkstemp(prefix="seam-", suffix=".json")
     try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(args, fh)
         proc = subprocess.run(
             [sys.executable, "-m", "src.app", "cli", "tool-call", "--tool", tool,
-             "--args-json", json.dumps(args)],
+             "--args-file", argpath],
             cwd=str(suite_home()), capture_output=True, text=True, encoding="utf-8",
             errors="replace", timeout=timeout)
         env = json.loads(proc.stdout)
         return {"ok": bool(env.get("ok")), "output": env.get("output"), "error": env.get("error")}
     except (subprocess.SubprocessError, json.JSONDecodeError, OSError) as e:
         return {"ok": False, "output": None, "error": f"{type(e).__name__}: {e}"}
+    finally:
+        # The payload is a tool's arguments on their way between two processes; it has no
+        # business outliving the call.
+        try:
+            os.unlink(argpath)
+        except OSError:
+            pass
