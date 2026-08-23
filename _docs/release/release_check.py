@@ -586,33 +586,78 @@ def walk(artifact: Path, label: str, target: Path, *, full: bool,
           v.returncode == 0 and "usefulhelpers" in (v.stdout or "").lower(),
           f"rc={v.returncode} out={(v.stdout or '')[:120]!r}")
 
-    # WHAT THE INLINE ROUTE CAN ACTUALLY CARRY, ASSERTED RATHER THAN ASSUMED.
+    # A GATE MAY NOT ASSERT A CAPABILITY THE PLATFORM CANNOT PROVIDE - AND MAY NOT LET
+    # THE ABSENCE GO UNRECORDED EITHER.
     #
-    # `tool_call` sends payloads through a file on Windows because an inline one arrived
-    # corrupted. That is a reasonable thing for a verifier to do and a terrible thing for
-    # it to do QUIETLY: routing around a broken channel while reporting nothing turns a
-    # product defect into an implementation detail of the test harness. So the channel is
-    # measured directly, with the payload shape that breaks it - nested quotes and a
-    # backslash path, the same probe the T-seam gate uses - and `ping` echoes back exactly
-    # what it received.
+    # Measured, not inferred: a JSON payload sent by a program to a .bat arrives split
+    # across several arguments, because cmd.exe does not read the backslash-escaped quotes
+    # that subprocess layers emit. `{"message": "nested \"quotes\"...}` reached the batch
+    # as %2=`{\"message\": \"nested` and %3=`\\\"quotes\\\"`. No amount of work inside
+    # run.bat repairs that; the argument was destroyed before the batch was entered.
+    #
+    # Three responses were possible and two are wrong. DELETING the check would erase the
+    # limitation from the record, so a reader of the certification would assume inline
+    # works everywhere. INVERTING it - passing when the payload corrupts - would enshrine
+    # a defect as a requirement and fail the day someone fixed it. So the assertion moves
+    # to the route the product actually offers programmatic callers, and what cannot be
+    # provided becomes a DISCLOSURE requirement instead: the launcher must say so itself.
+    #
+    # That is the standard this product already holds `attach` to. A map that cannot know
+    # something says it cannot know it, and the gate checks that it said so. A launcher
+    # that cannot carry something says it cannot carry it, and the gate checks the same.
     hostile = {"message": 'nested "quotes" and C:\\win\\style\\path',
                "arr": [1, {"k": True}]}
-    if platform.system() == "Windows":
-        inline_cmd = [*launcher(home), "tool", "ping", json.dumps(hostile)]
-    else:
-        inline_cmd = [*launcher(home), "call", "--tool", "ping",
-                      "--args-json", json.dumps(hostile)]
-    ip = run(inline_cmd, cwd=home, timeout=300, env=clean_env(target))
+    hfd, hpath = tempfile.mkstemp(prefix="uh-hostile-", suffix=".json")
     try:
-        echoed = ((json.loads(ip.stdout).get("output") or {}).get("echo"))
+        with os.fdopen(hfd, "w", encoding="utf-8") as fh:
+            json.dump(hostile, fh)
+        if platform.system() == "Windows":
+            fcmd = [*launcher(home), "tool", "ping", "@" + hpath]
+        else:
+            fcmd = [*launcher(home), "call", "--tool", "ping",
+                    "--args-json", "@" + hpath]
+        fp = run(fcmd, cwd=home, timeout=300, env=clean_env(target))
+    finally:
+        try:
+            os.unlink(hpath)
+        except OSError:
+            pass
+    try:
+        echoed = ((json.loads(fp.stdout).get("output") or {}).get("echo"))
     except ValueError:
         echoed = None
-    check(step, "the launcher carries an inline payload intact",
+    check(step, "the programmatic payload route carries a hostile payload intact",
           echoed == hostile["message"],
-          f"rc={ip.returncode} sent={hostile['message']!r} got={echoed!r} - the documented "
-          "inline form is what an operator types; a payload that does not survive it is "
-          "corrupted in transit, not rejected",
-          note=f"inline round-trip {'intact' if echoed == hostile['message'] else 'CORRUPTED'}")
+          f"rc={fp.returncode} sent={hostile['message']!r} got={echoed!r} - `@file` is what "
+          "the launcher tells scripts to use; if it cannot carry quotes and backslashes "
+          "there is no route that can",
+          note=f"@file round-trip {'intact' if echoed == hostile['message'] else 'CORRUPTED'}")
+
+    if platform.system() == "Windows":
+        # The capability is impossible here, so what is asserted is that the product says
+        # so, in the launcher's own help, where an operator meets it.
+        hp = run([*launcher(home), "help"], cwd=home, timeout=120, env=clean_env(target))
+        said = (hp.stdout or "") + (hp.stderr or "")
+        check(step, "the launcher states that inline payloads are not for programs",
+              "inline" in said.lower() and "@<file>" in said.lower(),
+              f"rc={hp.returncode} help={said[-200:]!r} - cmd.exe shatters a "
+              "programmatically-sent JSON argument before the batch sees it. That cannot "
+              "be repaired here, so it must be disclosed here",
+              note="inline limitation disclosed in `run.bat help`")
+    else:
+        # POSIX hands over an argument vector with nothing in between, so the capability
+        # exists and is asserted as a capability.
+        ic = [*launcher(home), "call", "--tool", "ping", "--args-json", json.dumps(hostile)]
+        ip = run(ic, cwd=home, timeout=300, env=clean_env(target))
+        try:
+            inline_echo = ((json.loads(ip.stdout).get("output") or {}).get("echo"))
+        except ValueError:
+            inline_echo = None
+        check(step, "inline payloads survive the launcher unchanged",
+              inline_echo == hostile["message"],
+              f"rc={ip.returncode} sent={hostile['message']!r} got={inline_echo!r} - a shell "
+              "that passes argv through has no excuse for altering a payload",
+              note="inline round-trip intact")
 
     # THE LAUNCHER MUST BE ABLE TO SAY "NO", NOT JUST "FINE".
     #

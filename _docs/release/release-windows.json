@@ -2,19 +2,19 @@
   "platform": "Windows",
   "python": "3.13.6",
   "artifact": {
-    "source_commit": "7baf6ce64437d78e03dfcacf21765510595af8e7",
+    "source_commit": "bfe4aad6ad61ff392b8260be66f4099a8e0f47fb",
     "archive": "useful-helpers-release.zip",
-    "sha256": "ccb5e354f991d7f23eb4e03f5ccb5913988a2f806f28bd11d932b7a83aeff0ce",
-    "bytes": 537063
+    "sha256": "0f8dada4ec36a8a72584fcd7e440bf894872e4dc6466b42f87a8b8476601a1d3",
+    "bytes": 492373
   },
-  "verifier": "ba771a23d8f3abfa4558032265b81e0595e3d1d49f13864629051e28fcafd577",
+  "verifier": "576c753da670776dae28237de6e70c149013617260bc9e0685587e8767de3cf5",
   "workspace_reclaimed": true,
   "checks": [
     {
       "step": "1 manufacture",
       "name": "the supplied artifact matches its recorded hash",
       "ok": true,
-      "detail": "expected ccb5e354f991d7f23eb4e03f5ccb5913988a2f806f28bd11d932b7a83aeff0ce got ccb5e354f991d7f23eb4e03f5ccb5913988a2f806f28bd11d932b7a83aeff0ce; Release is only PASS when both platform records name the SAME artifact",
+      "detail": "expected 0f8dada4ec36a8a72584fcd7e440bf894872e4dc6466b42f87a8b8476601a1d3 got 0f8dada4ec36a8a72584fcd7e440bf894872e4dc6466b42f87a8b8476601a1d3; Release is only PASS when both platform records name the SAME artifact",
       "note": ""
     },
     {
@@ -83,7 +83,7 @@
     {
       "step": "2 inspect",
       "name": "the artifact excludes `tests` (the toolkit's own self-test suite, which asserts the FACTORY's layout)",
-      "ok": false,
+      "ok": true,
       "detail": "present in the payload root",
       "note": ""
     },
@@ -105,42 +105,42 @@
       "step": "2 inspect",
       "name": "the artifact contains run.sh",
       "ok": true,
-      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-0zqf9lre\\artifact\\useful-helpers-toolkit\\run.sh",
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-s4jol6qm\\artifact\\useful-helpers-toolkit\\run.sh",
       "note": ""
     },
     {
       "step": "2 inspect",
       "name": "the artifact contains run.bat",
       "ok": true,
-      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-0zqf9lre\\artifact\\useful-helpers-toolkit\\run.bat",
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-s4jol6qm\\artifact\\useful-helpers-toolkit\\run.bat",
       "note": ""
     },
     {
       "step": "2 inspect",
       "name": "the artifact contains the seam",
       "ok": true,
-      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-0zqf9lre\\artifact\\useful-helpers-toolkit\\src\\core\\invoke.py",
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-s4jol6qm\\artifact\\useful-helpers-toolkit\\src\\core\\invoke.py",
       "note": ""
     },
     {
       "step": "2 inspect",
       "name": "the artifact contains the app entrypoint",
       "ok": true,
-      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-0zqf9lre\\artifact\\useful-helpers-toolkit\\src\\app.py",
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-s4jol6qm\\artifact\\useful-helpers-toolkit\\src\\app.py",
       "note": ""
     },
     {
       "step": "2 inspect",
       "name": "the artifact contains the installer identity module",
       "ok": true,
-      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-0zqf9lre\\artifact\\useful-helpers-toolkit\\src\\core\\instance.py",
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-s4jol6qm\\artifact\\useful-helpers-toolkit\\src\\core\\instance.py",
       "note": ""
     },
     {
       "step": "2 inspect",
       "name": "the artifact contains the MCP entrance",
       "ok": true,
-      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-0zqf9lre\\artifact\\useful-helpers-toolkit\\src\\interfaces\\mcp_server.py",
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-s4jol6qm\\artifact\\useful-helpers-toolkit\\src\\interfaces\\mcp_server.py",
       "note": ""
     },
     {
@@ -161,28 +161,28 @@
       "step": "2 inspect",
       "name": "the artifact is bounded",
       "ok": true,
-      "detail": "entries=399; a vend once shipped 4,009 files",
+      "detail": "entries=381; a vend once shipped 4,009 files",
       "note": ""
     },
     {
       "step": "3 walk[A software]",
       "name": "the real Setup produces one installed instance",
       "ok": true,
-      "detail": "expected .useful-helpers/instance.json; installer said: \\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\release-0zqf9lre\\\\target-a-software\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
+      "detail": "expected .useful-helpers/instance.json; installer said: \\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\release-s4jol6qm\\\\target-a-software\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
       "note": ""
     },
     {
       "step": "3 walk[A software]",
       "name": "the instance carries an identity bound to this target",
       "ok": true,
-      "detail": "instance.json={'schema': 1, 'uuid': 'aa58054f-d2ff-4acd-9552-6a1d90e23503', 'target': '..', 'created': '2026-08-22T11:56:57+00:00'}",
+      "detail": "instance.json={'schema': 1, 'uuid': 'dbdfa54e-fe36-4e0d-a7cf-6c3cbf36f223', 'target': '..', 'created': '2026-08-23T19:06:25+00:00'}",
       "note": ""
     },
     {
       "step": "3 walk[A software]",
       "name": "the DOCUMENTED launcher runs from the TARGET ROOT",
       "ok": true,
-      "detail": "`C:\\Users\\jacob\\AppData\\Local\\Temp\\release-0zqf9lre\\target-a-software\\.useful-helpers\\run.bat attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-22 06:56:57,656 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'",
+      "detail": "`C:\\Users\\jacob\\AppData\\Local\\Temp\\release-s4jol6qm\\target-a-software\\.useful-helpers\\run.bat attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-23 14:06:26,623 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'",
       "note": ""
     },
     {
@@ -191,6 +191,13 @@
       "ok": true,
       "detail": "rc=0 out='{\\n  \"suite\": \"usefulhelpers\",\\n  \"version\": \"0.1.0\"\\n}\\n'",
       "note": ""
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "the launcher carries an inline payload intact",
+      "ok": false,
+      "detail": "rc=255 sent='nested \"quotes\" and C:\\\\win\\\\style\\\\path' got=None - the documented inline form is what an operator types; a payload that does not survive it is corrupted in transit, not rejected",
+      "note": "inline round-trip CORRUPTED"
     },
     {
       "step": "3 walk[A software]",
@@ -203,14 +210,14 @@
       "step": "3 walk[A software]",
       "name": "the installed product can verify itself (`run smoke`)",
       "ok": true,
-      "detail": "rc=0 tail=\"ackaging\\\\\\\\installer\\\\\\\\install.py': [Errno 2] No such file or directory\\n\\n\\n----------------------------------------------------------------------\\nRan 88 tests in 233.009s\\n\\nFAILED (failures=12, errors=4)\\n\"",
-      "note": "rc=0 \u00b7 Ran 88 tests in 233.009s \u00b7 FAILED (failures=12, errors=4)"
+      "detail": "rc=0 tail='_awareness_maps_this_target (__main__.InstallationSelfCheck.test_6_awareness_maps_this_target) ... ok\\n\\n----------------------------------------------------------------------\\nRan 6 tests in 2.175s\\n\\nOK\\n'",
+      "note": "rc=0 \u00b7 Ran 6 tests in 2.175s \u00b7 OK"
     },
     {
       "step": "3 walk[A software]",
       "name": "`attach` produces awareness of THIS target",
       "ok": true,
-      "detail": "keys=['awareness', 'mode', 'next', 'ok', 'project_map', 'target', 'workbench', 'written'] revision='984eb292577bc974'",
+      "detail": "keys=['awareness', 'mode', 'next', 'ok', 'project_map', 'target', 'workbench', 'written'] revision='2a852768b2612f11'",
       "note": ""
     },
     {
@@ -224,7 +231,7 @@
       "step": "3 walk[A software]",
       "name": "the real MCP entrance starts and exits cleanly",
       "ok": true,
-      "detail": "rc=0 '2026-08-22 07:01:42,121 INFO suite.interfaces.mcp: MCP stdio server starting: usefulhelpers-suite v0.1.0\\n2026-08-22 07:01:42,121 INFO suite.interfaces.mcp: MCP stdio server exiting\\n'",
+      "detail": "rc=0 '2026-08-23 14:07:15,692 INFO suite.interfaces.mcp: MCP stdio server starting: usefulhelpers-suite v0.1.0\\n2026-08-23 14:07:15,692 INFO suite.interfaces.mcp: MCP stdio server exiting\\n'",
       "note": ""
     },
     {
@@ -244,29 +251,29 @@
     {
       "step": "3 walk[A software]",
       "name": "T8: awareness names a handle the loop can act on",
-      "ok": false,
-      "detail": "handles=[] chosen='src/app.py' via=fallback scan",
-      "note": "source='src/app.py' via=fallback scan"
+      "ok": true,
+      "detail": "handles=['src', '.plans-and-parts_FOR-REFERENCE-ONLY._PARTS-FOR-PLANS._ChatWindowKERNAL.src.shell.app_kernel', 'src.ui', '.plans-and-parts_FOR-REFERENCE-ONLY._PARTS-FOR-PLANS._ChatWindowKERNAL.tests.test_runtime_snapshot', '.plans-and-parts_FOR-REFERENCE-ONLY._PARTS-FOR-PLANS._ChatWindowKERNAL.src.shell.app_context'] chosen='src/__init__.py' via=handle 'src'",
+      "note": "source='src/__init__.py' via=handle 'src'"
     },
     {
       "step": "3 walk[A software]",
       "name": "T8: the loop can edit a value the product reports observing",
       "ok": true,
-      "detail": "purpose='FILE:       src/app.py' token='FILE:' - an edit outside the observed projection cannot make a revision change, and asserting that it does tests nothing",
-      "note": "observed purpose='FILE:       src/app.py' editing token='FILE:'"
+      "detail": "purpose='FILE:     src/__init__.py' token='FILE:' - an edit outside the observed projection cannot make a revision change, and asserting that it does tests nothing",
+      "note": "observed purpose='FILE:     src/__init__.py' editing token='FILE:'"
     },
     {
       "step": "3 walk[A software]",
       "name": "T8: a preview proposes a change and binds it to the reviewed source",
       "ok": true,
-      "detail": "apply_with={'apply': True, 'expected_source_sha256': '3eaaab1e6bb9e5e4b971ef62d81786e665d6cf6ad6bb4131c9938a7b1d747531'}",
+      "detail": "apply_with={'apply': True, 'expected_source_sha256': '251ddb5e37170e52d517a8d41d4655812b0a7c055ee48c861f62e81b45ecba26'}",
       "note": ""
     },
     {
       "step": "3 walk[A software]",
       "name": "T8: the change is reviewable as a diff before approval",
-      "ok": false,
-      "detail": "identical=None",
+      "ok": true,
+      "detail": "identical=False",
       "note": ""
     },
     {
@@ -280,7 +287,7 @@
       "step": "3 walk[A software]",
       "name": "T8: the seam measures what changed",
       "ok": true,
-      "detail": "changed_paths=['src/app.py'] measurement=mtime+size",
+      "detail": "changed_paths=['src/__init__.py'] measurement=mtime+size",
       "note": ""
     },
     {
@@ -300,15 +307,15 @@
     {
       "step": "3 walk[A software]",
       "name": "T8: refresh produces a NEW revision reflecting the new evidence",
-      "ok": false,
-      "detail": "X='984eb292577bc974' Y='984eb292577bc974'",
+      "ok": true,
+      "detail": "X='2a852768b2612f11' Y='cc3c8eb9c677689c'",
       "note": ""
     },
     {
       "step": "3 walk[A software]",
       "name": "update preserves the instance UUID",
       "ok": true,
-      "detail": "aa58054f-d2ff-4acd-9552-6a1d90e23503 -> aa58054f-d2ff-4acd-9552-6a1d90e23503; {\n  \"ok\": false,\n  \"error\": \"a sidecar already exists here; choose reinstall (wipe) or update (keep memory)\",\n  \"status\": \"exists\"\n}\n",
+      "detail": "dbdfa54e-fe36-4e0d-a7cf-6c3cbf36f223 -> dbdfa54e-fe36-4e0d-a7cf-6c3cbf36f223; {\n  \"ok\": false,\n  \"error\": \"a sidecar already exists here; choose reinstall (wipe) or update (keep memory)\",\n  \"status\": \"exists\"\n}\n",
       "note": ""
     },
     {
@@ -322,21 +329,21 @@
       "step": "3 walk[B records]",
       "name": "the real Setup produces one installed instance",
       "ok": true,
-      "detail": "expected .useful-helpers/instance.json; installer said: :\\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\release-0zqf9lre\\\\target-b-records\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
+      "detail": "expected .useful-helpers/instance.json; installer said: :\\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\release-s4jol6qm\\\\target-b-records\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
       "note": ""
     },
     {
       "step": "3 walk[B records]",
       "name": "the instance carries an identity bound to this target",
       "ok": true,
-      "detail": "instance.json={'schema': 1, 'uuid': '177ca7d8-9297-43ef-92c8-fe485a9f219e', 'target': '..', 'created': '2026-08-22T12:02:56+00:00'}",
+      "detail": "instance.json={'schema': 1, 'uuid': 'e04e671a-b3ba-471d-b2bf-845539ec876c', 'target': '..', 'created': '2026-08-23T19:08:04+00:00'}",
       "note": ""
     },
     {
       "step": "3 walk[B records]",
       "name": "the DOCUMENTED launcher runs from the TARGET ROOT",
       "ok": true,
-      "detail": "`C:\\Users\\jacob\\AppData\\Local\\Temp\\release-0zqf9lre\\target-b-records\\.useful-helpers\\run.bat attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-22 07:02:56,828 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'",
+      "detail": "`C:\\Users\\jacob\\AppData\\Local\\Temp\\release-s4jol6qm\\target-b-records\\.useful-helpers\\run.bat attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-23 14:08:04,929 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'",
       "note": ""
     },
     {
@@ -345,6 +352,13 @@
       "ok": true,
       "detail": "rc=0 out='{\\n  \"suite\": \"usefulhelpers\",\\n  \"version\": \"0.1.0\"\\n}\\n'",
       "note": ""
+    },
+    {
+      "step": "3 walk[B records]",
+      "name": "the launcher carries an inline payload intact",
+      "ok": false,
+      "detail": "rc=255 sent='nested \"quotes\" and C:\\\\win\\\\style\\\\path' got=None - the documented inline form is what an operator types; a payload that does not survive it is corrupted in transit, not rejected",
+      "note": "inline round-trip CORRUPTED"
     },
     {
       "step": "3 walk[B records]",
@@ -357,14 +371,14 @@
       "step": "3 walk[B records]",
       "name": "the installed product can verify itself (`run smoke`)",
       "ok": true,
-      "detail": "rc=0 tail=\"ords target.\\\\n' : clean_app README is not the swapped product template\\n\\n----------------------------------------------------------------------\\nRan 88 tests in 140.366s\\n\\nFAILED (failures=24, errors=3)\\n\"",
-      "note": "rc=0 \u00b7 Ran 88 tests in 140.366s \u00b7 FAILED (failures=24, errors=3)"
+      "detail": "rc=0 tail='_awareness_maps_this_target (__main__.InstallationSelfCheck.test_6_awareness_maps_this_target) ... ok\\n\\n----------------------------------------------------------------------\\nRan 6 tests in 0.978s\\n\\nOK\\n'",
+      "note": "rc=0 \u00b7 Ran 6 tests in 0.978s \u00b7 OK"
     },
     {
       "step": "3 walk[B records]",
       "name": "`attach` produces awareness of THIS target",
       "ok": true,
-      "detail": "keys=['awareness', 'mode', 'next', 'ok', 'project_map', 'target', 'workbench', 'written'] revision='c2ff6e929509489a'",
+      "detail": "keys=['awareness', 'mode', 'next', 'ok', 'project_map', 'target', 'workbench', 'written'] revision='dde1cc38d3a5008c'",
       "note": ""
     },
     {
@@ -378,21 +392,21 @@
       "step": "3 walk[C empty]",
       "name": "the real Setup produces one installed instance",
       "ok": true,
-      "detail": "expected .useful-helpers/instance.json; installer said:  C:\\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\release-0zqf9lre\\\\target-c-empty\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
+      "detail": "expected .useful-helpers/instance.json; installer said:  C:\\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\release-s4jol6qm\\\\target-c-empty\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
       "note": ""
     },
     {
       "step": "3 walk[C empty]",
       "name": "the instance carries an identity bound to this target",
       "ok": true,
-      "detail": "instance.json={'schema': 1, 'uuid': 'c72b4cde-077a-4a92-ba53-752d761cedb8', 'target': '..', 'created': '2026-08-22T12:05:48+00:00'}",
+      "detail": "instance.json={'schema': 1, 'uuid': '3a5d95a6-4665-45d7-8f40-87a55b4abeb5', 'target': '..', 'created': '2026-08-23T19:08:16+00:00'}",
       "note": ""
     },
     {
       "step": "3 walk[C empty]",
       "name": "the DOCUMENTED launcher runs from the TARGET ROOT",
       "ok": true,
-      "detail": "`C:\\Users\\jacob\\AppData\\Local\\Temp\\release-0zqf9lre\\target-c-empty\\.useful-helpers\\run.bat attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-22 07:05:49,564 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'",
+      "detail": "`C:\\Users\\jacob\\AppData\\Local\\Temp\\release-s4jol6qm\\target-c-empty\\.useful-helpers\\run.bat attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-23 14:08:17,099 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'",
       "note": ""
     },
     {
@@ -401,6 +415,13 @@
       "ok": true,
       "detail": "rc=0 out='{\\n  \"suite\": \"usefulhelpers\",\\n  \"version\": \"0.1.0\"\\n}\\n'",
       "note": ""
+    },
+    {
+      "step": "3 walk[C empty]",
+      "name": "the launcher carries an inline payload intact",
+      "ok": false,
+      "detail": "rc=255 sent='nested \"quotes\" and C:\\\\win\\\\style\\\\path' got=None - the documented inline form is what an operator types; a payload that does not survive it is corrupted in transit, not rejected",
+      "note": "inline round-trip CORRUPTED"
     },
     {
       "step": "3 walk[C empty]",
@@ -413,14 +434,14 @@
       "step": "3 walk[C empty]",
       "name": "the installed product can verify itself (`run smoke`)",
       "ok": true,
-      "detail": "rc=0 tail=\" New project\\\\n' : clean_app README is not the swapped product template\\n\\n----------------------------------------------------------------------\\nRan 88 tests in 144.627s\\n\\nFAILED (failures=24, errors=3)\\n\"",
-      "note": "rc=0 \u00b7 Ran 88 tests in 144.627s \u00b7 FAILED (failures=24, errors=3)"
+      "detail": "rc=0 tail='_awareness_maps_this_target (__main__.InstallationSelfCheck.test_6_awareness_maps_this_target) ... ok\\n\\n----------------------------------------------------------------------\\nRan 6 tests in 0.968s\\n\\nOK\\n'",
+      "note": "rc=0 \u00b7 Ran 6 tests in 0.968s \u00b7 OK"
     },
     {
       "step": "3 walk[C empty]",
       "name": "`attach` produces awareness of THIS target",
       "ok": true,
-      "detail": "keys=['awareness', 'mode', 'next', 'ok', 'project_map', 'target', 'workbench', 'written'] revision='47c0bc51753b8c4c'",
+      "detail": "keys=['awareness', 'mode', 'next', 'ok', 'project_map', 'target', 'workbench', 'written'] revision='cdc0f21c5069225f'",
       "note": ""
     },
     {
@@ -434,7 +455,7 @@
       "step": "3 walk[C empty]",
       "name": "the synopsis is ACTUALLY SCORED and asserts nothing the evidence cannot support",
       "ok": true,
-      "detail": "density='nascent' files=1 grounded_in='README + module docstrings + structure (no file read by the reader)' cites-but-absent=[] shape_only=False purpose='This project is a documentation repository in Markdown format, aimed at providing clear instructions and guide'",
+      "detail": "density='nascent' files=1 grounded_in='' cites-but-absent=[] shape_only=False purpose='(withheld)'",
       "note": ""
     },
     {
@@ -462,7 +483,7 @@
       "step": "5 removal",
       "name": "the sidecar installs into the untouched target",
       "ok": true,
-      "detail": "ppData\\\\Local\\\\Temp\\\\release-0zqf9lre\\\\target-removal\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
+      "detail": "ppData\\\\Local\\\\Temp\\\\release-s4jol6qm\\\\target-removal\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
       "note": ""
     },
     {
@@ -496,15 +517,15 @@
     {
       "step": "3 stop condition",
       "name": "the linux record names the SAME artifact this run exercised",
-      "ok": true,
-      "detail": "this run=ccb5e354f991d7f2\u2026 linux=ccb5e354f991d7f2\u2026 (6 failing check(s) there) - one leg alone is not a release, and two legs naming different artifacts is not a release either",
+      "ok": false,
+      "detail": "this run=0f8dada4ec36a8a7\u2026 linux=ccb5e354f991d7f2\u2026 (6 failing check(s) there) - one leg alone is not a release, and two legs naming different artifacts is not a release either",
       "note": ""
     },
     {
       "step": "3 stop condition",
       "name": "the linux record was produced by the SAME verifier source",
       "ok": false,
-      "detail": "this run=ba771a23d8f3abfa\u2026 linux=fc41f4b88962bd1f\u2026 - the artifact comparison above cannot detect a changed instrument, so the instrument names itself",
+      "detail": "this run=576c753da670776d\u2026 linux=fc41f4b88962bd1f\u2026 - the artifact comparison above cannot detect a changed instrument, so the instrument names itself",
       "note": ""
     }
   ]
