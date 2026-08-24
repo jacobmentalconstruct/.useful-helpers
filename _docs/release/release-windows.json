@@ -2,26 +2,47 @@
   "platform": "Windows",
   "python": "3.13.6",
   "artifact": {
-    "source_commit": "bfe4aad6ad61ff392b8260be66f4099a8e0f47fb",
+    "source_commit": "7972069d4034353153b5681ab7193ccfa2c78da2",
     "archive": "useful-helpers-release.zip",
-    "sha256": "0f8dada4ec36a8a72584fcd7e440bf894872e4dc6466b42f87a8b8476601a1d3",
-    "bytes": 492373
+    "sha256": "29754aa3d2481628ef3b0d2958906a99da128993c95350af0fb39eec4638e897",
+    "bytes": 492935
   },
-  "verifier": "576c753da670776dae28237de6e70c149013617260bc9e0685587e8767de3cf5",
+  "verifier": "57e2958265984d38c5cff075fe8a3954be28b6b31170f912e2af50d28f225bba",
   "workspace_reclaimed": true,
   "checks": [
     {
       "step": "1 manufacture",
-      "name": "the supplied artifact matches its recorded hash",
+      "name": "a clean clone of the certified source is obtained",
       "ok": true,
-      "detail": "expected 0f8dada4ec36a8a72584fcd7e440bf894872e4dc6466b42f87a8b8476601a1d3 got 0f8dada4ec36a8a72584fcd7e440bf894872e4dc6466b42f87a8b8476601a1d3; Release is only PASS when both platform records name the SAME artifact",
+      "detail": "rc=0 ",
       "note": ""
     },
     {
       "step": "1 manufacture",
-      "name": "a clean clone is available for the oracle controls",
+      "name": "the clone carries no uncommitted development state",
       "ok": true,
-      "detail": "rc=0 ",
+      "detail": "a clone that inherits working-tree changes is not a clean source; porcelain=[]",
+      "note": ""
+    },
+    {
+      "step": "1 manufacture",
+      "name": "the EXISTING vend mechanism produces the payload",
+      "ok": true,
+      "detail": "payload.materialise from the clone; rc=0 ",
+      "note": ""
+    },
+    {
+      "step": "1 manufacture",
+      "name": "the distribution carries the installer beside the payload",
+      "ok": true,
+      "detail": "the README declares run.bat / run.sh / install.py / useful-helpers-toolkit; dist=['install.py', 'run.bat', 'run.sh', 'useful-helpers-toolkit']",
+      "note": ""
+    },
+    {
+      "step": "1 manufacture",
+      "name": "the distribution is sealed with an immutable identity",
+      "ok": true,
+      "detail": "commit=7972069d4034 sha256=29754aa3d2481628\u2026 bytes=492935",
       "note": ""
     },
     {
@@ -105,42 +126,42 @@
       "step": "2 inspect",
       "name": "the artifact contains run.sh",
       "ok": true,
-      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-s4jol6qm\\artifact\\useful-helpers-toolkit\\run.sh",
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-f4i88umh\\artifact\\useful-helpers-toolkit\\run.sh",
       "note": ""
     },
     {
       "step": "2 inspect",
       "name": "the artifact contains run.bat",
       "ok": true,
-      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-s4jol6qm\\artifact\\useful-helpers-toolkit\\run.bat",
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-f4i88umh\\artifact\\useful-helpers-toolkit\\run.bat",
       "note": ""
     },
     {
       "step": "2 inspect",
       "name": "the artifact contains the seam",
       "ok": true,
-      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-s4jol6qm\\artifact\\useful-helpers-toolkit\\src\\core\\invoke.py",
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-f4i88umh\\artifact\\useful-helpers-toolkit\\src\\core\\invoke.py",
       "note": ""
     },
     {
       "step": "2 inspect",
       "name": "the artifact contains the app entrypoint",
       "ok": true,
-      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-s4jol6qm\\artifact\\useful-helpers-toolkit\\src\\app.py",
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-f4i88umh\\artifact\\useful-helpers-toolkit\\src\\app.py",
       "note": ""
     },
     {
       "step": "2 inspect",
       "name": "the artifact contains the installer identity module",
       "ok": true,
-      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-s4jol6qm\\artifact\\useful-helpers-toolkit\\src\\core\\instance.py",
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-f4i88umh\\artifact\\useful-helpers-toolkit\\src\\core\\instance.py",
       "note": ""
     },
     {
       "step": "2 inspect",
       "name": "the artifact contains the MCP entrance",
       "ok": true,
-      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-s4jol6qm\\artifact\\useful-helpers-toolkit\\src\\interfaces\\mcp_server.py",
+      "detail": "C:\\Users\\jacob\\AppData\\Local\\Temp\\release-f4i88umh\\artifact\\useful-helpers-toolkit\\src\\interfaces\\mcp_server.py",
       "note": ""
     },
     {
@@ -168,21 +189,21 @@
       "step": "3 walk[A software]",
       "name": "the real Setup produces one installed instance",
       "ok": true,
-      "detail": "expected .useful-helpers/instance.json; installer said: \\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\release-s4jol6qm\\\\target-a-software\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
+      "detail": "expected .useful-helpers/instance.json; installer said: \\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\release-f4i88umh\\\\target-a-software\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
       "note": ""
     },
     {
       "step": "3 walk[A software]",
       "name": "the instance carries an identity bound to this target",
       "ok": true,
-      "detail": "instance.json={'schema': 1, 'uuid': 'dbdfa54e-fe36-4e0d-a7cf-6c3cbf36f223', 'target': '..', 'created': '2026-08-23T19:06:25+00:00'}",
+      "detail": "instance.json={'schema': 1, 'uuid': '79431119-12c6-470c-81d2-b04984790fc3', 'target': '..', 'created': '2026-08-23T22:58:00+00:00'}",
       "note": ""
     },
     {
       "step": "3 walk[A software]",
       "name": "the DOCUMENTED launcher runs from the TARGET ROOT",
       "ok": true,
-      "detail": "`C:\\Users\\jacob\\AppData\\Local\\Temp\\release-s4jol6qm\\target-a-software\\.useful-helpers\\run.bat attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-23 14:06:26,623 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'",
+      "detail": "`C:\\Users\\jacob\\AppData\\Local\\Temp\\release-f4i88umh\\target-a-software\\.useful-helpers\\run.bat attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-23 17:58:00,880 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'",
       "note": ""
     },
     {
@@ -194,30 +215,37 @@
     },
     {
       "step": "3 walk[A software]",
-      "name": "the launcher carries an inline payload intact",
-      "ok": false,
-      "detail": "rc=255 sent='nested \"quotes\" and C:\\\\win\\\\style\\\\path' got=None - the documented inline form is what an operator types; a payload that does not survive it is corrupted in transit, not rejected",
-      "note": "inline round-trip CORRUPTED"
+      "name": "the programmatic payload route carries a hostile payload intact",
+      "ok": true,
+      "detail": "rc=0 sent='nested \"quotes\" and C:\\\\win\\\\style\\\\path' got='nested \"quotes\" and C:\\\\win\\\\style\\\\path' - `@file` is what the launcher tells scripts to use; if it cannot carry quotes and backslashes there is no route that can",
+      "note": "@file round-trip intact"
+    },
+    {
+      "step": "3 walk[A software]",
+      "name": "the launcher states that inline payloads are not for programs",
+      "ok": true,
+      "detail": "rc=0 help='cross several arguments. This is a cmd.exe boundary, not a defect this\\n  launcher can repair. On POSIX, run.sh receives an argument vector and both forms\\n  are exact.\\nPress any key to continue . . . \\n' - cmd.exe shatters a programmatically-sent JSON argument before the batch sees it. That cannot be repaired here, so it must be disclosed here",
+      "note": "inline limitation disclosed in `run.bat help`"
     },
     {
       "step": "3 walk[A software]",
       "name": "the launcher reports FAILURE as well as success",
-      "ok": false,
-      "detail": "rc=0 for a tool that does not exist; a launcher that cannot return non-zero makes every exit-code check above meaningless",
-      "note": "unknown-tool rc=0 (want non-zero)"
+      "ok": true,
+      "detail": "rc=1 for a tool that does not exist; a launcher that cannot return non-zero makes every exit-code check above meaningless",
+      "note": "unknown-tool rc=1 (want non-zero)"
     },
     {
       "step": "3 walk[A software]",
       "name": "the installed product can verify itself (`run smoke`)",
       "ok": true,
-      "detail": "rc=0 tail='_awareness_maps_this_target (__main__.InstallationSelfCheck.test_6_awareness_maps_this_target) ... ok\\n\\n----------------------------------------------------------------------\\nRan 6 tests in 2.175s\\n\\nOK\\n'",
-      "note": "rc=0 \u00b7 Ran 6 tests in 2.175s \u00b7 OK"
+      "detail": "rc=0 tail='_awareness_maps_this_target (__main__.InstallationSelfCheck.test_6_awareness_maps_this_target) ... ok\\n\\n----------------------------------------------------------------------\\nRan 6 tests in 2.190s\\n\\nOK\\n'",
+      "note": "rc=0 \u00b7 Ran 6 tests in 2.190s \u00b7 OK"
     },
     {
       "step": "3 walk[A software]",
       "name": "`attach` produces awareness of THIS target",
       "ok": true,
-      "detail": "keys=['awareness', 'mode', 'next', 'ok', 'project_map', 'target', 'workbench', 'written'] revision='2a852768b2612f11'",
+      "detail": "keys=['awareness', 'mode', 'next', 'ok', 'project_map', 'target', 'workbench', 'written'] revision='5c498eb757dc7d21'",
       "note": ""
     },
     {
@@ -231,7 +259,7 @@
       "step": "3 walk[A software]",
       "name": "the real MCP entrance starts and exits cleanly",
       "ok": true,
-      "detail": "rc=0 '2026-08-23 14:07:15,692 INFO suite.interfaces.mcp: MCP stdio server starting: usefulhelpers-suite v0.1.0\\n2026-08-23 14:07:15,692 INFO suite.interfaces.mcp: MCP stdio server exiting\\n'",
+      "detail": "rc=0 '2026-08-23 17:58:49,796 INFO suite.interfaces.mcp: MCP stdio server starting: usefulhelpers-suite v0.1.0\\n2026-08-23 17:58:49,796 INFO suite.interfaces.mcp: MCP stdio server exiting\\n'",
       "note": ""
     },
     {
@@ -308,14 +336,14 @@
       "step": "3 walk[A software]",
       "name": "T8: refresh produces a NEW revision reflecting the new evidence",
       "ok": true,
-      "detail": "X='2a852768b2612f11' Y='cc3c8eb9c677689c'",
+      "detail": "X='5c498eb757dc7d21' Y='a04e1c36960ea713'",
       "note": ""
     },
     {
       "step": "3 walk[A software]",
       "name": "update preserves the instance UUID",
       "ok": true,
-      "detail": "dbdfa54e-fe36-4e0d-a7cf-6c3cbf36f223 -> dbdfa54e-fe36-4e0d-a7cf-6c3cbf36f223; {\n  \"ok\": false,\n  \"error\": \"a sidecar already exists here; choose reinstall (wipe) or update (keep memory)\",\n  \"status\": \"exists\"\n}\n",
+      "detail": "79431119-12c6-470c-81d2-b04984790fc3 -> 79431119-12c6-470c-81d2-b04984790fc3; {\n  \"ok\": false,\n  \"error\": \"a sidecar already exists here; choose reinstall (wipe) or update (keep memory)\",\n  \"status\": \"exists\"\n}\n",
       "note": ""
     },
     {
@@ -329,21 +357,21 @@
       "step": "3 walk[B records]",
       "name": "the real Setup produces one installed instance",
       "ok": true,
-      "detail": "expected .useful-helpers/instance.json; installer said: :\\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\release-s4jol6qm\\\\target-b-records\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
+      "detail": "expected .useful-helpers/instance.json; installer said: :\\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\release-f4i88umh\\\\target-b-records\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
       "note": ""
     },
     {
       "step": "3 walk[B records]",
       "name": "the instance carries an identity bound to this target",
       "ok": true,
-      "detail": "instance.json={'schema': 1, 'uuid': 'e04e671a-b3ba-471d-b2bf-845539ec876c', 'target': '..', 'created': '2026-08-23T19:08:04+00:00'}",
+      "detail": "instance.json={'schema': 1, 'uuid': 'ab23b35c-17d3-490c-8613-8ce48bcba4ee', 'target': '..', 'created': '2026-08-23T22:59:40+00:00'}",
       "note": ""
     },
     {
       "step": "3 walk[B records]",
       "name": "the DOCUMENTED launcher runs from the TARGET ROOT",
       "ok": true,
-      "detail": "`C:\\Users\\jacob\\AppData\\Local\\Temp\\release-s4jol6qm\\target-b-records\\.useful-helpers\\run.bat attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-23 14:08:04,929 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'",
+      "detail": "`C:\\Users\\jacob\\AppData\\Local\\Temp\\release-f4i88umh\\target-b-records\\.useful-helpers\\run.bat attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-23 17:59:40,825 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'",
       "note": ""
     },
     {
@@ -355,30 +383,37 @@
     },
     {
       "step": "3 walk[B records]",
-      "name": "the launcher carries an inline payload intact",
-      "ok": false,
-      "detail": "rc=255 sent='nested \"quotes\" and C:\\\\win\\\\style\\\\path' got=None - the documented inline form is what an operator types; a payload that does not survive it is corrupted in transit, not rejected",
-      "note": "inline round-trip CORRUPTED"
+      "name": "the programmatic payload route carries a hostile payload intact",
+      "ok": true,
+      "detail": "rc=0 sent='nested \"quotes\" and C:\\\\win\\\\style\\\\path' got='nested \"quotes\" and C:\\\\win\\\\style\\\\path' - `@file` is what the launcher tells scripts to use; if it cannot carry quotes and backslashes there is no route that can",
+      "note": "@file round-trip intact"
+    },
+    {
+      "step": "3 walk[B records]",
+      "name": "the launcher states that inline payloads are not for programs",
+      "ok": true,
+      "detail": "rc=0 help='cross several arguments. This is a cmd.exe boundary, not a defect this\\n  launcher can repair. On POSIX, run.sh receives an argument vector and both forms\\n  are exact.\\nPress any key to continue . . . \\n' - cmd.exe shatters a programmatically-sent JSON argument before the batch sees it. That cannot be repaired here, so it must be disclosed here",
+      "note": "inline limitation disclosed in `run.bat help`"
     },
     {
       "step": "3 walk[B records]",
       "name": "the launcher reports FAILURE as well as success",
-      "ok": false,
-      "detail": "rc=0 for a tool that does not exist; a launcher that cannot return non-zero makes every exit-code check above meaningless",
-      "note": "unknown-tool rc=0 (want non-zero)"
+      "ok": true,
+      "detail": "rc=1 for a tool that does not exist; a launcher that cannot return non-zero makes every exit-code check above meaningless",
+      "note": "unknown-tool rc=1 (want non-zero)"
     },
     {
       "step": "3 walk[B records]",
       "name": "the installed product can verify itself (`run smoke`)",
       "ok": true,
-      "detail": "rc=0 tail='_awareness_maps_this_target (__main__.InstallationSelfCheck.test_6_awareness_maps_this_target) ... ok\\n\\n----------------------------------------------------------------------\\nRan 6 tests in 0.978s\\n\\nOK\\n'",
-      "note": "rc=0 \u00b7 Ran 6 tests in 0.978s \u00b7 OK"
+      "detail": "rc=0 tail='_awareness_maps_this_target (__main__.InstallationSelfCheck.test_6_awareness_maps_this_target) ... ok\\n\\n----------------------------------------------------------------------\\nRan 6 tests in 1.029s\\n\\nOK\\n'",
+      "note": "rc=0 \u00b7 Ran 6 tests in 1.029s \u00b7 OK"
     },
     {
       "step": "3 walk[B records]",
       "name": "`attach` produces awareness of THIS target",
       "ok": true,
-      "detail": "keys=['awareness', 'mode', 'next', 'ok', 'project_map', 'target', 'workbench', 'written'] revision='dde1cc38d3a5008c'",
+      "detail": "keys=['awareness', 'mode', 'next', 'ok', 'project_map', 'target', 'workbench', 'written'] revision='18c80abb6f3e88e8'",
       "note": ""
     },
     {
@@ -392,21 +427,21 @@
       "step": "3 walk[C empty]",
       "name": "the real Setup produces one installed instance",
       "ok": true,
-      "detail": "expected .useful-helpers/instance.json; installer said:  C:\\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\release-s4jol6qm\\\\target-c-empty\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
+      "detail": "expected .useful-helpers/instance.json; installer said:  C:\\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\release-f4i88umh\\\\target-c-empty\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
       "note": ""
     },
     {
       "step": "3 walk[C empty]",
       "name": "the instance carries an identity bound to this target",
       "ok": true,
-      "detail": "instance.json={'schema': 1, 'uuid': '3a5d95a6-4665-45d7-8f40-87a55b4abeb5', 'target': '..', 'created': '2026-08-23T19:08:16+00:00'}",
+      "detail": "instance.json={'schema': 1, 'uuid': 'a9f9535d-d9f3-4a38-87fc-f721b7d27d70', 'target': '..', 'created': '2026-08-23T22:59:53+00:00'}",
       "note": ""
     },
     {
       "step": "3 walk[C empty]",
       "name": "the DOCUMENTED launcher runs from the TARGET ROOT",
       "ok": true,
-      "detail": "`C:\\Users\\jacob\\AppData\\Local\\Temp\\release-s4jol6qm\\target-c-empty\\.useful-helpers\\run.bat attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-23 14:08:17,099 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'",
+      "detail": "`C:\\Users\\jacob\\AppData\\Local\\Temp\\release-f4i88umh\\target-c-empty\\.useful-helpers\\run.bat attach` from the target root; rc=0 out='{\\n  \"ok\": true,\\n  \"tool_id\": \"attach\",\\n  \"output\": {\\n    \"ok\": true,\\n    \"mode\": \"mapped\",\\n    \"targ' err='2026-08-23 17:59:53,591 INFO suite.core.invoke: invoke tool=attach authority=Observe category=orientation\\n'",
       "note": ""
     },
     {
@@ -418,30 +453,37 @@
     },
     {
       "step": "3 walk[C empty]",
-      "name": "the launcher carries an inline payload intact",
-      "ok": false,
-      "detail": "rc=255 sent='nested \"quotes\" and C:\\\\win\\\\style\\\\path' got=None - the documented inline form is what an operator types; a payload that does not survive it is corrupted in transit, not rejected",
-      "note": "inline round-trip CORRUPTED"
+      "name": "the programmatic payload route carries a hostile payload intact",
+      "ok": true,
+      "detail": "rc=0 sent='nested \"quotes\" and C:\\\\win\\\\style\\\\path' got='nested \"quotes\" and C:\\\\win\\\\style\\\\path' - `@file` is what the launcher tells scripts to use; if it cannot carry quotes and backslashes there is no route that can",
+      "note": "@file round-trip intact"
+    },
+    {
+      "step": "3 walk[C empty]",
+      "name": "the launcher states that inline payloads are not for programs",
+      "ok": true,
+      "detail": "rc=0 help='cross several arguments. This is a cmd.exe boundary, not a defect this\\n  launcher can repair. On POSIX, run.sh receives an argument vector and both forms\\n  are exact.\\nPress any key to continue . . . \\n' - cmd.exe shatters a programmatically-sent JSON argument before the batch sees it. That cannot be repaired here, so it must be disclosed here",
+      "note": "inline limitation disclosed in `run.bat help`"
     },
     {
       "step": "3 walk[C empty]",
       "name": "the launcher reports FAILURE as well as success",
-      "ok": false,
-      "detail": "rc=0 for a tool that does not exist; a launcher that cannot return non-zero makes every exit-code check above meaningless",
-      "note": "unknown-tool rc=0 (want non-zero)"
+      "ok": true,
+      "detail": "rc=1 for a tool that does not exist; a launcher that cannot return non-zero makes every exit-code check above meaningless",
+      "note": "unknown-tool rc=1 (want non-zero)"
     },
     {
       "step": "3 walk[C empty]",
       "name": "the installed product can verify itself (`run smoke`)",
       "ok": true,
-      "detail": "rc=0 tail='_awareness_maps_this_target (__main__.InstallationSelfCheck.test_6_awareness_maps_this_target) ... ok\\n\\n----------------------------------------------------------------------\\nRan 6 tests in 0.968s\\n\\nOK\\n'",
-      "note": "rc=0 \u00b7 Ran 6 tests in 0.968s \u00b7 OK"
+      "detail": "rc=0 tail='_awareness_maps_this_target (__main__.InstallationSelfCheck.test_6_awareness_maps_this_target) ... ok\\n\\n----------------------------------------------------------------------\\nRan 6 tests in 1.037s\\n\\nOK\\n'",
+      "note": "rc=0 \u00b7 Ran 6 tests in 1.037s \u00b7 OK"
     },
     {
       "step": "3 walk[C empty]",
       "name": "`attach` produces awareness of THIS target",
       "ok": true,
-      "detail": "keys=['awareness', 'mode', 'next', 'ok', 'project_map', 'target', 'workbench', 'written'] revision='cdc0f21c5069225f'",
+      "detail": "keys=['awareness', 'mode', 'next', 'ok', 'project_map', 'target', 'workbench', 'written'] revision='9c21d69b9107f0c8'",
       "note": ""
     },
     {
@@ -483,7 +525,7 @@
       "step": "5 removal",
       "name": "the sidecar installs into the untouched target",
       "ok": true,
-      "detail": "ppData\\\\Local\\\\Temp\\\\release-s4jol6qm\\\\target-removal\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
+      "detail": "ppData\\\\Local\\\\Temp\\\\release-f4i88umh\\\\target-removal\\n  .useful-helpers\\\\run.bat attach     (what is this target, and what next)\\n  .useful-helpers\\\\run.bat list       (every tool available here)\"\n}\n",
       "note": ""
     },
     {
@@ -518,14 +560,14 @@
       "step": "3 stop condition",
       "name": "the linux record names the SAME artifact this run exercised",
       "ok": false,
-      "detail": "this run=0f8dada4ec36a8a7\u2026 linux=ccb5e354f991d7f2\u2026 (6 failing check(s) there) - one leg alone is not a release, and two legs naming different artifacts is not a release either",
+      "detail": "this run=29754aa3d2481628\u2026 linux=ccb5e354f991d7f2\u2026 (6 failing check(s) there) - one leg alone is not a release, and two legs naming different artifacts is not a release either",
       "note": ""
     },
     {
       "step": "3 stop condition",
       "name": "the linux record was produced by the SAME verifier source",
       "ok": false,
-      "detail": "this run=576c753da670776d\u2026 linux=fc41f4b88962bd1f\u2026 - the artifact comparison above cannot detect a changed instrument, so the instrument names itself",
+      "detail": "this run=57e2958265984d38\u2026 linux=fc41f4b88962bd1f\u2026 - the artifact comparison above cannot detect a changed instrument, so the instrument names itself",
       "note": ""
     }
   ]
