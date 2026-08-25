@@ -1,0 +1,1 @@
+"""Installed-instance acceptance fixtures."""
