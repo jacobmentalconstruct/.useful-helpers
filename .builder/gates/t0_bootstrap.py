@@ -313,13 +313,14 @@ def _product_boundary() -> str:
 
 def _journal_separation() -> str:
     charter = (ROOT / "docs/PRODUCT_CHARTER.md").read_text(encoding="utf-8")
+    normalized_charter = re.sub(r"\s+", " ", charter)
     required = (
         ".builder/journal/",
         "product journal",
         "begins empty",
         "Neither journal stores or projects the other",
     )
-    absent = [phrase for phrase in required if phrase not in charter]
+    absent = [phrase for phrase in required if phrase not in normalized_charter]
     if absent:
         raise AssertionError(f"Charter does not establish journal separation: {absent}")
     return "construction and product journals have distinct subjects, stores, and lifecycles"
@@ -460,7 +461,10 @@ def main() -> int:
         "checks": [asdict(check) for check in checks],
     }
     evidence_path.write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")
-    relative_evidence = evidence_path.relative_to(ROOT).as_posix()
+    try:
+        reported_evidence = evidence_path.relative_to(ROOT).as_posix()
+    except ValueError:
+        reported_evidence = evidence_path.as_posix()
     print(
         json.dumps(
             {
@@ -468,7 +472,7 @@ def main() -> int:
                 "status": evidence["status"],
                 "passed": sum(check.status == "PASS" for check in checks),
                 "total": len(checks),
-                "evidence": relative_evidence,
+                "evidence": reported_evidence,
                 "failures": [asdict(check) for check in checks if check.status == "FAIL"],
             },
             indent=2,
