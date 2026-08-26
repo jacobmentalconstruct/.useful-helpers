@@ -16,13 +16,17 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 
 class InstalledFixture(unittest.TestCase):
     def setUp(self) -> None:
-        runtime_root = REPOSITORY_ROOT / "tests" / ".runtime"
-        runtime_root.mkdir(parents=True, exist_ok=True)
-        self.root = runtime_root / f"case-{uuid.uuid4().hex}"
+        self.runtime_root = REPOSITORY_ROOT / "tests" / ".runtime"
+        self.runtime_root.mkdir(parents=True, exist_ok=True)
+        self.root = self.runtime_root / f"case-{uuid.uuid4().hex}"
         self.root.mkdir()
 
     def tearDown(self) -> None:
         shutil.rmtree(self.root, ignore_errors=True)
+        try:
+            self.runtime_root.rmdir()
+        except OSError:
+            pass
 
     def target(self, name: str = "target") -> Path:
         path = self.root / name

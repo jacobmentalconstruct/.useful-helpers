@@ -1,41 +1,43 @@
 # Sidecar Workbench
 
-Sidecar Workbench is a self-contained local instrument attached to one directory. It
-observes that directory, builds durable evidence-backed knowledge about it, exposes
-deterministic capabilities over it, and allows humans or agents to make governed
-changes through one control plane.
+Sidecar Workbench is the provisional name for a self-contained local instrument
+attached to one directory. Its governing product definition is
+[`docs/PRODUCT_CHARTER.md`](docs/PRODUCT_CHARTER.md).
 
-The experiential standard is: **a calm workbench with receipts**.
+## Construction status
 
-This repository is a clean implementation. Its own architecture is defined in
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). The current code stops at the Phase 1
-identity-and-hands milestone described in [`docs/PHASE_1.md`](docs/PHASE_1.md).
+T0 project bootstrap is **PARKED by operator approval**. The source preserved at Git baseline
+`60174bc93ef4a187a0cc7ff848a03b3d8772b804` predates construction governance and is
+**provisional T1 input**. Its behavior and passing tests confer no tranche or product
+acceptance credit until T1 audits them.
 
-## Try the Phase 1 prototype
+The approved T0 receipt is
+`.builder/evidence/T0/20260825T152930Z-8ecc1428/bootstrap-gate.json`. T1 has not begun.
 
-Python 3.11 or newer is required. From this repository:
+Read construction authority in this order:
 
-```powershell
-python -m factory attach C:\path\to\target
-python C:\path\to\target\.sidecar\bin\sidecar.py status
-python C:\path\to\target\.sidecar\bin\sidecar.py tools
-python C:\path\to\target\.sidecar\bin\sidecar.py call inventory --args '{}'
-```
+1. [`.builder/BCC.md`](.builder/BCC.md)
+2. [`docs/PRODUCT_CHARTER.md`](docs/PRODUCT_CHARTER.md)
+3. [`.builder/TRANCHE_PLAN.md`](.builder/TRANCHE_PLAN.md)
+4. [`.builder/TRANCHE_PROTOCOL.md`](.builder/TRANCHE_PROTOCOL.md)
+5. [`.builder/CURRENT_STATE.md`](.builder/CURRENT_STATE.md)
 
-An intentional write requires both Apply authority and an explicit confirmation:
-
-```powershell
-python C:\path\to\target\.sidecar\bin\sidecar.py call write_file `
-  --authority apply `
-  --args '{"path":"notes.txt","content":"hello\n","confirm":true}'
-```
-
-The installed instrument writes its own code and state only beneath
-`TARGET/.sidecar/`. A confirmed target edit is a work product and remains if the
-instrument is removed.
-
-## Verify
+The canonical product-test entrance is:
 
 ```powershell
-python -m unittest discover -s tests -v
+python -m pytest
 ```
+
+Construction gates are owned only by `.builder/gates/`. Product tests and fixtures
+belong only under `tests/`.
+
+## Ownership boundary
+
+- `product/` is installed runtime source.
+- `factory/` manufactures, installs, packages, or releases product material. It is not
+  runtime product logic.
+- `.builder/` governs construction and never ships.
+- `tests/` contains product tests and fixtures and never owns tranche gates.
+- `docs/` contains product authority and approved implementation documentation.
+
+The shipped runtime must never import from `factory/`.

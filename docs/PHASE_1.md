@@ -1,5 +1,9 @@
 # Phase 1: Identity and Hands
 
+> **PRE-BOOTSTRAP PROVISIONAL REPORT.** This file records what the baseline prototype
+> claimed and measured before construction governance existed. It grants no T1 or
+> Product STOP credit. T1 may audit, adopt, amend, re-home, or reject these mechanisms.
+
 ## Milestone
 
 Phase 1 proves this executable spine:

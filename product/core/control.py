@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from . import registry, storage
 from .constants import CONTROL_PLANE_VERSION, TOOL_CONTRACT_VERSION
 from .containment import ContainmentError, resolve_declared_paths
-from .contracts import ToolManifest, validate_json
+from .contracts import validate_json
 from .instance import InstanceContext
 
 _AUTHORITY_ORDER = {"observe": 0, "sandbox": 1, "apply": 2}

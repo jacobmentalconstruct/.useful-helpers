@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from .contracts import ContractError, ToolManifest, parse_manifest
 from .instance import InstanceContext
 

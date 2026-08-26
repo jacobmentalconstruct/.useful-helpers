@@ -1,74 +1,18 @@
-# Architecture Charter
+# Architecture
 
-This document is the architectural authority for Sidecar Workbench.
+Status: **PRE-BOOTSTRAP IMPLEMENTATION MAP - PROVISIONAL UNTIL T1**
 
-## Product identity
+## Charter relationship
 
-Sidecar Workbench is a self-contained local instrument attached to one directory. It
-observes that directory, builds durable evidence-backed knowledge about it, exposes
-deterministic capabilities over it, and allows humans or agents to make governed
-changes through the same control plane.
+The [Product Charter](PRODUCT_CHARTER.md) owns product identity, invariants, topology,
+P1-P8, the acceptance walk, Product STOP, and product non-goals. This document does not
+redefine those facts. It maps the implementation currently present in the repository to
+the Charter responsibilities it is intended to realize. That implementation has not
+been audited or approved by a product tranche.
 
-It is a local project instrumentation system, not primarily an AI assistant. AI may
-consume observations or produce derived claims, but it is neither authority nor
-canonical storage.
+## Current installed-instance realization
 
-The design optimizes for an intentional asymmetry: local compute and storage are
-cheap; model context, remote calls, repeated rediscovery, and human attention are
-expensive.
-
-## Invariants
-
-1. **One sidecar, one target.** An installed instance is a direct child of its target.
-   Identity is a UUID plus a relative structural relationship, never an absolute path,
-   current working directory, environment variable, or folder-name guess.
-2. **Clean removability.** Instrument-owned code, state, logs, and artifacts live
-   beneath `.sidecar`. Removing that directory removes the instrument. Approved target
-   work products are separate and remain.
-3. **One control plane.** CLI, MCP, a future panel, and other clients are adapters over
-   one `invoke(tool, args, client, authority)` boundary. Projections own no private
-   capabilities.
-4. **Deterministic hands.** Tools are headless capabilities with strict, machine-readable
-   manifests. They do not infer instance identity or caller type.
-5. **SQLite is canonical.** Structured state belongs in one local SQLite database.
-   Large immutable evidence may live in a content-addressed object store beside it.
-6. **Epistemic types remain distinct.** Resources, observations, evidence, derived
-   claims, and operations are not interchangeable records.
-7. **Unknown is not absent.** Missing observation produces an explicit limitation, not
-   an invented negative fact.
-8. **History keeps its meaning.** Awareness revisions and evidence are immutable once
-   addressed. Later reality produces later records.
-9. **Handles round-trip.** Important objects have stable identifiers such as
-   `path:src/app.py`, `evidence:<digest>`, and `operation:<id>`.
-10. **Measured reality outranks self-report.** A mutating tool's account will eventually
-    be compared with independently observed target changes.
-
-## Layering and direction
-
-```text
-Human or agent
-      |
-CLI / MCP / future panel
-      |
-Control plane
-      |
-Tool host ---- local inference (later)
-      |
-Project substrate
-      |
-Target
-```
-
-Adapters translate protocols. The control plane owns discovery, contracts,
-containment, authority, process execution, and eventually previews, measurement,
-audit, cancellation, and invalidation. Tools perform capabilities. The substrate owns
-durable truth. Dependencies point downward.
-
-No projection owns a scanner, editor, inference backend, or alternate mutation path.
-A useful behavior must be a tool, a composition, substrate/query behavior, or
-projection behavior.
-
-## Installed instance
+Charter product invariants 1 and 2 are currently approached with this emitted structure:
 
 ```text
 TARGET/
@@ -84,73 +28,79 @@ TARGET/
         logs/
 ```
 
-`instance.json` establishes continuity and location. Its UUID identifies the durable
-instance; `target_relation` resolves from the instance directory to its direct parent.
-An absent manifest means "not an instance." A present malformed manifest is a hard
-error and never falls through to inference.
+`factory/installer.py` positively copies `product/bin`, `product/core`, and
+`product/tools`, creates private state and log directories, then asks
+`product/core/instance.py` and `product/core/storage.py` to create identity and storage.
+It removes the incomplete `.sidecar` if attachment fails.
 
-The target has no pointer, configuration edit, ignore-file edit, external registry, or
-required external identity state.
+`product/core/instance.py` requires `instance.json` at an explicitly supplied instance
+root. The manifest stores a UUID and `target_relation = ".."`; loading resolves the
+target from that relation and rejects a missing, malformed, unsupported, or structurally
+inconsistent instance. No fallback identity-discovery path is present.
 
-## Durable substrate
+## Current module responsibilities
 
-The eventual canonical record classes are:
+- `product/bin/sidecar.py` is the installed composition root and delegates to the CLI
+  adapter.
+- `product/core/cli.py` translates CLI arguments and delegates tool calls to the control
+  plane.
+- `product/core/control.py` coordinates instance loading, catalog lookup, contracts,
+  containment, child-process execution, and result envelopes.
+- `product/core/registry.py` discovers tool manifests from the installed `tools/` tree.
+- `product/core/containment.py` resolves manifest-declared path arguments.
+- `product/core/tool_runtime.py` is the common child-process entry helper used by tools.
+- `product/core/storage.py` owns the current SQLite bootstrap.
+- `product/tools/<id>/` contains manifest-described deterministic capabilities.
 
-- **Resources:** target entities and their versions.
-- **Observations:** deterministic statements made by named producers.
-- **Evidence:** immutable support, addressed by digest.
-- **Derived claims:** interpretations linked to supporting observations and evidence,
-  including model and method when inference is model-produced.
-- **Operations and memory:** invocations, proposals, decisions, mutations,
-  verifications, journal entries, and unresolved items.
+These are measured locations, not an endorsement of their final ownership or naming.
+T1 may re-home provisional code when it audits behavior and assigns an actual owner.
 
-SQLite stores identity and relationships. JSON columns may hold variable domain data;
-identity and provenance remain relational. Full-text and semantic indexes are derived
-retrieval aids, never canonical truth.
+## Current control-plane mechanics
 
-## Tool and control-plane contract
+The current implementation approaches Charter product invariants 3 and 4 through
+`product/core/control.py`. Its invocation sequence is:
 
-Each `tools/<id>/manifest.json` declares its identifier, purpose, authority, schemas,
-read/write domains, applicability, path arguments, and executable entry point.
-Discovery reads these manifests directly. There is no authoritative generated catalog.
+1. load an explicitly named instance root;
+2. discover and validate the requested manifest;
+3. compare requested and declared authority;
+4. validate input shape;
+5. resolve declared target or instance paths through containment;
+6. invoke the tool in a child Python process with serialized context;
+7. validate the structured result and return a common envelope.
 
-The control plane:
+Environment variables transport already-resolved child context. They are not consulted
+to discover instance identity. Preview/apply governance, independent mutation
+measurement, durable operation receipts, cancellation, and invalidation are not present
+and receive no architectural or Product STOP credit.
 
-1. resolves the canonical instance context;
-2. discovers and validates the manifest;
-3. validates caller authority and input shape;
-4. resolves declared paths within their allowed roots;
-5. transports the resolved context to a child process;
-6. requires a structured JSON result matching the output contract;
-7. returns a common envelope to every adapter.
+## Current substrate implementation
 
-Environment variables may be ordinary process input, but they are never instance
-identity. Context is transported by the parent runtime after structural resolution.
+The current foundation for Charter product invariant 5 is
+`.sidecar/state/workbench.sqlite3`. `product/core/storage.py` enables foreign keys, WAL,
+and full synchronous writes; applies a `PRAGMA user_version` migration; and stores one
+instance row whose UUID must agree with `instance.json` on re-entry.
 
-## Work loop
+The database does not yet implement the Charter's required resource, observation,
+evidence, claim, operation, provenance, awareness, or product-journal records. The
+objects directory is created but has no accepted object-store contract.
 
-The product grows toward:
+## Current tool contract
 
-```text
-observe -> investigate -> propose -> preview -> diff -> approve -> apply
-        -> measure -> verify -> refresh -> record
-```
+Each `product/tools/<id>/manifest.json` declares identifier, description, authority,
+input and output schemas, read/write domains, applicability, path arguments, and module
+entry point. `product/core/registry.py` reads manifests directly, so no generated catalog
+is authoritative. Tools receive resolved context and return JSON; they contain no CLI,
+MCP, or caller-specific path.
 
-Approval must bind to the reviewed target state. Verification reports unavailable when
-the target has no native verifier; it never invents PASS.
+Five provisional tools are present: inventory, read file, exact text search, hash file,
+and write file. Their contracts and behavior remain T1 audit subjects.
 
-## Anti-goals
+## Provisional implementation evidence
 
-The initial product does not include an IDE, large GUI, autonomous agent framework,
-graph database, vector-first store, plugin marketplace, workflow language, universal
-ontology, projection-specific backends, or a broad catalog of speculative tools.
-
-Domain-neutral mechanics come first. Python, web, documents, records, and data depth
-will arrive as stateless cartridges only after use demonstrates the need.
-
-## Initial acceptance
-
-Phase 1 is accepted when fixtures prove that a normal or empty target can be attached,
-re-entered after process restart and relocation, inspected through discovered tools and
-one CLI/control-plane path, protected from path escape, and left unchanged outside the
+The existing fixtures report that a normal or empty target can be attached, re-entered
+after process restart and relocation, inspected through discovered tools and one
+CLI/control-plane path, protected from path escape, and left unchanged outside the
 single `.sidecar` directory except for an explicitly authorized work product.
+
+This is pre-bootstrap evidence available to T1. It is not a parked tranche, Product STOP
+score, product-invariant finding, or architectural approval.

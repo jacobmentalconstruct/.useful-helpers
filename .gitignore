@@ -3,6 +3,12 @@ __pycache__/
 .pytest_cache/
 .coverage
 .venv/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+/release/
+/_projectmapper/
 tmp*/
 tests/.runtime/
 phase1-*/

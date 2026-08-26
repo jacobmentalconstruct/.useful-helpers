@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "gate": "T0-bootstrap",
+  "status": "FAIL",
+  "recorded_at": "2026-08-25T14:36:54.182957+00:00",
+  "run_id": "20260825T143654Z-db6d03cc",
+  "baseline_commit": "60174bc93ef4a187a0cc7ff848a03b3d8772b804",
+  "head_commit": "60174bc93ef4a187a0cc7ff848a03b3d8772b804",
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "required_authorities",
+      "status": "PASS",
+      "detail": "all 9 required surfaces exist"
+    },
+    {
+      "name": "authority_ownership",
+      "status": "PASS",
+      "detail": "authority map is complete and Charter defines P1-P8 exactly once"
+    },
+    {
+      "name": "baseline_provenance",
+      "status": "PASS",
+      "detail": "baseline commit and tree preserved (8d2463515c19d07de1d05ee6e11cf3de837c047e)"
+    },
+    {
+      "name": "journal_origin",
+      "status": "PASS",
+      "detail": "fresh construction journal begins at 0001 (1 entries)"
+    },
+    {
+      "name": "one_gate_authority",
+      "status": "PASS",
+      "detail": "one gate implementation exists under .builder/gates"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "24 product modules are independent of factory/tests/builder; artifact undecided"
+    },
+    {
+      "name": "journal_separation",
+      "status": "PASS",
+      "detail": "construction and product journals have distinct subjects, stores, and lifecycles"
+    },
+    {
+      "name": "provisional_status",
+      "status": "PASS",
+      "detail": "pre-bootstrap source and product acceptance remain explicitly provisional"
+    },
+    {
+      "name": "reference_independence",
+      "status": "PASS",
+      "detail": "product source contains no parent-project names or sandbox paths"
+    },
+    {
+      "name": "canonical_pytest",
+      "status": "PASS",
+      "detail": "10 passed in 5.75s"
+    },
+    {
+      "name": "static_discovery",
+      "status": "FAIL",
+      "detail": "AssertionError: F401 [*] `.contracts.ToolManifest` imported but unused\n  --> product\\core\\control.py:13:24\n   |\n11 | from .constants import CONTROL_PLANE_VERSION, TOOL_CONTRACT_VERSION\n12 | from .containment import ContainmentError, resolve_declared_paths\n13 | from .contracts import ToolManifest, validate_json\n   |                        ^^^^^^^^^^^^\n14 | from .instance import InstanceContext\n   |\nhelp: Remove unused import: `.contracts.ToolManifest`\n\nF401 [*] `pathlib.Path` imported but unused\n --> product\\core\\registry.py:3:21\n  |\n1 | from __future__ import annotations\n2 |\n3 | from pathlib import Path\n  |                     ^^^^\n4 |\n5 | from .contracts import ContractError, ToolManifest, parse_manifest\n  |\nhelp: Remove unused import: `pathlib.Path`\n\nFound 2 errors.\n[*] 2 fixable with the `--fix` option."
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "PASS",
+      "detail": "no generated build, test-cache, bytecode, release, or non-empty fixture debris"
+    }
+  ]
+}
