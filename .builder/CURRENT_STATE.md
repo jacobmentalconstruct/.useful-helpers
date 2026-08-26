@@ -3,11 +3,11 @@
 This file is a resumability projection, not authority.
 
 - Current tranche: **T2 Runtime Receipts + Work Memory**
-- Current state: **PROVISIONAL - NOT STARTED**
-- Operator direction: T1 approved and parked; do not begin T2
+- Current state: **DECLARED - AWAITING OPERATOR REVIEW**
+- Operator direction: review the T2 declaration before implementation
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0015-t1-park.md`
+- Latest journal position: `0016-t2-runtime-receipts-work-memory-declaration.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host
 - Product STOP: PARTIAL - P1/P2 credited by parked T1; P3-P8 UNSCORED
@@ -102,5 +102,6 @@ UNSCORED and Product STOP remains incomplete.
 
 ## Next entering-builder action
 
-Stop at the parked T1 boundary. T2 Runtime Receipts + Work Memory remains PROVISIONAL
-and requires an explicit operator direction and declaration before any implementation.
+Review entry `0016` and its declared evidence plan. The builder must stop until the
+operator approves, requests revision, narrows or enlarges scope, rejects, or reopens a
+premise. Do not implement T2 and do not begin T3.

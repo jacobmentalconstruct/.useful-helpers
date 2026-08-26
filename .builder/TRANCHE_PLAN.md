@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **PARKED - T1 COMPLETE**
+Status: **ACTIVE - T2 DECLARED**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -12,7 +12,7 @@ Charter and are referenced here without redefinition.
 |---|---|---|---|---|
 | T0 Bootstrap | PARKED | One approved construction system and aligned product authority exist around provisional source. | Operator vision-alignment ruling | Construction ability |
 | T1 Mechanical Hands + Governed Host | PARKED | Manifest-defined mechanical capabilities run on host-transported context through one contained CLI seam without importing higher projections. | T0 PARKED; declaration approved | P1, P2 |
-| T2 Runtime Receipts + Work Memory | PROVISIONAL | Previewed work is reconstructable through distinct operational receipts/evidence while a blank-start App Journal records project decisions and park state. | T1 | P3, P5 |
+| T2 Runtime Receipts + Work Memory | DECLARED | Previewed work is reconstructable through distinct operational receipts/evidence while a blank-start App Journal records project decisions and park state. | T1 PARKED; declaration under review | P3, P5 |
 | T3 Epistemic Substrate | PROVISIONAL | Resources, versions, observations, evidence, claims, and provenance persist without becoming receipts or journal entries. | T2 | P3 |
 | T4 Awareness | PROVISIONAL | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 | P4 |
 | T5 Removable MCP Entrance | PROVISIONAL | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T4 | P6 |
@@ -73,6 +73,24 @@ does not reopen product scope. Entry `0014` submits the repaired committed-state
 returns T1 to AWAITING_APPROVAL without granting product credit. Entry `0015` records
 operator approval, grants the terminal PARKED disposition, and parks the declared P1/P2
 credit while leaving P3-P8 UNSCORED.
+
+## T2 synopsis
+
+T2 Runtime Receipts + Work Memory is DECLARED for operator review. The sequence outcome
+above remains the Plan-owned tranche property; entry `0016` owns its measured starting
+state, scope, non-goals, completion evidence, risks, and ordered implementation plan.
+The outcome must add durable runtime receipts/evidence and a clean blank-start App
+Journal without collapsing into construction history, T3 epistemic substrate, or T4
+awareness.
+
+## T2 declaration record
+
+- Declaration and scope-review submission:
+  `journal/0016-t2-runtime-receipts-work-memory-declaration.md`
+
+Entry `0016` does not authorize implementation, create the T2 gate, change product
+source, or grant P3/P5 credit. Operator approval is required before T2 can enter
+IMPLEMENTING.
 
 ## Project closure
 
