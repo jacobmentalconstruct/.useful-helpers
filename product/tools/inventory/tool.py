@@ -3,10 +3,10 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from core.tool_runtime import ToolContext, run_tool
+from core.tool_runtime import MechanicalContext, run_tool
 
 
-def _resource(context: ToolContext, path: Path, kind: str) -> dict:
+def _resource(context: MechanicalContext, path: Path, kind: str) -> dict:
     relative = context.target_relative(path)
     record = {
         "handle": f"path:{relative}",
@@ -21,7 +21,7 @@ def _resource(context: ToolContext, path: Path, kind: str) -> dict:
     return record
 
 
-def run(arguments: dict, context: ToolContext) -> dict:
+def run(arguments: dict, context: MechanicalContext) -> dict:
     limit = int(arguments.get("limit", 5000))
     resources: list[dict] = []
     truncated = False
@@ -31,7 +31,7 @@ def run(arguments: dict, context: ToolContext) -> dict:
         directory_names[:] = sorted(
             name
             for name in directory_names
-            if not context.is_instance_path(here / name)
+            if not context.is_excluded(here / name)
         )
         for name in directory_names:
             if len(resources) >= limit:
@@ -45,7 +45,7 @@ def run(arguments: dict, context: ToolContext) -> dict:
             break
         for name in sorted(file_names):
             path = here / name
-            if context.is_instance_path(path):
+            if context.is_excluded(path):
                 continue
             if len(resources) >= limit:
                 truncated = True

@@ -1,6 +1,6 @@
 # Architecture
 
-Status: **PRE-BOOTSTRAP IMPLEMENTATION MAP - PROVISIONAL UNTIL T1**
+Status: **T1 IMPLEMENTATION REVIEW CANDIDATE - AWAITING OPERATOR APPROVAL**
 
 ## Charter relationship
 
@@ -49,28 +49,28 @@ inconsistent instance. No fallback identity-discovery path is present.
   containment, child-process execution, and result envelopes.
 - `product/core/registry.py` discovers tool manifests from the installed `tools/` tree.
 - `product/core/containment.py` resolves manifest-declared path arguments.
-- `product/core/tool_runtime.py` is the current common child-process entry helper used by
-  tools. Its provisional context contract is broader and more Sidecar-specific than the
-  accepted lower-layer boundary.
+- `product/core/tool_runtime.py` owns the product-neutral mechanical subprocess protocol,
+  strict transported context, target-relative handles, excluded-root behavior, and
+  deterministic error serialization.
 - `product/core/storage.py` owns the current SQLite bootstrap.
 - `product/tools/<id>/` contains manifest-described deterministic capabilities.
 
-These are measured locations, not an endorsement of their final ownership or naming.
-T1 may re-home provisional code when it audits behavior and assigns an actual owner.
+T1 audited these measured locations and retained them because their responsibilities
+match the approved ownership boundary; no cosmetic re-homing was needed.
 
-## Measured T1 separability debt
+## T1 mechanical-host seam realization
 
-All five current `product/tools/*/tool.py` modules import
-`core.tool_runtime.ToolContext`. That context requires `instance_root`, `target_root`,
-`state_root`, and `instance_uuid` for every operation, although read, search, inventory,
-hash, and write mechanics do not all intrinsically require Sidecar identity or state.
-This is evidence of provisional upward coupling, not an accepted tool contract.
+All five `product/tools/*/tool.py` modules now import only the product-neutral
+`core.tool_runtime.MechanicalContext` and `run_tool` substrate. The context contains a
+resolved `target_root` plus explicit `excluded_roots`; it rejects unknown fields, so an
+instance UUID, instance root, or state root cannot silently return to the mechanical
+contract.
 
-T1 must distinguish a minimal mechanical tool substrate from host policy and transport
-only the roots/capabilities each contract requires. The host may continue to require and
-verify complete instance identity before invoking a tool; that host safety policy must
-not become the mechanical operation's identity. T0 records this as T1 separability debt
-and does not refactor product code.
+`InstanceContext` retains the complete installed identity but no longer projects itself
+to tools. `ControlPlane` validates the host context, manifest, authority, input, and path
+containment before constructing the narrower mechanical context. Excluding the installed
+host subtree is transported as an ordinary root capability, not interpreted by tools as
+Sidecar identity.
 
 ## Current control-plane mechanics
 
@@ -82,12 +82,13 @@ The current implementation approaches Charter product invariants 3 and 4 through
 3. compare requested and declared authority;
 4. validate input shape;
 5. resolve declared target or instance paths through containment;
-6. invoke the tool in a child Python process with serialized context;
-7. validate the structured result and return a common envelope.
+6. shape product-neutral context from the already validated host facts;
+7. invoke the tool in a child Python process with serialized arguments and context;
+8. validate the structured result and return a common envelope.
 
-The host resolves complete instance identity and containment before dispatch. Environment
-variables transport already-resolved child context; tools do not consult them to discover
-identity. The present transport document is overbroad as described above. Preview/apply
+The host resolves complete instance identity and containment before dispatch. The JSON
+request transports only already-resolved mechanical facts; environment configuration
+locates the installed Python modules but does not carry project identity. Preview/apply
 governance, independent mutation
 measurement, durable operation receipts, cancellation, and invalidation are not present
 and receive no architectural or Product STOP credit.
@@ -112,19 +113,22 @@ entry point. `product/core/registry.py` reads manifests directly, so no generate
 is authoritative. Tools receive resolved context and return JSON; they contain no CLI,
 MCP, or caller-specific path.
 
-Five provisional tools are present: inventory, read file, exact text search, hash file,
-and write file. Their manifests currently own their machine-readable contracts. Their
-Python mechanics depend only on the standard library plus `core.tool_runtime`, but that
-shared helper still carries the separability debt above. No tool imports CLI, control,
-storage, awareness, MCP, GUI, factory, or tranche machinery. T1 must prove and refine
-this boundary rather than infer acceptance from its present shape.
+Five tools are present: inventory, read file, exact text search, hash file, and write
+file. Their manifests own machine-readable input, output, authority, domain,
+applicability, path, and invocation contracts. Their mechanics depend only on the
+standard library plus `core.tool_runtime`; no tool imports identity, CLI, control,
+registry, storage, awareness, MCP, GUI, factory, tests, or tranche machinery.
 
-## Provisional implementation evidence
+## T1 review evidence
 
-The existing fixtures report that a normal or empty target can be attached, re-entered
+The fixtures report that a normal or empty target can be attached, re-entered
 after process restart and relocation, inspected through discovered tools and one
 CLI/control-plane path, protected from path escape, and left unchanged outside the
 single `.sidecar` directory except for an explicitly authorized work product.
 
-This is pre-bootstrap evidence available to T1. It is not a parked tranche, Product STOP
-score, product-invariant finding, or architectural approval.
+Direct subprocess fixtures also invoke all five mechanics with no Sidecar instance,
+while a live host probe receives only `target_root` and `excluded_roots`. A malicious
+child leaves no launch witness when identity, authority, input, or containment fails.
+Dependency mutation proves the T1 gate rejects `core.instance` imported by a mechanical
+tool. The candidate remains unapproved until the operator rules on journal entry `0011`;
+this document does not grant P1/P2 or Product STOP credit.

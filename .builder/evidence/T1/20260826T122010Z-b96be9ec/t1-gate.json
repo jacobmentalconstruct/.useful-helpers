@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "gate": "T1-mechanical-host",
+  "status": "PASS",
+  "recorded_at": "2026-08-26T12:20:10.173146+00:00",
+  "run_id": "20260826T122010Z-b96be9ec",
+  "head_commit": "02c0f27dcb4957951f1e376e7d718ad3860a672c",
+  "working_tree": "M .builder/CURRENT_STATE.md\n M .builder/TRANCHE_PLAN.md\n M product/core/control.py\n M product/core/instance.py\n M product/core/tool_runtime.py\n M product/tools/hash_file/manifest.json\n M product/tools/hash_file/tool.py\n M product/tools/inventory/manifest.json\n M product/tools/inventory/tool.py\n M product/tools/read_file/manifest.json\n M product/tools/read_file/tool.py\n M product/tools/search_text/manifest.json\n M product/tools/search_text/tool.py\n M product/tools/write_file/manifest.json\n M product/tools/write_file/tool.py\n?? .builder/evidence/T1/\n?? .builder/gates/t1_mechanical_host.py\n?? .builder/journal/0010-t1-execution-start.md\n?? tests/test_t1_mechanical_host.py",
+  "source_digest": "a35361c2f6b48cbd31f308b31b61c9121c21eabccc013f1adc0304f4b8ff3464",
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "manifest_contracts",
+      "status": "PASS",
+      "detail": "five manifests own explicit input/output, authority, domain, and invocation contracts"
+    },
+    {
+      "name": "mechanical_dependency_direction",
+      "status": "PASS",
+      "detail": "shared runtime and five tools contain no installed identity or upward dependencies"
+    },
+    {
+      "name": "focused_product_evidence",
+      "status": "PASS",
+      "detail": ".....                                                                    [100%]"
+    },
+    {
+      "name": "consumer_regression",
+      "status": "PASS",
+      "detail": "..........                                                               [100%]"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "24 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "journal_and_authority_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0010-t1-execution-start.md and gate authority remains singular"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 33 Python sources parsed"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "PASS",
+      "detail": "no generated cache, bytecode, build, release, or fixture debris remains"
+    }
+  ]
+}

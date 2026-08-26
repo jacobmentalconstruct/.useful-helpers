@@ -3,12 +3,12 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from core.tool_runtime import ToolContext, run_tool
+from core.tool_runtime import MechanicalContext, run_tool
 
 _MAX_FILE_BYTES = 2_000_000
 
 
-def run(arguments: dict, context: ToolContext) -> dict:
+def run(arguments: dict, context: MechanicalContext) -> dict:
     query = arguments["query"]
     case_sensitive = bool(arguments.get("case_sensitive", False))
     needle = query if case_sensitive else query.casefold()
@@ -26,7 +26,7 @@ def run(arguments: dict, context: ToolContext) -> dict:
         visible_directories = []
         for name in sorted(directory_names):
             path = here / name
-            if context.is_instance_path(path):
+            if context.is_excluded(path):
                 continue
             if path.is_symlink():
                 skipped_symlinks += 1
@@ -35,7 +35,7 @@ def run(arguments: dict, context: ToolContext) -> dict:
         directory_names[:] = visible_directories
         for name in sorted(file_names):
             path = here / name
-            if context.is_instance_path(path):
+            if context.is_excluded(path):
                 continue
             if path.is_symlink():
                 skipped_symlinks += 1

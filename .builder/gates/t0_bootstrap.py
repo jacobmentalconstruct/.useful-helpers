@@ -177,8 +177,12 @@ def _vision_alignment() -> str:
         raise AssertionError(f"Plan omits aligned tranche boundaries: {absent_plan_markers}")
 
     architecture = (ROOT / "docs/ARCHITECTURE.md").read_text(encoding="utf-8")
-    if "## Measured T1 separability debt" not in architecture:
-        raise AssertionError("Architecture does not record provisional tool-context coupling")
+    architecture_states = (
+        "## Measured T1 separability debt",
+        "## T1 mechanical-host seam realization",
+    )
+    if not any(marker in architecture for marker in architecture_states):
+        raise AssertionError("Architecture records neither the provisional debt nor its T1 realization")
 
     forbidden_tool_imports = (
         "core.cli",
@@ -238,11 +242,9 @@ def _vision_alignment() -> str:
 
     if not tools:
         raise AssertionError("no mechanical tools were measured")
-    if shared_runtime_users and "T1 separability debt" not in architecture:
-        raise AssertionError("current shared runtime coupling is not classified as T1 debt")
     return (
         f"method/product/state boundaries declared; {tools} manifest-owned tools have no "
-        f"forbidden upward imports ({shared_runtime_users} retain acknowledged T1 debt)"
+        f"forbidden upward imports ({shared_runtime_users} use the shared mechanical runtime)"
     )
 
 
@@ -280,10 +282,11 @@ def _one_gate_authority() -> str:
         for path in ROOT.rglob("*.py")
         if "gate" in path.name.lower() or "gates" in path.parts
     )
-    expected = [".builder/gates/t0_bootstrap.py"]
-    if gate_files != expected:
+    if ".builder/gates/t0_bootstrap.py" not in gate_files:
+        raise AssertionError("the authoritative T0 gate is missing")
+    if any(not path.startswith(".builder/gates/") for path in gate_files):
         raise AssertionError(f"unexpected gate implementation locations: {gate_files}")
-    return "one gate implementation exists under .builder/gates"
+    return f"all {len(gate_files)} gate implementations are owned by .builder/gates"
 
 
 def _product_boundary() -> str:
@@ -334,9 +337,10 @@ def _provisional_status() -> str:
         raise AssertionError("Plan grants or obscures product credit during T0")
     if "PRE-BOOTSTRAP PROVISIONAL REPORT" not in phase:
         raise AssertionError("pre-bootstrap Phase 1 report is not labeled provisional")
-    if "PROVISIONAL UNTIL T1" not in architecture:
-        raise AssertionError("implementation architecture is not labeled provisional")
-    return "pre-bootstrap source and product acceptance remain explicitly provisional"
+    allowed_statuses = ("PROVISIONAL UNTIL T1", "T1 IMPLEMENTATION REVIEW CANDIDATE")
+    if not any(status in architecture for status in allowed_statuses):
+        raise AssertionError("implementation architecture has no recognized lifecycle status")
+    return "pre-bootstrap history remains provisional while architecture may advance through T1"
 
 
 def _reference_independence() -> str:

@@ -3,10 +3,10 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
-from core.tool_runtime import ToolContext, run_tool
+from core.tool_runtime import MechanicalContext, run_tool
 
 
-def run(arguments: dict, context: ToolContext) -> dict:
+def run(arguments: dict, context: MechanicalContext) -> dict:
     path = Path(arguments["path"])
     if not path.is_file():
         return {"ok": False, "error": "path is not a file"}

@@ -14,8 +14,18 @@
   },
   "output_schema": {
     "type": "object",
-    "properties": {"ok": {"type": "boolean"}},
-    "required": ["ok"]
+    "properties": {
+      "ok": {"type": "boolean"},
+      "tool": {"type": "string"},
+      "handle": {"type": "string"},
+      "content": {"type": "string"},
+      "bytes_returned": {"type": "integer"},
+      "truncated": {"type": "boolean"},
+      "error": {"type": "string"},
+      "error_kind": {"type": "string"}
+    },
+    "required": ["ok"],
+    "additionalProperties": false
   },
   "reads": ["target"],
   "writes": [],

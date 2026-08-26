@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from . import registry, storage
 from .constants import CONTROL_PLANE_VERSION, TOOL_CONTRACT_VERSION
 from .containment import ContainmentError, resolve_declared_paths
-from .contracts import validate_json
+from .contracts import ToolManifest, validate_json
 from .instance import InstanceContext
 
 _AUTHORITY_ORDER = {"observe": 0, "sandbox": 1, "apply": 2}
@@ -55,6 +55,14 @@ class ControlPlane:
             error={"code": code, "message": message},
             **extra,
         )
+
+    def _mechanical_context(self, manifest: ToolManifest) -> dict:
+        domains = set(manifest.reads) | set(manifest.writes)
+        excluded_roots = [str(self.context.instance_root)] if "target" in domains else []
+        return {
+            "target_root": str(self.context.target_root),
+            "excluded_roots": excluded_roots,
+        }
 
     def invoke(
         self,
@@ -118,7 +126,7 @@ class ControlPlane:
 
         request = {
             "args": resolved_arguments,
-            "context": self.context.tool_context(),
+            "context": self._mechanical_context(manifest),
         }
         environment = dict(os.environ)
         existing_python_path = environment.get("PYTHONPATH", "")

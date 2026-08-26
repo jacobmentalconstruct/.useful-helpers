@@ -27,15 +27,6 @@ class InstanceContext:
     created_at: str
     target_relation: str
 
-    def tool_context(self) -> dict:
-        return {
-            "instance_root": str(self.instance_root),
-            "target_root": str(self.target_root),
-            "state_root": str(self.state_root),
-            "instance_uuid": self.instance_uuid,
-        }
-
-
 def _canonical_uuid(value: object) -> str:
     if not isinstance(value, str):
         raise InstanceError("instance_uuid must be a canonical UUID string")

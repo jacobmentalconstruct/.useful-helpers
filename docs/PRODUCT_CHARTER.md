@@ -1,6 +1,6 @@
 # Product Charter
 
-Status: **APPROVED FOR PROTOTYPE CONSTRUCTION - T0 ALIGNMENT UNDER REVIEW**
+Status: **APPROVED PRODUCT AUTHORITY**
 
 This document owns what Sidecar Workbench is, its consumer-visible invariants,
 prototype acceptance conditions, product boundary, and global product non-goals. It

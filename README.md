@@ -17,9 +17,10 @@ The source preserved at Git baseline
 acceptance credit until T1 audits them.
 
 The approved T0 alignment receipt is
-`.builder/evidence/T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`. The T1 declaration
-scope is operator-approved and parked as the implementation contract; no T1 product
-implementation has begun.
+`.builder/evidence/T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`. T1 implementation
+is submitted for operator review in `.builder/journal/0011-t1-awaiting-approval.md` with
+authoritative gate run `20260826T122010Z-b96be9ec`. T1 is not PARKED and P1/P2 remain
+UNSCORED until operator approval.
 
 Read construction authority in this order:
 

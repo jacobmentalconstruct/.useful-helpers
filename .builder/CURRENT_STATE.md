@@ -3,11 +3,11 @@
 This file is a resumability projection, not authority.
 
 - Current tranche: **T1 Mechanical Hands + Governed Host**
-- Current state: **DECLARATION SCOPE PARKED / EXECUTE NOT STARTED**
-- Operator direction: declaration approved and parked as the T1 implementation contract
-- Git branch: `main`
+- Current state: **VERIFYING**
+- Operator direction: repair the bounded dependency proof and resubmit T1
+- Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0009-t1-declaration-scope-park.md`
+- Latest journal position: `0013-t1-verification-return.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment
 - Product STOP: UNSCORED
@@ -40,12 +40,13 @@ implemented.
 
 ## Alignment result
 
-The Charter now distinguishes the integrated workbench from the independent Coherent
+The Charter distinguishes the integrated workbench from the independent Coherent
 Development method; mechanical capabilities from governed host use; construction
 history, operational receipts, App Journal memory, evidence, and awareness; and CLI/MCP
-entrances from capability ownership. The provisional source still gives every tool a
-`ToolContext` requiring Sidecar instance identity. Architecture records that measured
-coupling as T1 separability debt; this T0 reopen does not repair product code.
+entrances from capability ownership. At the T0 alignment checkpoint, the provisional
+source still gave every tool a `ToolContext` requiring Sidecar instance identity. Entry
+`0007` accepted that measured coupling as T1 debt rather than architecture; the current
+T1 review candidate repairs it.
 
 Fresh-clone gate run `20260826T054142Z-b5ec742a` passed 13/13 against commit
 `356f922150e999ac7fdd5bfb1740255b088525fe`. It verified method/product/state ownership,
@@ -59,12 +60,11 @@ reopen T0.
 
 ## T1 synopsis
 
-T1 Mechanical Hands + Governed Host will audit the provisional tool contracts, shared
-runtime, identity, containment, discovery, control plane, CLI, attachment, and fixtures
-before granting them credit. Its intended outcome distinguishes portable mechanical
-capability from Sidecar-hosted governed use through host-resolved context transport. T1
-is declared for scope review only. No product implementation may begin before explicit
-operator approval of entry `0008`.
+T1 Mechanical Hands + Governed Host audits the provisional tool contracts, shared
+runtime, identity, containment, discovery, control plane, CLI, attachment, and fixtures.
+Its outcome distinguishes portable mechanical capability from Sidecar-hosted governed
+use through host-resolved context transport. Entries `0008` and `0009` own the approved
+implementation contract; entry `0011` submits the implemented outcome for review.
 
 ## T1 declaration status
 
@@ -75,11 +75,32 @@ host retains complete instance validation, discovery, authority, containment, pr
 attribution, and result policy.
 
 No product source, test, manifest, or T1 gate implementation changed during declaration.
-Entry `0009` records operator approval and parks entry `0008` as the scope baseline. The
-T1 outcome itself is not PARKED, implemented, verified, or credited.
+Entry `0009` records operator approval and parks entry `0008` as the scope baseline.
+Implementation and verification occurred later under entries `0010` and `0011`; the T1
+outcome is still not PARKED or credited.
+
+## T1 review position
+
+The five tools now consume a strict product-neutral `MechanicalContext` containing only
+`target_root` and `excluded_roots`. The host retains full installed identity, state,
+manifest discovery, authority, containment, attribution, process lifetime, and result
+validation before constructing that context. Manifest output contracts are typed and
+closed against undeclared fields.
+
+Authoritative T1 run `20260826T122010Z-b96be9ec` passed 8/8 checks with receipt SHA-256
+`6B6B7D01BEA7DFB3EA34064285DA5FC8C4B216F27BA509ECD7A2B79719B8C4D8`. Canonical
+pytest passed 15 tests and Ruff passed. Entry `0011` records the mutation witness,
+disqualified false-positive receipt, corrected failure, implementation evidence, risks,
+and deferred work. Entry `0012` records the focused review-document and cumulative-gate
+repairs; no product implementation changed after the authoritative receipt.
+
+The operator accepted the implementation in principle and returned T1 to VERIFYING
+because the dependency-direction gate used an incomplete blacklist. Entry `0013` limits
+the repair to a positive `core.tool_runtime` dependency assertion and new closure
+evidence. T1 is not PARKED. P1/P2 and Product STOP remain UNSCORED.
 
 ## Next entering-builder action
 
-Read entries `0008` and `0009`. T1 is ready to enter EXECUTE under the approved scope,
-but no product behavior has changed yet. The next implementation turn must begin by
-remeasuring source and following the declared gate-first plan.
+Complete the entry `0013` verification repair, generate clean committed-state T1 and T0
+receipts, submit a new immutable review amendment, and stop at AWAITING_APPROVAL. Do not
+begin T2.

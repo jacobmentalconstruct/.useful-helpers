@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from core.tool_runtime import ToolContext, run_tool
+from core.tool_runtime import MechanicalContext, run_tool
 
 
-def run(arguments: dict, context: ToolContext) -> dict:
+def run(arguments: dict, context: MechanicalContext) -> dict:
     if arguments.get("confirm") is not True:
         return {"ok": False, "error": "confirm must be true"}
     path = Path(arguments["path"])
