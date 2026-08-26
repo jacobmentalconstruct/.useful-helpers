@@ -29,11 +29,12 @@ outcome only; they do not authorize implementation.
 - Review amendment and replacement submission: `journal/0003-t0-review-amendment.md`
 - Operator approval and terminal park: `journal/0004-t0-park.md`
 - Vision-alignment reopen declaration: `journal/0005-t0-vision-alignment-reopen.md`
+- Current alignment review submission: `journal/0006-t0-vision-alignment-review.md`
 
 The operator approved and parked the repaired T0 outcome in entry `0004`, which remains
 historically valid. Later product-boundary understanding reopened T0 narrowly through
-entry `0005`. The alignment implementation is complete and submitted for verification;
-the replacement review entry will cite the fresh-clone receipt. T1 remains undeclared.
+entry `0005`. Entry `0006` submits the aligned authorities with fresh-clone evidence for
+operator approval. T1 remains undeclared.
 
 ## Product STOP coverage
 

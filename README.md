@@ -16,8 +16,8 @@ The source preserved at Git baseline
 **provisional T1 input**. Its behavior and passing tests confer no tranche or product
 acceptance credit until T1 audits them.
 
-The previously approved T0 receipt is
-`.builder/evidence/T0/20260825T152930Z-8ecc1428/bootstrap-gate.json`. T1 has not begun.
+The current T0 alignment receipt is
+`.builder/evidence/T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`. T1 has not begun.
 
 Read construction authority in this order:
 

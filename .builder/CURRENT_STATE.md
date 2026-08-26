@@ -7,8 +7,8 @@ This file is a resumability projection, not authority.
 - Operator direction: reconcile product-shape authorities before T1
 - Git branch: `main`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0005-t0-vision-alignment-reopen.md`
-- Approved T0 receipt: `T0/20260825T152930Z-8ecc1428/bootstrap-gate.json`
+- Latest journal position: `0006-t0-vision-alignment-review.md`
+- Current T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: none; T0's 2026-08-25 park remains historical but is reopened
 - Product STOP: UNSCORED
 - Project closure: not eligible
@@ -38,7 +38,7 @@ superseded it as the repaired submission, and entry `0004` records operator appr
 PARKED status. Product STOP P1-P8 remains UNSCORED and no T1 behavior has been
 implemented.
 
-## Active alignment measurement
+## Alignment result
 
 The Charter now distinguishes the integrated workbench from the independent Coherent
 Development method; mechanical capabilities from governed host use; construction
@@ -46,6 +46,12 @@ history, operational receipts, App Journal memory, evidence, and awareness; and 
 entrances from capability ownership. The provisional source still gives every tool a
 `ToolContext` requiring Sidecar instance identity. Architecture records that measured
 coupling as T1 separability debt; this T0 reopen does not repair product code.
+
+Fresh-clone gate run `20260826T054142Z-b5ec742a` passed 13/13 against commit
+`356f922150e999ac7fdd5bfb1740255b088525fe`. It verified method/product/state ownership,
+five manifest-owned tools with no forbidden upward imports, and five explicitly
+acknowledged provisional shared-runtime dependencies. The aligned T0 is submitted, not
+parked.
 
 The operator classifies `/_projectmapper/` as transient file-dump output. It is absent
 and covered by a root-scoped ignore rule; recurrence is routine cleanliness and does not
@@ -62,6 +68,5 @@ alignment followed by explicit direction.
 
 ## Next entering-builder action
 
-Complete only the fresh-clone T0 gate and replacement review entry for alignment declared
-in entry `0005`, then stop for operator approval. Do not audit, re-home, or implement T1
-product behavior.
+Read entry `0006-t0-vision-alignment-review.md` and stop for operator approval. Do not
+audit, re-home, declare, or implement T1 product behavior.

@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "gate": "T0-bootstrap",
+  "status": "PASS",
+  "recorded_at": "2026-08-26T05:41:42.630806+00:00",
+  "run_id": "20260826T054142Z-b5ec742a",
+  "baseline_commit": "60174bc93ef4a187a0cc7ff848a03b3d8772b804",
+  "head_commit": "356f922150e999ac7fdd5bfb1740255b088525fe",
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "required_authorities",
+      "status": "PASS",
+      "detail": "all 9 required surfaces exist"
+    },
+    {
+      "name": "authority_ownership",
+      "status": "PASS",
+      "detail": "authority owners are singular and dependent documents use mappings or pointers"
+    },
+    {
+      "name": "vision_alignment",
+      "status": "PASS",
+      "detail": "method/product/state boundaries declared; 5 manifest-owned tools have no forbidden upward imports (5 retain acknowledged T1 debt)"
+    },
+    {
+      "name": "baseline_provenance",
+      "status": "PASS",
+      "detail": "baseline commit and tree preserved (8d2463515c19d07de1d05ee6e11cf3de837c047e)"
+    },
+    {
+      "name": "journal_origin",
+      "status": "PASS",
+      "detail": "fresh construction journal begins at 0001 (5 entries)"
+    },
+    {
+      "name": "one_gate_authority",
+      "status": "PASS",
+      "detail": "one gate implementation exists under .builder/gates"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "24 product modules are independent of factory/tests/builder; artifact undecided"
+    },
+    {
+      "name": "journal_separation",
+      "status": "PASS",
+      "detail": "construction and product journals have distinct subjects, stores, and lifecycles"
+    },
+    {
+      "name": "provisional_status",
+      "status": "PASS",
+      "detail": "pre-bootstrap source and product acceptance remain explicitly provisional"
+    },
+    {
+      "name": "reference_independence",
+      "status": "PASS",
+      "detail": "product source contains no parent-project names or sandbox paths"
+    },
+    {
+      "name": "canonical_pytest",
+      "status": "PASS",
+      "detail": "10 passed in 8.34s"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 31 Python files parsed successfully"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "PASS",
+      "detail": "no generated build, test-cache, bytecode, release, or non-empty fixture debris"
+    }
+  ]
+}
