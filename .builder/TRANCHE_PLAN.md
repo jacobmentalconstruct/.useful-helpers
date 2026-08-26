@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **ACTIVE - T1 VERIFYING**
+Status: **ACTIVE - T1 AWAITING APPROVAL**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -11,7 +11,7 @@ Charter and are referenced here without redefinition.
 | Tranche | Status | One observable outcome | Preconditions | Advances |
 |---|---|---|---|---|
 | T0 Bootstrap | PARKED | One approved construction system and aligned product authority exist around provisional source. | Operator vision-alignment ruling | Construction ability |
-| T1 Mechanical Hands + Governed Host | VERIFYING | Manifest-defined mechanical capabilities run on host-transported context through one contained CLI seam without importing higher projections. | T0 PARKED; declaration approved | P1, P2 |
+| T1 Mechanical Hands + Governed Host | AWAITING_APPROVAL | Manifest-defined mechanical capabilities run on host-transported context through one contained CLI seam without importing higher projections. | T0 PARKED; declaration approved | P1, P2 |
 | T2 Runtime Receipts + Work Memory | PROVISIONAL | Previewed work is reconstructable through distinct operational receipts/evidence while a blank-start App Journal records project decisions and park state. | T1 | P3, P5 |
 | T3 Epistemic Substrate | PROVISIONAL | Resources, versions, observations, evidence, claims, and provenance persist without becoming receipts or journal entries. | T2 | P3 |
 | T4 Awareness | PROVISIONAL | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 | P4 |
@@ -60,13 +60,15 @@ distinction: portable mechanical capability versus Sidecar-hosted governed use.
 - Implementation review submission: `journal/0011-t1-awaiting-approval.md`
 - Review-document amendment: `journal/0012-t1-review-document-amendment.md`
 - Operator verification return: `journal/0013-t1-verification-return.md`
+- Positive dependency proof amendment: `journal/0014-t1-dependency-proof-amendment.md`
 
 Entry `0009` parks the declaration as the approved implementation contract. Entry `0010`
 records operator direction to enter EXECUTE. Entry `0011` submits the implemented outcome
 for review, and entry `0012` reconciles its review documents and cumulative construction
 checks. This does not park T1 or grant P1/P2 credit without operator approval.
 Entry `0013` returns T1 to VERIFYING for a bounded positive dependency-proof repair; it
-does not reopen product scope.
+does not reopen product scope. Entry `0014` submits the repaired committed-state proof and
+returns T1 to AWAITING_APPROVAL without granting product credit.
 
 ## Project closure
 

@@ -3,11 +3,11 @@
 This file is a resumability projection, not authority.
 
 - Current tranche: **T1 Mechanical Hands + Governed Host**
-- Current state: **VERIFYING**
-- Operator direction: repair the bounded dependency proof and resubmit T1
+- Current state: **AWAITING_APPROVAL**
+- Operator direction: review the repaired positive dependency proof
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0013-t1-verification-return.md`
+- Latest journal position: `0014-t1-dependency-proof-amendment.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment
 - Product STOP: UNSCORED
@@ -87,20 +87,20 @@ manifest discovery, authority, containment, attribution, process lifetime, and r
 validation before constructing that context. Manifest output contracts are typed and
 closed against undeclared fields.
 
-Authoritative T1 run `20260826T122010Z-b96be9ec` passed 8/8 checks with receipt SHA-256
-`6B6B7D01BEA7DFB3EA34064285DA5FC8C4B216F27BA509ECD7A2B79719B8C4D8`. Canonical
-pytest passed 15 tests and Ruff passed. Entry `0011` records the mutation witness,
-disqualified false-positive receipt, corrected failure, implementation evidence, risks,
-and deferred work. Entry `0012` records the focused review-document and cumulative-gate
-repairs; no product implementation changed after the authoritative receipt.
+Authoritative T1 run `20260826T133048Z-8782844f` passed 9/9 checks from clean commit
+`4e79192`, with an empty recorded working tree and receipt SHA-256
+`C48A61C114C0F5D6AAA6EE8800B2D78D097ADB8BCF6DED7CE017565B8515BCD9`. Its positive
+assertion rejects `core.containment`, `core.contracts`, and `core.instance` mutations in
+both a tool and the shared runtime. Current T0 run `20260826T133128Z-129b3024` passed
+13/13 checks with receipt SHA-256
+`03718F0D3DC8FFE2C6B57F3A3B0F727D20A1497B1A025BE68A3BC12A4442C2F8`.
 
-The operator accepted the implementation in principle and returned T1 to VERIFYING
-because the dependency-direction gate used an incomplete blacklist. Entry `0013` limits
-the repair to a positive `core.tool_runtime` dependency assertion and new closure
-evidence. T1 is not PARKED. P1/P2 and Product STOP remain UNSCORED.
+Entries `0011`/`0012` remain historical submissions; entry `0013` records the operator
+return and entry `0014` submits its bounded repair. T1 is not PARKED. P1/P2 and Product
+STOP remain UNSCORED pending operator review.
 
 ## Next entering-builder action
 
-Complete the entry `0013` verification repair, generate clean committed-state T1 and T0
-receipts, submit a new immutable review amendment, and stop at AWAITING_APPROVAL. Do not
-begin T2.
+Review entry `0014` and its cited receipts. The builder must stop until the operator
+approves, requests revision, changes scope, rejects, or reopens a premise. Do not begin
+T2.
