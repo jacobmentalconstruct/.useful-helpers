@@ -2,12 +2,12 @@
 
 This file is a resumability projection, not authority.
 
-- Current tranche: **none open**
-- Current state: **T0 PARKED; T1 PROVISIONAL AND NOT DECLARED**
-- Operator direction: T0 alignment approved; prepare T1 declaration only
+- Current tranche: **T1 Mechanical Hands + Governed Host declaration only**
+- Current state: **T1 DECLARED / AWAITING DECLARATION APPROVAL**
+- Operator direction: review T1 declaration before any product implementation
 - Git branch: `main`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0007-t0-vision-alignment-park.md`
+- Latest journal position: `0008-t1-mechanical-host-declaration.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment
 - Product STOP: UNSCORED
@@ -63,11 +63,20 @@ T1 Mechanical Hands + Governed Host will audit the provisional tool contracts, s
 runtime, identity, containment, discovery, control plane, CLI, attachment, and fixtures
 before granting them credit. Its intended outcome distinguishes portable mechanical
 capability from Sidecar-hosted governed use through host-resolved context transport. T1
-is not declared. The operator has authorized declaration preparation only; no product
-implementation may begin before declaration review and explicit approval.
+is declared for scope review only. No product implementation may begin before explicit
+operator approval of entry `0008`.
+
+## T1 declaration status
+
+The declaration measures the five tools at source commit `38892a5`: all use target-domain
+mechanics; none uses UUID or state; inventory/search need target traversal plus excluded
+roots; read/hash/write need a sanctioned resolved path and target-relative handle. The
+host retains complete instance validation, discovery, authority, containment, process,
+attribution, and result policy.
+
+No product source, test, manifest, or T1 gate implementation changed during declaration.
 
 ## Next entering-builder action
 
-Read entry `0007-t0-vision-alignment-park.md`, measure the provisional T1 surfaces, and
-prepare the T1 declaration only. Do not modify product source, tests, manifests, or gate
-implementation before operator review.
+Read entry `0008-t1-mechanical-host-declaration.md` and stop for operator scope review.
+Do not enter EXECUTE or modify product behavior without explicit approval.

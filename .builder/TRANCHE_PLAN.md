@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **BETWEEN TRANCHES - T0 PARKED; T1 NOT DECLARED**
+Status: **ACTIVE - T1 DECLARED / AWAITING DECLARATION APPROVAL**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -11,7 +11,7 @@ Charter and are referenced here without redefinition.
 | Tranche | Status | One observable outcome | Preconditions | Advances |
 |---|---|---|---|---|
 | T0 Bootstrap | PARKED | One approved construction system and aligned product authority exist around provisional source. | Operator vision-alignment ruling | Construction ability |
-| T1 Mechanical Hands + Governed Host | PROVISIONAL | Manifest-defined mechanical capabilities run on host-transported context through one contained CLI seam without importing higher projections. | T0 terminal disposition | P1, P2 |
+| T1 Mechanical Hands + Governed Host | DECLARED / AWAITING DECLARATION APPROVAL | Manifest-defined mechanical capabilities run on host-transported context through one contained CLI seam without importing higher projections. | T0 PARKED | P1, P2 |
 | T2 Runtime Receipts + Work Memory | PROVISIONAL | Previewed work is reconstructable through distinct operational receipts/evidence while a blank-start App Journal records project decisions and park state. | T1 | P3, P5 |
 | T3 Epistemic Substrate | PROVISIONAL | Resources, versions, observations, evidence, claims, and provenance persist without becoming receipts or journal entries. | T2 | P3 |
 | T4 Awareness | PROVISIONAL | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 | P4 |
@@ -46,13 +46,17 @@ exact gate assertions that do so.
 
 ## T1 synopsis
 
-T1 Mechanical Hands + Governed Host remains PROVISIONAL and undeclared. When the operator
-starts it, T1 will audit the pre-bootstrap implementation rather than inherit its claims.
-It may establish deterministic tool contracts, manifest discovery, a minimal shared tool
-substrate, host-resolved context transport, containment, governed invocation, and CLI
-accessibility. It must preserve portable mechanical capability versus Sidecar-hosted
-governed use and must not make installed identity intrinsic to tool contracts. No T1
-scope or implementation is authorized by this synopsis.
+T1 Mechanical Hands + Governed Host is declared for scope review. The sequence outcome
+above remains the Plan-owned tranche property; entry `0008` owns its measured scope,
+non-goals, completion evidence, risks, and ordered implementation proposal.
+
+## T1 declaration record
+
+- Declaration and scope-review submission: `journal/0008-t1-mechanical-host-declaration.md`
+
+T1 is declared for operator scope review only. `DECLARED / AWAITING DECLARATION APPROVAL`
+does not authorize EXECUTE. Product implementation may begin only after explicit operator
+approval of entry `0008`.
 
 ## Project closure
 

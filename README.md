@@ -17,7 +17,8 @@ The source preserved at Git baseline
 acceptance credit until T1 audits them.
 
 The approved T0 alignment receipt is
-`.builder/evidence/T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`. T1 has not begun.
+`.builder/evidence/T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`. The T1 declaration
+is awaiting operator review; no T1 product implementation has begun.
 
 Read construction authority in this order:
 
