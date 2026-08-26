@@ -17,11 +17,11 @@ The source preserved at Git baseline
 acceptance credit until T1 audits them.
 
 The approved T0 alignment receipt is
-`.builder/evidence/T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`. T1 implementation
-is submitted for operator review through `.builder/journal/0011-t1-awaiting-approval.md`
-and the current proof amendment `.builder/journal/0014-t1-dependency-proof-amendment.md`,
-with authoritative gate run `20260826T133048Z-8782844f`. T1 is not PARKED and P1/P2
-remain UNSCORED until operator approval.
+`.builder/evidence/T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`. T1 Mechanical
+Hands + Governed Host is **PARKED by operator approval** in
+`.builder/journal/0015-t1-park.md`, supported by authoritative gate run
+`20260826T133048Z-8782844f`. P1/P2 are credited for the declared T1 boundary; Product
+STOP remains incomplete while P3-P8 are UNSCORED.
 
 Read construction authority in this order:
 

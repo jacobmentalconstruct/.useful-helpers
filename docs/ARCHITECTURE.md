@@ -1,6 +1,6 @@
 # Architecture
 
-Status: **T1 IMPLEMENTATION REVIEW CANDIDATE - AWAITING OPERATOR APPROVAL**
+Status: **T1 PARKED BY OPERATOR APPROVAL**
 
 ## Charter relationship
 
@@ -129,6 +129,7 @@ single `.sidecar` directory except for an explicitly authorized work product.
 Direct subprocess fixtures also invoke all five mechanics with no Sidecar instance,
 while a live host probe receives only `target_root` and `excluded_roots`. A malicious
 child leaves no launch witness when identity, authority, input, or containment fails.
-Dependency mutation proves the T1 gate rejects `core.instance` imported by a mechanical
-tool. The candidate remains unapproved until the operator rules on journal entry `0011`;
-this document does not grant P1/P2 or Product STOP credit.
+Dependency mutation proves the T1 gate rejects `core.containment`, `core.contracts`, and
+`core.instance` when injected into both a mechanical tool and the shared runtime. Journal
+entry `0015` records operator approval and parks T1. This document maps the approved
+implementation state; Product STOP remains incomplete until P3-P8 are also proven.

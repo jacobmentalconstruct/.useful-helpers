@@ -2,15 +2,15 @@
 
 This file is a resumability projection, not authority.
 
-- Current tranche: **T1 Mechanical Hands + Governed Host**
-- Current state: **AWAITING_APPROVAL**
-- Operator direction: review the repaired positive dependency proof
+- Current tranche: **T2 Runtime Receipts + Work Memory**
+- Current state: **PROVISIONAL - NOT STARTED**
+- Operator direction: T1 approved and parked; do not begin T2
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0014-t1-dependency-proof-amendment.md`
+- Latest journal position: `0015-t1-park.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
-- Parked tranches: T0 Bootstrap, including the subsequent vision alignment
-- Product STOP: UNSCORED
+- Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host
+- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3-P8 UNSCORED
 - Project closure: not eligible
 
 ## Measured implementation
@@ -45,8 +45,8 @@ Development method; mechanical capabilities from governed host use; construction
 history, operational receipts, App Journal memory, evidence, and awareness; and CLI/MCP
 entrances from capability ownership. At the T0 alignment checkpoint, the provisional
 source still gave every tool a `ToolContext` requiring Sidecar instance identity. Entry
-`0007` accepted that measured coupling as T1 debt rather than architecture; the current
-T1 review candidate repairs it.
+`0007` accepted that measured coupling as T1 debt rather than architecture; parked T1
+repairs it.
 
 Fresh-clone gate run `20260826T054142Z-b5ec742a` passed 13/13 against commit
 `356f922150e999ac7fdd5bfb1740255b088525fe`. It verified method/product/state ownership,
@@ -79,7 +79,7 @@ Entry `0009` records operator approval and parks entry `0008` as the scope basel
 Implementation and verification occurred later under entries `0010` and `0011`; the T1
 outcome is still not PARKED or credited.
 
-## T1 review position
+## T1 parked position
 
 The five tools now consume a strict product-neutral `MechanicalContext` containing only
 `target_root` and `excluded_roots`. The host retains full installed identity, state,
@@ -96,11 +96,11 @@ both a tool and the shared runtime. Current T0 run `20260826T133128Z-129b3024` p
 `03718F0D3DC8FFE2C6B57F3A3B0F727D20A1497B1A025BE68A3BC12A4442C2F8`.
 
 Entries `0011`/`0012` remain historical submissions; entry `0013` records the operator
-return and entry `0014` submits its bounded repair. T1 is not PARKED. P1/P2 and Product
-STOP remain UNSCORED pending operator review.
+return and entry `0014` submits its bounded repair. Entry `0015` records operator
+approval and parks T1. P1/P2 are credited for the declared T1 boundary; P3-P8 remain
+UNSCORED and Product STOP remains incomplete.
 
 ## Next entering-builder action
 
-Review entry `0014` and its cited receipts. The builder must stop until the operator
-approves, requests revision, changes scope, rejects, or reopens a premise. Do not begin
-T2.
+Stop at the parked T1 boundary. T2 Runtime Receipts + Work Memory remains PROVISIONAL
+and requires an explicit operator direction and declaration before any implementation.

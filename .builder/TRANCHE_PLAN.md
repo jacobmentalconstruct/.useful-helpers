@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **ACTIVE - T1 AWAITING APPROVAL**
+Status: **PARKED - T1 COMPLETE**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -11,7 +11,7 @@ Charter and are referenced here without redefinition.
 | Tranche | Status | One observable outcome | Preconditions | Advances |
 |---|---|---|---|---|
 | T0 Bootstrap | PARKED | One approved construction system and aligned product authority exist around provisional source. | Operator vision-alignment ruling | Construction ability |
-| T1 Mechanical Hands + Governed Host | AWAITING_APPROVAL | Manifest-defined mechanical capabilities run on host-transported context through one contained CLI seam without importing higher projections. | T0 PARKED; declaration approved | P1, P2 |
+| T1 Mechanical Hands + Governed Host | PARKED | Manifest-defined mechanical capabilities run on host-transported context through one contained CLI seam without importing higher projections. | T0 PARKED; declaration approved | P1, P2 |
 | T2 Runtime Receipts + Work Memory | PROVISIONAL | Previewed work is reconstructable through distinct operational receipts/evidence while a blank-start App Journal records project decisions and park state. | T1 | P3, P5 |
 | T3 Epistemic Substrate | PROVISIONAL | Resources, versions, observations, evidence, claims, and provenance persist without becoming receipts or journal entries. | T2 | P3 |
 | T4 Awareness | PROVISIONAL | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 | P4 |
@@ -40,17 +40,18 @@ checkpoint T1 remained undeclared; its later records appear below.
 
 ## Product STOP coverage
 
-T0 grants no P1-P8 credit. Pre-bootstrap behavior is evidence available to T1, not
-acceptance credit. Each later declaration must name the P-conditions it advances and the
-exact gate assertions that do so.
+T0 grants no P1-P8 credit. T1 grants P1/P2 credit for the declared mechanical-host
+boundary only. P3-P8 remain UNSCORED, and Product STOP remains incomplete. Each later
+declaration must name the P-conditions it advances and the exact gate assertions that do
+so.
 
 ## T1 synopsis
 
-T1 Mechanical Hands + Governed Host has an approved scope and an implementation submitted
-for review. The sequence outcome above remains the Plan-owned tranche property; entry
-`0008` owns its measured scope, non-goals, completion evidence, risks, and ordered plan,
-while entry `0011` owns the current review submission. The outcome preserves the aligned
-distinction: portable mechanical capability versus Sidecar-hosted governed use.
+T1 Mechanical Hands + Governed Host is PARKED by operator approval. The sequence outcome
+above remains the Plan-owned tranche property; entry `0008` owns its measured scope,
+non-goals, completion evidence, risks, and ordered plan, while entry `0015` owns the
+terminal approval and park disposition. The outcome preserves the aligned distinction:
+portable mechanical capability versus Sidecar-hosted governed use.
 
 ## T1 declaration record
 
@@ -61,6 +62,7 @@ distinction: portable mechanical capability versus Sidecar-hosted governed use.
 - Review-document amendment: `journal/0012-t1-review-document-amendment.md`
 - Operator verification return: `journal/0013-t1-verification-return.md`
 - Positive dependency proof amendment: `journal/0014-t1-dependency-proof-amendment.md`
+- Operator approval and terminal park: `journal/0015-t1-park.md`
 
 Entry `0009` parks the declaration as the approved implementation contract. Entry `0010`
 records operator direction to enter EXECUTE. Entry `0011` submits the implemented outcome
@@ -68,7 +70,9 @@ for review, and entry `0012` reconciles its review documents and cumulative cons
 checks. This does not park T1 or grant P1/P2 credit without operator approval.
 Entry `0013` returns T1 to VERIFYING for a bounded positive dependency-proof repair; it
 does not reopen product scope. Entry `0014` submits the repaired committed-state proof and
-returns T1 to AWAITING_APPROVAL without granting product credit.
+returns T1 to AWAITING_APPROVAL without granting product credit. Entry `0015` records
+operator approval, grants the terminal PARKED disposition, and parks the declared P1/P2
+credit while leaving P3-P8 UNSCORED.
 
 ## Project closure
 
