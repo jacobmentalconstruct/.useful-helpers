@@ -40,12 +40,17 @@ maps its stages to repository mechanisms; it does not redefine the required acti
 
 | BCC-owned stage | Repository mechanism |
 |---|---|
+| ORIENT | Read current authorities/history/evidence and measure the live repository |
 | DECLARE | A new numbered declaration in `.builder/journal/`; status in the Plan and Current State |
 | EXECUTE | Changes on the declared surfaces; amendments receive later journal numbers |
+| CONSOLIDATE | Hardening/discovery findings recorded in the active tranche history |
 | VERIFY | The tranche entry in `.builder/gates/`; immutable output under `.builder/evidence/<tranche>/` |
-| SUBMIT | A numbered awaiting-approval entry; Plan and Current State set to `AWAITING_APPROVAL` |
-| OPERATOR REVIEW | Operator ruling represented by a later journal entry and the Plan status |
-| CLOSE | Operator-granted disposition recorded in journal, Plan, and Current State |
+| REVIEW | A numbered awaiting-approval entry and later operator ruling; Plan and Current State carry status |
+| PARK | Operator-granted terminal disposition recorded in journal, Plan, and Current State |
+
+STOP/outcome dependencies are owned by the Plan and Charter; discovery, reopen, and
+supersession use later immutable journal entries. These mappings do not make Sidecar
+Workbench the owner or required runtime of Coherent Development.
 
 When this mapping and the BCC disagree, the BCC governs builder behavior. This protocol
 governs only the repository locations and transitions shown here.

@@ -4,14 +4,19 @@ Sidecar Workbench is the provisional name for a self-contained local instrument
 attached to one directory. Its governing product definition is
 [`docs/PRODUCT_CHARTER.md`](docs/PRODUCT_CHARTER.md).
 
+The Charter also owns the product/method boundary, lower-layer separability, and runtime
+state terminology. Repository construction documents and projections consume those facts
+rather than defining alternate versions.
+
 ## Construction status
 
-T0 project bootstrap is **PARKED by operator approval**. The source preserved at Git baseline
+T0 project bootstrap is **AWAITING_APPROVAL after a bounded vision-alignment reopen**.
+The source preserved at Git baseline
 `60174bc93ef4a187a0cc7ff848a03b3d8772b804` predates construction governance and is
 **provisional T1 input**. Its behavior and passing tests confer no tranche or product
 acceptance credit until T1 audits them.
 
-The approved T0 receipt is
+The previously approved T0 receipt is
 `.builder/evidence/T0/20260825T152930Z-8ecc1428/bootstrap-gate.json`. T1 has not begun.
 
 Read construction authority in this order:

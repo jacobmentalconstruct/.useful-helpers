@@ -132,6 +132,120 @@ def _authority_ownership() -> str:
     return "authority owners are singular and dependent documents use mappings or pointers"
 
 
+def _vision_alignment() -> str:
+    charter = (ROOT / "docs/PRODUCT_CHARTER.md").read_text(encoding="utf-8")
+    normalized_charter = re.sub(r"\s+", " ", charter)
+    charter_markers = (
+        "Coherent Development is an independent product-neutral method",
+        "host-resolved transported context",
+        "mechanical tools",
+        "Operational receipts/event ledger",
+        "App Journal",
+        "MCP is removable",
+        "does not require extraction into separate distributions",
+        "Runtime state and history ownership",
+        "compatible updates preserve engagement-owned state",
+    )
+    missing_markers = [marker for marker in charter_markers if marker not in normalized_charter]
+    if missing_markers:
+        raise AssertionError(f"Charter omits vision-alignment markers: {missing_markers}")
+
+    bcc = (ROOT / ".builder/BCC.md").read_text(encoding="utf-8")
+    if "Coherent Development is an independent product-neutral method" not in bcc:
+        raise AssertionError("BCC does not separate repository governance from the method")
+
+    protocol = (ROOT / ".builder/TRANCHE_PROTOCOL.md").read_text(encoding="utf-8")
+    stages = ("ORIENT", "DECLARE", "EXECUTE", "CONSOLIDATE", "VERIFY", "REVIEW", "PARK")
+    absent_stages = [stage for stage in stages if f"| {stage} |" not in protocol]
+    if absent_stages:
+        raise AssertionError(f"Protocol omits Coherent Development stage mappings: {absent_stages}")
+
+    plan = (ROOT / ".builder/TRANCHE_PLAN.md").read_text(encoding="utf-8")
+    normalized_plan = re.sub(r"\s+", " ", plan)
+    if "T1 Bound Hands" in plan:
+        raise AssertionError("Plan retains identity-conflating T1 Bound Hands wording")
+    plan_markers = (
+        "T1 Mechanical Hands + Governed Host",
+        "host-transported context",
+        "without importing higher projections",
+        "Runtime Receipts + Work Memory",
+        "Removable MCP Entrance",
+        "portable mechanical capability versus Sidecar-hosted governed use",
+    )
+    absent_plan_markers = [marker for marker in plan_markers if marker not in normalized_plan]
+    if absent_plan_markers:
+        raise AssertionError(f"Plan omits aligned tranche boundaries: {absent_plan_markers}")
+
+    architecture = (ROOT / "docs/ARCHITECTURE.md").read_text(encoding="utf-8")
+    if "## Measured T1 separability debt" not in architecture:
+        raise AssertionError("Architecture does not record provisional tool-context coupling")
+
+    forbidden_tool_imports = (
+        "core.cli",
+        "core.control",
+        "core.instance",
+        "core.registry",
+        "core.storage",
+        "awareness",
+        "mcp",
+        "gui",
+        "factory",
+    )
+    tools = 0
+    shared_runtime_users = 0
+    for tool_path in sorted((ROOT / "product/tools").glob("*/tool.py")):
+        tools += 1
+        manifest_path = tool_path.with_name("manifest.json")
+        if not manifest_path.is_file():
+            raise AssertionError(f"tool lacks owning manifest: {tool_path.relative_to(ROOT)}")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        required_contract = {
+            "id",
+            "description",
+            "authority",
+            "input_schema",
+            "output_schema",
+            "reads",
+            "writes",
+            "invocation",
+        }
+        missing_contract = sorted(required_contract - manifest.keys())
+        if missing_contract:
+            raise AssertionError(
+                f"manifest {manifest_path.relative_to(ROOT)} omits contract fields: "
+                f"{missing_contract}"
+            )
+
+        tree = ast.parse(tool_path.read_text(encoding="utf-8"), filename=str(tool_path))
+        imported_modules: list[str] = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imported_modules.extend(alias.name for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                imported_modules.append(node.module)
+        if "core.tool_runtime" in imported_modules:
+            shared_runtime_users += 1
+        forbidden = sorted(
+            module
+            for module in imported_modules
+            if any(module == prefix or module.startswith(prefix + ".") for prefix in forbidden_tool_imports)
+        )
+        if forbidden:
+            raise AssertionError(
+                f"mechanical tool imports higher Sidecar layers in {tool_path.relative_to(ROOT)}: "
+                f"{forbidden}"
+            )
+
+    if not tools:
+        raise AssertionError("no mechanical tools were measured")
+    if shared_runtime_users and "T1 separability debt" not in architecture:
+        raise AssertionError("current shared runtime coupling is not classified as T1 debt")
+    return (
+        f"method/product/state boundaries declared; {tools} manifest-owned tools have no "
+        f"forbidden upward imports ({shared_runtime_users} retain acknowledged T1 debt)"
+    )
+
+
 def _baseline_provenance() -> str:
     _git("cat-file", "-e", f"{BASELINE}^{{commit}}")
     subject = _git("show", "-s", "--format=%s", BASELINE)
@@ -215,7 +329,7 @@ def _provisional_status() -> str:
     plan = (ROOT / ".builder/TRANCHE_PLAN.md").read_text(encoding="utf-8")
     phase = (ROOT / "docs/PHASE_1.md").read_text(encoding="utf-8")
     architecture = (ROOT / "docs/ARCHITECTURE.md").read_text(encoding="utf-8")
-    if "P1-P8 remain UNSCORED during T0" not in plan:
+    if "T0 grants no P1-P8 credit" not in plan:
         raise AssertionError("Plan grants or obscures product credit during T0")
     if "PRE-BOOTSTRAP PROVISIONAL REPORT" not in phase:
         raise AssertionError("pre-bootstrap Phase 1 report is not labeled provisional")
@@ -315,6 +429,7 @@ def main() -> int:
     checks = [
         _check("required_authorities", _required_authorities),
         _check("authority_ownership", _authority_ownership),
+        _check("vision_alignment", _vision_alignment),
         _check("baseline_provenance", _baseline_provenance),
         _check("journal_origin", _journal_origin),
         _check("one_gate_authority", _one_gate_authority),

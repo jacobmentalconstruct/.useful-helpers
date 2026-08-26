@@ -2,9 +2,18 @@
 
 Status: **APPROVED CONSTRUCTION AUTHORITY**
 
-This contract owns builder behavior and general construction grammar. It does not own
+This contract owns builder behavior and repository construction grammar. It does not own
 product architecture, product acceptance facts, tranche sequence, or implementation
 status.
+
+## Method relationship
+
+Coherent Development is an independent product-neutral method whose meaning is not owned
+by Sidecar Workbench, this BCC, or this repository. This contract applies that method to
+construction of this project by binding its stages to local authorities, evidence, and
+operator decisions. References to ORIENT, DECLARE, EXECUTE, CONSOLIDATE, VERIFY, REVIEW,
+PARK, STOP, discovery, reopen, or supersession constrain this repository only; they do
+not redefine the general method.
 
 ## Authority map
 
@@ -100,9 +109,10 @@ Never rewrite history to match later belief. Entries record what was believed, a
 changed, why, evidence, decisions, failures, and next action without duplicating authority
 documents.
 
-The construction journal and installed product journal are unrelated stores with distinct
-subjects and lifecycles. Current State is a replaceable projection assembled from the
-Plan, journal, evidence, and measured source.
+The construction journal, Charter-defined runtime App Journal, and operational receipts
+are unrelated record classes with distinct owners, subjects, and lifecycles. This BCC
+governs only construction history. Current State is a replaceable projection assembled
+from the Plan, construction journal, evidence, and measured source.
 
 ## Closure and restraint
 
