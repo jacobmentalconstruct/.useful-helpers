@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "gate": "T2-runtime-receipts-work-memory",
+  "status": "PASS",
+  "recorded_at": "2026-08-26T22:18:56.625432+00:00",
+  "run_id": "20260826T221856Z-b97a3845",
+  "head_commit": "9b9920cb35345c783dd332c7a4fe3ff737c43540",
+  "working_tree": "",
+  "source_digest": "44ba70fe849905cd8e4284b13fb9fc960fc8adf6f02e8907b5853525e377f789",
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "runtime_schema_separation",
+      "status": "PASS",
+      "detail": "storage declares distinct T2 receipt, artifact, App Journal, and link tables only"
+    },
+    {
+      "name": "runtime_owner_separation",
+      "status": "PASS",
+      "detail": "receipts/artifacts and App Journal have separate runtime owners"
+    },
+    {
+      "name": "receipt_failure_guard",
+      "status": "PASS",
+      "detail": "state-changing calls cannot be reported durably governed without receipt creation"
+    },
+    {
+      "name": "t1_dependency_boundary",
+      "status": "PASS",
+      "detail": "T1 mechanical dependency boundary remains intact"
+    },
+    {
+      "name": "focused_t2_product_evidence",
+      "status": "PASS",
+      "detail": ".....                                                                    [100%]"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": "....................                                                     [100%]"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "26 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "journal_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0018-t2-execution-start.md"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 37 Python sources parsed"
+    },
+    {
+      "name": "discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: journal/receipt table collapse; automatic receipt-to-journal projection; missing receipt failure guard"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "PASS",
+      "detail": "no generated cache, bytecode, build, release, or fixture debris remains"
+    }
+  ]
+}
