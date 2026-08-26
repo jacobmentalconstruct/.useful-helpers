@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **ACTIVE - T2 DECLARED**
+Status: **ACTIVE - T2 IMPLEMENTING**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -12,7 +12,7 @@ Charter and are referenced here without redefinition.
 |---|---|---|---|---|
 | T0 Bootstrap | PARKED | One approved construction system and aligned product authority exist around provisional source. | Operator vision-alignment ruling | Construction ability |
 | T1 Mechanical Hands + Governed Host | PARKED | Manifest-defined mechanical capabilities run on host-transported context through one contained CLI seam without importing higher projections. | T0 PARKED; declaration approved | P1, P2 |
-| T2 Runtime Receipts + Work Memory | DECLARED | Governed runtime calls after trusted state ownership produce durable operational receipts/artifacts while a blank-start App Journal records deliberate work memory separately. | T1 PARKED; amended declaration under review | P3 |
+| T2 Runtime Receipts + Work Memory | IMPLEMENTING | Governed runtime calls after trusted state ownership produce durable operational receipts/artifacts while a blank-start App Journal records deliberate work memory separately. | T1 PARKED; amended declaration approved | P3 |
 | T3 Epistemic Substrate | PROVISIONAL | Resources, versions, observations, evidence, claims, and provenance persist without becoming receipts or journal entries. | T2 | P3 |
 | T4 Awareness | PROVISIONAL | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 | P4 |
 | T5 Governed Mutation Loop | PROVISIONAL | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 | P5 |
@@ -90,12 +90,16 @@ T5 governed mutation loop.
   `journal/0016-t2-runtime-receipts-work-memory-declaration.md`
 - Scope amendment and replacement review submission:
   `journal/0017-t2-declaration-scope-amendment.md`
+- Execution start:
+  `journal/0018-t2-execution-start.md`
 
 Entry `0016` does not authorize implementation, create the T2 gate, change product
 source, or grant product credit. Entry `0017` narrows T2 by moving preview-first mutation,
 approval binding, stale-preview refusal, measured mutation, and target-native
 verification to T5, and compatible update/removal proof to T8. Operator approval is
 required before T2 can enter IMPLEMENTING.
+Entry `0018` records operator approval of the amended declaration and starts
+implementation. It does not park T2 or grant product credit.
 
 ## Project closure
 

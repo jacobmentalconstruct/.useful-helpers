@@ -3,11 +3,11 @@
 This file is a resumability projection, not authority.
 
 - Current tranche: **T2 Runtime Receipts + Work Memory**
-- Current state: **DECLARED - AWAITING OPERATOR REVIEW**
-- Operator direction: review the amended T2 declaration before implementation
+- Current state: **IMPLEMENTING**
+- Operator direction: execute approved amended T2, then stop at AWAITING_APPROVAL
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0017-t2-declaration-scope-amendment.md`
+- Latest journal position: `0018-t2-execution-start.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host
 - Product STOP: PARTIAL - P1/P2 credited by parked T1; P3-P8 UNSCORED
@@ -102,6 +102,7 @@ UNSCORED and Product STOP remains incomplete.
 
 ## Next entering-builder action
 
-Review entries `0016` and `0017`, with `0017` as the current amended T2 declaration. The
-builder must stop until the operator approves, requests revision, narrows or enlarges
-scope, rejects, or reopens a premise. Do not implement T2 and do not begin T3.
+Continue T2 implementation under entries `0016`, `0017`, and `0018`. Add the declared
+tests, implement the narrow runtime receipts/artifacts and App Journal scope, verify with
+the T2 gate and relevant cumulative checks, then submit AWAITING_APPROVAL. Do not park T2
+and do not begin T3.
