@@ -337,10 +337,15 @@ def _provisional_status() -> str:
         raise AssertionError("Plan grants or obscures product credit during T0")
     if "PRE-BOOTSTRAP PROVISIONAL REPORT" not in phase:
         raise AssertionError("pre-bootstrap Phase 1 report is not labeled provisional")
-    allowed_statuses = ("PROVISIONAL UNTIL T1", "T1 IMPLEMENTATION REVIEW CANDIDATE")
+    allowed_statuses = (
+        "PROVISIONAL UNTIL T1",
+        "T1 IMPLEMENTATION REVIEW CANDIDATE",
+        "T1 PARKED BY OPERATOR APPROVAL",
+        "T2 IMPLEMENTATION REVIEW CANDIDATE",
+    )
     if not any(status in architecture for status in allowed_statuses):
         raise AssertionError("implementation architecture has no recognized lifecycle status")
-    return "pre-bootstrap history remains provisional while architecture may advance through T1"
+    return "pre-bootstrap history remains provisional while architecture may advance by tranche"
 
 
 def _reference_independence() -> str:

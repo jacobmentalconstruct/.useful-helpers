@@ -1,6 +1,6 @@
 # Architecture
 
-Status: **T1 PARKED BY OPERATOR APPROVAL**
+Status: **T2 IMPLEMENTATION REVIEW CANDIDATE - AWAITING OPERATOR APPROVAL**
 
 ## Charter relationship
 
@@ -8,8 +8,9 @@ The [Product Charter](PRODUCT_CHARTER.md) owns product identity, method/product 
 invariants, topology and dependency direction, runtime state classes, P1-P8, the
 acceptance walk, Product STOP, and product non-goals. This document does not redefine
 those facts. It maps the implementation currently present in the repository to the
-Charter responsibilities it is intended to realize. That implementation has not been
-audited or approved by a product tranche.
+Charter responsibilities it is intended to realize. The T1 mechanical-host boundary is
+parked by operator approval. The T2 runtime memory implementation is a review candidate
+and is not parked until the operator grants that terminal disposition.
 
 ## Current installed-instance realization
 
@@ -49,10 +50,14 @@ inconsistent instance. No fallback identity-discovery path is present.
   containment, child-process execution, and result envelopes.
 - `product/core/registry.py` discovers tool manifests from the installed `tools/` tree.
 - `product/core/containment.py` resolves manifest-declared path arguments.
+- `product/core/runtime_records.py` owns runtime operation receipts and operational
+  artifacts.
+- `product/core/app_journal.py` owns deliberate runtime App Journal entries and their
+  links to receipt or artifact identifiers.
 - `product/core/tool_runtime.py` owns the product-neutral mechanical subprocess protocol,
   strict transported context, target-relative handles, excluded-root behavior, and
   deterministic error serialization.
-- `product/core/storage.py` owns the current SQLite bootstrap.
+- `product/core/storage.py` owns the current SQLite bootstrap and migration mechanics.
 - `product/tools/<id>/` contains manifest-described deterministic capabilities.
 
 T1 audited these measured locations and retained them because their responsibilities
@@ -83,27 +88,49 @@ The current implementation approaches Charter product invariants 3 and 4 through
 4. validate input shape;
 5. resolve declared target or instance paths through containment;
 6. shape product-neutral context from the already validated host facts;
-7. invoke the tool in a child Python process with serialized arguments and context;
-8. validate the structured result and return a common envelope.
+7. establish a durable operation receipt after trusted state ownership is available;
+8. invoke the tool in a child Python process with serialized arguments and context;
+9. validate the structured result;
+10. record a durable operational artifact supporting the receipt; and
+11. return a common envelope containing receipt and artifact identifiers when recording
+    succeeds.
 
 The host resolves complete instance identity and containment before dispatch. The JSON
 request transports only already-resolved mechanical facts; environment configuration
-locates the installed Python modules but does not carry project identity. Preview/apply
-governance, independent mutation
-measurement, durable operation receipts, cancellation, and invalidation are not present
-and receive no architectural or Product STOP credit.
+locates the installed Python modules but does not carry project identity.
+
+If receipt creation fails, the control plane reports `receipt_persistence_failed` with
+`durably_governed = false`. That failure happens before child-process launch, so a
+state-changing tool does not silently proceed as durably governed when the required
+operation record cannot be established.
+
+Preview/apply governance, stale approval binding, governed mutation measurement,
+target-native verification workflow, refresh, cancellation, and invalidation are not
+present and receive no architectural or Product STOP credit in T2.
 
 ## Current substrate implementation
 
-The current foundation for Charter product invariant 5 is
+The current foundation for Charter product invariants 6 and 7 is
 `.sidecar/state/workbench.sqlite3`. `product/core/storage.py` enables foreign keys, WAL,
-and full synchronous writes; applies a `PRAGMA user_version` migration; and stores one
+and full synchronous writes; applies `PRAGMA user_version` migrations; and stores one
 instance row whose UUID must agree with `instance.json` on re-entry.
 
-The database does not yet implement the Charter's required operational receipt/event
-ledger, App Journal, resource, observation, evidence, claim, provenance, or awareness
-records. Those are separate semantic owners even if later implemented in one SQLite
-database. The objects directory is created but has no accepted object-store contract.
+Schema version 2 adds distinct T2 runtime tables:
+
+- `operation_receipts` records governed invocation/event facts after trusted installed
+  state ownership is resolved.
+- `operational_artifacts` stores JSON artifacts that substantiate operation receipt
+  facts, such as tool envelopes and captured process output.
+- `app_journal_entries` stores deliberate project/work memory entries with entry type,
+  status, title, and body.
+- `app_journal_links` links App Journal entries to `operation:` or `artifact:`
+  identifiers without turning receipts into journal entries.
+
+These operational artifacts are evidence of runtime operations only. They are not the T3
+epistemic evidence owner for target observations or claims. The database still does not
+implement canonical resource inventory, observations, derived claims, provenance graph,
+awareness revisions, or semantic/vector indexes. The objects directory is created but has
+no accepted object-store contract.
 
 ## Current tool contract
 
@@ -133,3 +160,24 @@ Dependency mutation proves the T1 gate rejects `core.containment`, `core.contrac
 `core.instance` when injected into both a mechanical tool and the shared runtime. Journal
 entry `0015` records operator approval and parks T1. This document maps the approved
 implementation state; Product STOP remains incomplete until P3-P8 are also proven.
+
+## T2 review evidence
+
+T2 product fixtures report that a fresh attach starts with blank runtime receipts,
+operational artifacts, App Journal entries, and App Journal links. Successful reads,
+authority refusals before child launch, malformed child JSON, child process failure, and
+the existing immediate write route are recorded after state ownership is resolved.
+
+Receipts and operational artifacts remain distinct from App Journal entries. Journal
+entries are deliberate work-memory records with entry type and status, may link to
+receipt or artifact identifiers, do not appear automatically after tool calls, and remain
+available across process restart/re-entry without awareness or MCP.
+
+A failure-injection fixture adds a SQLite trigger that rejects receipt creation and then
+attempts an apply-authority write. The control plane returns `receipt_persistence_failed`
+with `durably_governed = false`, and the target file is not created. This proves the T2
+failure invariant without implementing the later T5 preview/apply loop.
+
+Authoritative T2 gate evidence is expected to be recorded by the review submission
+journal entry. Until operator approval, T2 remains an implementation review candidate;
+P3 is not parked and Product STOP remains incomplete.
