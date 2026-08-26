@@ -3,11 +3,11 @@
 This file is a resumability projection, not authority.
 
 - Current tranche: **T2 Runtime Receipts + Work Memory**
-- Current state: **IMPLEMENTING**
-- Operator direction: execute approved amended T2, then stop at AWAITING_APPROVAL
+- Current state: **AWAITING_APPROVAL**
+- Operator direction: review the submitted T2 implementation; do not begin T3
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0018-t2-execution-start.md`
+- Latest journal position: `0019-t2-awaiting-approval.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host
 - Product STOP: PARTIAL - P1/P2 credited by parked T1; P3-P8 UNSCORED
@@ -100,9 +100,27 @@ return and entry `0014` submits its bounded repair. Entry `0015` records operato
 approval and parks T1. P1/P2 are credited for the declared T1 boundary; P3-P8 remain
 UNSCORED and Product STOP remains incomplete.
 
+## T2 review position
+
+T2 adds schema version 2 with distinct `operation_receipts`,
+`operational_artifacts`, `app_journal_entries`, and `app_journal_links` tables.
+`runtime_records.py` owns receipts/artifacts; `app_journal.py` owns deliberate work
+memory and links. The CLI exposes minimal receipt, artifact, and journal commands.
+
+Final T2 run `20260826T221856Z-b97a3845` passed 11/11 from clean commit `9b9920c`, with
+receipt SHA-256 `A190F0B6BBF646061B8183A2314E79FB37B778B8628A4BEB774DFA03A61DD308`.
+It proves runtime state separation, receipt failure guard, focused T2 behavior,
+canonical regression, T1 dependency preservation, product boundary, static discovery,
+repository hygiene, and discrimination against journal/receipt collapse, automatic
+receipt-to-journal projection, and missing receipt failure guard.
+
+Cumulative T1 run `20260826T221441Z-b2684cf6` passed 9/9. Cumulative T0 run
+`20260826T221803Z-a47fda50` passed 13/13 after a preserved failed run exposed stale T0
+lifecycle-status wording. T2 is not PARKED. P3 and Product STOP remain UNSCORED pending
+operator review.
+
 ## Next entering-builder action
 
-Continue T2 implementation under entries `0016`, `0017`, and `0018`. Add the declared
-tests, implement the narrow runtime receipts/artifacts and App Journal scope, verify with
-the T2 gate and relevant cumulative checks, then submit AWAITING_APPROVAL. Do not park T2
-and do not begin T3.
+Review entry `0019` and its cited receipts. The builder must stop until the operator
+approves, requests revision, narrows or enlarges scope, rejects, or reopens a premise.
+Do not park T2 and do not begin T3.

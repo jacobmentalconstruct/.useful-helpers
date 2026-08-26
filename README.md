@@ -20,8 +20,10 @@ The approved T0 alignment receipt is
 `.builder/evidence/T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`. T1 Mechanical
 Hands + Governed Host is **PARKED by operator approval** in
 `.builder/journal/0015-t1-park.md`, supported by authoritative gate run
-`20260826T133048Z-8782844f`. P1/P2 are credited for the declared T1 boundary; Product
-STOP remains incomplete while P3-P8 are UNSCORED.
+`20260826T133048Z-8782844f`. T2 Runtime Receipts + Work Memory is submitted for operator
+review in `.builder/journal/0019-t2-awaiting-approval.md`, supported by final T2 gate run
+`20260826T221856Z-b97a3845`. P1/P2 are credited for the declared T1 boundary; Product
+STOP remains incomplete while T2 awaits operator approval and P3-P8 remain UNSCORED.
 
 Read construction authority in this order:
 
