@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "gate": "T2-runtime-receipts-work-memory",
+  "status": "FAIL",
+  "recorded_at": "2026-08-26T22:11:02.352960+00:00",
+  "run_id": "20260826T221102Z-a13fa693",
+  "head_commit": "8b019b64784ae72da7c5505a0736b9ec7e4802ed",
+  "working_tree": "M product/core/cli.py\n M product/core/constants.py\n M product/core/control.py\n M product/core/storage.py\n M tests/test_phase1.py\n?? .builder/gates/t2_runtime_receipts_work_memory.py\n?? product/core/app_journal.py\n?? product/core/runtime_records.py\n?? tests/test_t2_runtime_memory.py",
+  "source_digest": "7d824f7a97c19f379ad45cce2dad9dd28fec7123c83be76f1a94a335e0a11206",
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "runtime_schema_separation",
+      "status": "PASS",
+      "detail": "storage declares distinct T2 receipt, artifact, App Journal, and link tables only"
+    },
+    {
+      "name": "runtime_owner_separation",
+      "status": "PASS",
+      "detail": "receipts/artifacts and App Journal have separate runtime owners"
+    },
+    {
+      "name": "receipt_failure_guard",
+      "status": "PASS",
+      "detail": "state-changing calls cannot be reported durably governed without receipt creation"
+    },
+    {
+      "name": "t1_dependency_boundary",
+      "status": "PASS",
+      "detail": "T1 mechanical dependency boundary remains intact"
+    },
+    {
+      "name": "focused_t2_product_evidence",
+      "status": "PASS",
+      "detail": ".....                                                                    [100%]"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": "....................                                                     [100%]"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "26 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "journal_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0018-t2-execution-start.md"
+    },
+    {
+      "name": "static_discovery",
+      "status": "FAIL",
+      "detail": "SyntaxError: source code string cannot contain null bytes"
+    },
+    {
+      "name": "discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: journal/receipt table collapse; automatic receipt-to-journal projection; missing receipt failure guard"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "FAIL",
+      "detail": "AssertionError: generated debris remains: ['tests/.runtime (non-empty)']"
+    }
+  ]
+}

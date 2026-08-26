@@ -45,6 +45,66 @@ def _migrate(connection: sqlite3.Connection) -> None:
                 )
                 """
             )
+            connection.execute("PRAGMA user_version = 1")
+        version = 1
+    if version < 2:
+        with connection:
+            connection.execute(
+                """
+                CREATE TABLE operational_artifacts (
+                    artifact_id TEXT PRIMARY KEY,
+                    created_at TEXT NOT NULL,
+                    kind TEXT NOT NULL,
+                    media_type TEXT NOT NULL,
+                    digest TEXT NOT NULL,
+                    body_json TEXT NOT NULL
+                )
+                """
+            )
+            connection.execute(
+                """
+                CREATE TABLE operation_receipts (
+                    receipt_id TEXT PRIMARY KEY,
+                    instance_uuid TEXT NOT NULL REFERENCES instances(instance_uuid),
+                    started_at TEXT NOT NULL,
+                    completed_at TEXT,
+                    client TEXT NOT NULL,
+                    tool_id TEXT NOT NULL,
+                    authority TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    error_code TEXT,
+                    result_ok INTEGER,
+                    exit_code INTEGER,
+                    duration_ms INTEGER,
+                    manifest_digest TEXT,
+                    artifact_id TEXT REFERENCES operational_artifacts(artifact_id)
+                )
+                """
+            )
+            connection.execute(
+                """
+                CREATE TABLE app_journal_entries (
+                    entry_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    created_at TEXT NOT NULL,
+                    entry_type TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    body TEXT NOT NULL
+                )
+                """
+            )
+            connection.execute(
+                """
+                CREATE TABLE app_journal_links (
+                    link_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    created_at TEXT NOT NULL,
+                    entry_id INTEGER NOT NULL REFERENCES app_journal_entries(entry_id)
+                        ON DELETE CASCADE,
+                    target_type TEXT NOT NULL,
+                    target_id TEXT NOT NULL
+                )
+                """
+            )
             connection.execute(f"PRAGMA user_version = {DATABASE_SCHEMA_VERSION}")
 
 
@@ -73,3 +133,14 @@ def bootstrap(context: InstanceContext) -> Path:
     finally:
         connection.close()
     return path
+
+
+def connect(context: InstanceContext) -> sqlite3.Connection:
+    path = database_path(context)
+    connection = _connect(path)
+    try:
+        _migrate(connection)
+    except Exception:
+        connection.close()
+        raise
+    return connection
