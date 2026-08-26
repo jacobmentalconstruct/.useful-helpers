@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **ACTIVE - T1 DECLARED / AWAITING DECLARATION APPROVAL**
+Status: **ACTIVE - T1 DECLARATION SCOPE PARKED / EXECUTE NOT STARTED**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -11,7 +11,7 @@ Charter and are referenced here without redefinition.
 | Tranche | Status | One observable outcome | Preconditions | Advances |
 |---|---|---|---|---|
 | T0 Bootstrap | PARKED | One approved construction system and aligned product authority exist around provisional source. | Operator vision-alignment ruling | Construction ability |
-| T1 Mechanical Hands + Governed Host | DECLARED / AWAITING DECLARATION APPROVAL | Manifest-defined mechanical capabilities run on host-transported context through one contained CLI seam without importing higher projections. | T0 PARKED | P1, P2 |
+| T1 Mechanical Hands + Governed Host | DECLARED / SCOPE APPROVED / EXECUTE NOT STARTED | Manifest-defined mechanical capabilities run on host-transported context through one contained CLI seam without importing higher projections. | T0 PARKED; declaration approved | P1, P2 |
 | T2 Runtime Receipts + Work Memory | PROVISIONAL | Previewed work is reconstructable through distinct operational receipts/evidence while a blank-start App Journal records project decisions and park state. | T1 | P3, P5 |
 | T3 Epistemic Substrate | PROVISIONAL | Resources, versions, observations, evidence, claims, and provenance persist without becoming receipts or journal entries. | T2 | P3 |
 | T4 Awareness | PROVISIONAL | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 | P4 |
@@ -53,10 +53,11 @@ non-goals, completion evidence, risks, and ordered implementation proposal.
 ## T1 declaration record
 
 - Declaration and scope-review submission: `journal/0008-t1-mechanical-host-declaration.md`
+- Operator approval and declaration-scope park: `journal/0009-t1-declaration-scope-park.md`
 
-T1 is declared for operator scope review only. `DECLARED / AWAITING DECLARATION APPROVAL`
-does not authorize EXECUTE. Product implementation may begin only after explicit operator
-approval of entry `0008`.
+Entry `0009` parks the declaration as the approved implementation contract. This does not
+park the T1 tranche outcome, grant P1/P2 credit, or claim implementation evidence. T1
+EXECUTE has not started.
 
 ## Project closure
 

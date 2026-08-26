@@ -2,12 +2,12 @@
 
 This file is a resumability projection, not authority.
 
-- Current tranche: **T1 Mechanical Hands + Governed Host declaration only**
-- Current state: **T1 DECLARED / AWAITING DECLARATION APPROVAL**
-- Operator direction: review T1 declaration before any product implementation
+- Current tranche: **T1 Mechanical Hands + Governed Host**
+- Current state: **DECLARATION SCOPE PARKED / EXECUTE NOT STARTED**
+- Operator direction: declaration approved and parked as the T1 implementation contract
 - Git branch: `main`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0008-t1-mechanical-host-declaration.md`
+- Latest journal position: `0009-t1-declaration-scope-park.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment
 - Product STOP: UNSCORED
@@ -75,8 +75,11 @@ host retains complete instance validation, discovery, authority, containment, pr
 attribution, and result policy.
 
 No product source, test, manifest, or T1 gate implementation changed during declaration.
+Entry `0009` records operator approval and parks entry `0008` as the scope baseline. The
+T1 outcome itself is not PARKED, implemented, verified, or credited.
 
 ## Next entering-builder action
 
-Read entry `0008-t1-mechanical-host-declaration.md` and stop for operator scope review.
-Do not enter EXECUTE or modify product behavior without explicit approval.
+Read entries `0008` and `0009`. T1 is ready to enter EXECUTE under the approved scope,
+but no product behavior has changed yet. The next implementation turn must begin by
+remeasuring source and following the declared gate-first plan.
