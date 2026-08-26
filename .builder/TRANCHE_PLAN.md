@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **ACTIVE - T0 AWAITING_APPROVAL; T1 NOT DECLARED**
+Status: **BETWEEN TRANCHES - T0 PARKED; T1 NOT DECLARED**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -10,7 +10,7 @@ Charter and are referenced here without redefinition.
 
 | Tranche | Status | One observable outcome | Preconditions | Advances |
 |---|---|---|---|---|
-| T0 Bootstrap | AWAITING_APPROVAL | One approved construction system and aligned product authority exist around provisional source. | Operator vision-alignment ruling | Construction ability |
+| T0 Bootstrap | PARKED | One approved construction system and aligned product authority exist around provisional source. | Operator vision-alignment ruling | Construction ability |
 | T1 Mechanical Hands + Governed Host | PROVISIONAL | Manifest-defined mechanical capabilities run on host-transported context through one contained CLI seam without importing higher projections. | T0 terminal disposition | P1, P2 |
 | T2 Runtime Receipts + Work Memory | PROVISIONAL | Previewed work is reconstructable through distinct operational receipts/evidence while a blank-start App Journal records project decisions and park state. | T1 | P3, P5 |
 | T3 Epistemic Substrate | PROVISIONAL | Resources, versions, observations, evidence, claims, and provenance persist without becoming receipts or journal entries. | T2 | P3 |
@@ -30,11 +30,13 @@ outcome only; they do not authorize implementation.
 - Operator approval and terminal park: `journal/0004-t0-park.md`
 - Vision-alignment reopen declaration: `journal/0005-t0-vision-alignment-reopen.md`
 - Current alignment review submission: `journal/0006-t0-vision-alignment-review.md`
+- Operator approval and alignment park: `journal/0007-t0-vision-alignment-park.md`
 
 The operator approved and parked the repaired T0 outcome in entry `0004`, which remains
 historically valid. Later product-boundary understanding reopened T0 narrowly through
-entry `0005`. Entry `0006` submits the aligned authorities with fresh-clone evidence for
-operator approval. T1 remains undeclared.
+entry `0005`. Entry `0006` submitted the aligned authorities with fresh-clone evidence;
+entry `0007` records operator approval and the subsequent PARKED disposition. T1 remains
+undeclared.
 
 ## Product STOP coverage
 

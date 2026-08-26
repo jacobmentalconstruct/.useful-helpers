@@ -10,13 +10,13 @@ rather than defining alternate versions.
 
 ## Construction status
 
-T0 project bootstrap is **AWAITING_APPROVAL after a bounded vision-alignment reopen**.
+T0 project bootstrap and its subsequent vision alignment are **PARKED by operator approval**.
 The source preserved at Git baseline
 `60174bc93ef4a187a0cc7ff848a03b3d8772b804` predates construction governance and is
 **provisional T1 input**. Its behavior and passing tests confer no tranche or product
 acceptance credit until T1 audits them.
 
-The current T0 alignment receipt is
+The approved T0 alignment receipt is
 `.builder/evidence/T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`. T1 has not begun.
 
 Read construction authority in this order:

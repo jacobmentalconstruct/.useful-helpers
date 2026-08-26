@@ -2,14 +2,14 @@
 
 This file is a resumability projection, not authority.
 
-- Current tranche: **T0 vision alignment only**
-- Current state: **T0 AWAITING_APPROVAL; T1 PROVISIONAL AND NOT DECLARED**
-- Operator direction: reconcile product-shape authorities before T1
+- Current tranche: **none open**
+- Current state: **T0 PARKED; T1 PROVISIONAL AND NOT DECLARED**
+- Operator direction: T0 alignment approved; prepare T1 declaration only
 - Git branch: `main`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0006-t0-vision-alignment-review.md`
-- Current T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
-- Parked tranches: none; T0's 2026-08-25 park remains historical but is reopened
+- Latest journal position: `0007-t0-vision-alignment-park.md`
+- Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
+- Parked tranches: T0 Bootstrap, including the subsequent vision alignment
 - Product STOP: UNSCORED
 - Project closure: not eligible
 
@@ -50,8 +50,8 @@ coupling as T1 separability debt; this T0 reopen does not repair product code.
 Fresh-clone gate run `20260826T054142Z-b5ec742a` passed 13/13 against commit
 `356f922150e999ac7fdd5bfb1740255b088525fe`. It verified method/product/state ownership,
 five manifest-owned tools with no forbidden upward imports, and five explicitly
-acknowledged provisional shared-runtime dependencies. The aligned T0 is submitted, not
-parked.
+acknowledged provisional shared-runtime dependencies. Entry `0007` records operator
+approval and PARKED status for this subsequent authority correction.
 
 The operator classifies `/_projectmapper/` as transient file-dump output. It is absent
 and covered by a root-scoped ignore rule; recurrence is routine cleanliness and does not
@@ -63,10 +63,11 @@ T1 Mechanical Hands + Governed Host will audit the provisional tool contracts, s
 runtime, identity, containment, discovery, control plane, CLI, attachment, and fixtures
 before granting them credit. Its intended outcome distinguishes portable mechanical
 capability from Sidecar-hosted governed use through host-resolved context transport. T1
-is not declared and no implementation may begin without operator approval of this
-alignment followed by explicit direction.
+is not declared. The operator has authorized declaration preparation only; no product
+implementation may begin before declaration review and explicit approval.
 
 ## Next entering-builder action
 
-Read entry `0006-t0-vision-alignment-review.md` and stop for operator approval. Do not
-audit, re-home, declare, or implement T1 product behavior.
+Read entry `0007-t0-vision-alignment-park.md`, measure the provisional T1 surfaces, and
+prepare the T1 declaration only. Do not modify product source, tests, manifests, or gate
+implementation before operator review.
