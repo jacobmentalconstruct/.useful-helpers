@@ -12,12 +12,13 @@ Charter and are referenced here without redefinition.
 |---|---|---|---|---|
 | T0 Bootstrap | PARKED | One approved construction system and aligned product authority exist around provisional source. | Operator vision-alignment ruling | Construction ability |
 | T1 Mechanical Hands + Governed Host | PARKED | Manifest-defined mechanical capabilities run on host-transported context through one contained CLI seam without importing higher projections. | T0 PARKED; declaration approved | P1, P2 |
-| T2 Runtime Receipts + Work Memory | DECLARED | Previewed work is reconstructable through distinct operational receipts/evidence while a blank-start App Journal records project decisions and park state. | T1 PARKED; declaration under review | P3, P5 |
+| T2 Runtime Receipts + Work Memory | DECLARED | Governed runtime calls after trusted state ownership produce durable operational receipts/artifacts while a blank-start App Journal records deliberate work memory separately. | T1 PARKED; amended declaration under review | P3 |
 | T3 Epistemic Substrate | PROVISIONAL | Resources, versions, observations, evidence, claims, and provenance persist without becoming receipts or journal entries. | T2 | P3 |
 | T4 Awareness | PROVISIONAL | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 | P4 |
-| T5 Removable MCP Entrance | PROVISIONAL | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T4 | P6 |
-| T6 Domain Truth | PROVISIONAL | Software, mixed records/documents, and empty targets degrade truthfully. | T5 | P7 |
-| T7 Release and STOP | PROVISIONAL | One sealed artifact passes lifecycle, blank-state, update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T6 | P1-P8 |
+| T5 Governed Mutation Loop | PROVISIONAL | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 | P5 |
+| T6 Removable MCP Entrance | PROVISIONAL | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 | P6 |
+| T7 Domain Truth | PROVISIONAL | Software, mixed records/documents, and empty targets degrade truthfully. | T6 | P7 |
+| T8 Release and STOP | PROVISIONAL | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 | P1-P8 |
 
 Tranche detail is declared immediately before work. Future rows state dependency and
 outcome only; they do not authorize implementation.
@@ -77,20 +78,24 @@ credit while leaving P3-P8 UNSCORED.
 ## T2 synopsis
 
 T2 Runtime Receipts + Work Memory is DECLARED for operator review. The sequence outcome
-above remains the Plan-owned tranche property; entry `0016` owns its measured starting
-state, scope, non-goals, completion evidence, risks, and ordered implementation plan.
-The outcome must add durable runtime receipts/evidence and a clean blank-start App
-Journal without collapsing into construction history, T3 epistemic substrate, or T4
-awareness.
+above remains the Plan-owned tranche property; entry `0016` owns the historical initial
+declaration, and entry `0017` amends its scope before implementation. The amended outcome
+must add durable runtime receipts/artifacts and a clean blank-start App Journal without
+collapsing into construction history, T3 epistemic substrate, T4 awareness, or the later
+T5 governed mutation loop.
 
 ## T2 declaration record
 
 - Declaration and scope-review submission:
   `journal/0016-t2-runtime-receipts-work-memory-declaration.md`
+- Scope amendment and replacement review submission:
+  `journal/0017-t2-declaration-scope-amendment.md`
 
 Entry `0016` does not authorize implementation, create the T2 gate, change product
-source, or grant P3/P5 credit. Operator approval is required before T2 can enter
-IMPLEMENTING.
+source, or grant product credit. Entry `0017` narrows T2 by moving preview-first mutation,
+approval binding, stale-preview refusal, measured mutation, and target-native
+verification to T5, and compatible update/removal proof to T8. Operator approval is
+required before T2 can enter IMPLEMENTING.
 
 ## Project closure
 
