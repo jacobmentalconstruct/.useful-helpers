@@ -6,7 +6,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-from . import app_journal, registry, runtime_records, storage, substrate
+from . import app_journal, awareness, registry, runtime_records, storage, substrate
 from .control import ControlPlane
 from .instance import InstanceError, load
 
@@ -93,6 +93,26 @@ def _parser() -> argparse.ArgumentParser:
     claim_read.add_argument("claim_id")
     trace = substrate_commands.add_parser("trace")
     trace.add_argument("handle")
+
+    awareness_parser = commands.add_parser("awareness")
+    awareness_commands = awareness_parser.add_subparsers(
+        dest="awareness_command",
+        required=True,
+    )
+    awareness_commands.add_parser("status")
+    awareness_commands.add_parser("refresh")
+    awareness_commands.add_parser("current")
+    awareness_revisions = awareness_commands.add_parser("revisions")
+    awareness_revision_commands = awareness_revisions.add_subparsers(
+        dest="awareness_revision_command",
+        required=True,
+    )
+    awareness_revision_list = awareness_revision_commands.add_parser("list")
+    awareness_revision_list.add_argument("--limit", type=int, default=50)
+    awareness_revision_read = awareness_revision_commands.add_parser("read")
+    awareness_revision_read.add_argument("awareness_id")
+    awareness_drill = awareness_commands.add_parser("drill")
+    awareness_drill.add_argument("item_id")
     return parser
 
 
@@ -239,6 +259,26 @@ def main(instance_root: str | Path, argv: list[str] | None = None) -> int:
                     }
             else:
                 response = {"ok": True, "trace": substrate.trace(context, arguments.handle)}
+        elif arguments.command == "awareness":
+            if arguments.awareness_command == "status":
+                response = awareness.status(context)
+            elif arguments.awareness_command == "refresh":
+                response = awareness.refresh(context)
+            elif arguments.awareness_command == "current":
+                response = awareness.current(context)
+            elif arguments.awareness_command == "revisions":
+                if arguments.awareness_revision_command == "list":
+                    response = {
+                        "ok": True,
+                        "revisions": awareness.list_revisions(context, arguments.limit),
+                    }
+                else:
+                    response = {
+                        "ok": True,
+                        "revision": awareness.read_revision(context, arguments.awareness_id),
+                    }
+            else:
+                response = {"ok": True, "drill": awareness.drill(context, arguments.item_id)}
         else:
             response = {"ok": False, "error": {"code": "unknown_command"}}
     except (
@@ -248,6 +288,7 @@ def main(instance_root: str | Path, argv: list[str] | None = None) -> int:
         runtime_records.RecordError,
         app_journal.JournalError,
         substrate.SubstrateError,
+        awareness.AwarenessError,
     ) as exc:
         _emit(
             {

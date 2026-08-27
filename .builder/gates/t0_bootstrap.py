@@ -345,6 +345,8 @@ def _provisional_status() -> str:
         "T2 PARKED IMPLEMENTATION MAP",
         "T3 IMPLEMENTATION REVIEW CANDIDATE",
         "T3 PARKED IMPLEMENTATION MAP",
+        "T4 IMPLEMENTATION REVIEW CANDIDATE",
+        "T4 PARKED IMPLEMENTATION MAP",
     )
     if not any(status in architecture for status in allowed_statuses):
         raise AssertionError("implementation architecture has no recognized lifecycle status")

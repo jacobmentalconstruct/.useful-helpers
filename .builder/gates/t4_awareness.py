@@ -17,6 +17,7 @@ from typing import Callable
 
 ROOT = Path(__file__).resolve().parents[2]
 RUNTIME_FIXTURE_ROOT = (ROOT / "tests/.runtime").resolve()
+T4_TABLES = {"awareness_revisions", "awareness_items"}
 T3_TABLES = {
     "resources",
     "resource_versions",
@@ -24,14 +25,6 @@ T3_TABLES = {
     "epistemic_evidence",
     "claims",
     "relations",
-}
-FORBIDDEN_T3_TERMS = {
-    "awareness_revisions",
-    "embeddings",
-    "vector_index",
-    "mcp",
-    "gui",
-    "cartridges",
 }
 
 
@@ -71,6 +64,8 @@ def _imports(tree: ast.AST) -> list[str]:
             imported.extend(alias.name for alias in node.names)
         elif isinstance(node, ast.ImportFrom) and node.module:
             imported.extend(f"{node.module}.{alias.name}" for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            imported.extend(alias.name for alias in node.names)
     return imported
 
 
@@ -78,106 +73,96 @@ def _storage_tables(source: str) -> list[str]:
     return re.findall(r"CREATE TABLE\s+([a-z_]+)", source)
 
 
-def _assert_t3_schema(source: str) -> None:
-    tables = _storage_tables(source)
-    missing = sorted(T3_TABLES - set(tables))
-    if missing:
-        raise AssertionError(f"T3 substrate tables missing: {missing}")
-    duplicates = sorted(table for table in set(tables) if tables.count(table) > 1)
-    if duplicates:
-        raise AssertionError(f"substrate tables are collapsed or duplicated: {duplicates}")
-    forbidden = sorted(term for term in FORBIDDEN_T3_TERMS if f"CREATE TABLE {term}" in source)
-    if forbidden:
-        raise AssertionError(f"T3 storage declares deferred projection/domain tables: {forbidden}")
-
-
-def _t3_schema() -> str:
+def _t4_schema() -> str:
     storage_source = (ROOT / "product/core/storage.py").read_text(encoding="utf-8")
     constants_source = (ROOT / "product/core/constants.py").read_text(encoding="utf-8")
-    if "DATABASE_SCHEMA_VERSION = 3" not in constants_source:
-        raise AssertionError("database schema version was not advanced to 3")
-    _assert_t3_schema(storage_source)
-    return "schema version 3 declares distinct resource, evidence, claim, and relation tables"
+    if "DATABASE_SCHEMA_VERSION = 4" not in constants_source:
+        raise AssertionError("database schema version was not advanced to 4")
+    tables = _storage_tables(storage_source)
+    missing = sorted(T4_TABLES - set(tables))
+    if missing:
+        raise AssertionError(f"T4 awareness tables missing: {missing}")
+    for table in T4_TABLES:
+        if tables.count(table) != 1:
+            raise AssertionError(f"T4 table is missing or duplicated: {table}")
+    return "schema version 4 declares distinct awareness revision and item tables"
 
 
-def _assert_substrate_owner(source: str) -> None:
+def _awareness_owner() -> str:
+    source_path = ROOT / "product/core/awareness.py"
+    source = source_path.read_text(encoding="utf-8")
     required = [
         "def refresh(",
-        "def list_resources(",
-        "def read_resource(",
-        "def list_versions(",
-        "def list_observations(",
-        "def read_evidence(",
-        "def list_claims(",
-        "def trace(",
-        "epistemic_evidence",
-        "resource_versions",
-        "derived_from",
-        "supported_by",
-        "concerns",
+        "def current(",
+        "def list_revisions(",
+        "def read_revision(",
+        "def drill(",
+        "awareness:",
+        "basis_status",
+        "unknown",
+        "stale",
+        "substrate.",
     ]
     missing = [term for term in required if term not in source]
     if missing:
-        raise AssertionError(f"substrate owner lacks required operations/relations: {missing}")
-    forbidden = [term for term in ("operational_artifacts", "app_journal_entries", ".builder")]
+        raise AssertionError(f"awareness owner lacks required behavior: {missing}")
+    forbidden = ["operational_artifacts", "app_journal_entries", "operation_receipts"]
     leaked = [term for term in forbidden if term in source]
     if leaked:
-        raise AssertionError(f"substrate owner writes or references non-epistemic owners: {leaked}")
-
-
-def _substrate_owner() -> str:
-    source = (ROOT / "product/core/substrate.py").read_text(encoding="utf-8")
-    _assert_substrate_owner(source)
-    return "substrate owner exposes refresh, lookup, immutable evidence, claims, and trace"
+        raise AssertionError(f"awareness owner collapsed into T2/App Journal tables: {leaked}")
+    for table in T3_TABLES:
+        if re.search(rf"\b(?:FROM|JOIN|INTO|UPDATE|DELETE FROM)\s+{table}\b", source, re.I):
+            raise AssertionError(f"awareness owner directly queries T3-owned table: {table}")
+    tree = ast.parse(source, filename=str(source_path))
+    imports = _imports(tree)
+    if (
+        "substrate" not in imports
+        and "core.substrate" not in imports
+        and not any(item.startswith("product.core.substrate") for item in imports)
+    ):
+        raise AssertionError("awareness owner does not consume the substrate owner")
+    return "awareness owner projects through substrate APIs and owns only awareness records"
 
 
 def _cli_entrance() -> str:
     source = (ROOT / "product/core/cli.py").read_text(encoding="utf-8")
     required = [
-        'commands.add_parser("substrate")',
-        'substrate_commands.add_parser("refresh")',
-        'substrate_commands.add_parser("resources")',
-        'substrate_commands.add_parser("versions")',
-        'substrate_commands.add_parser("observations")',
-        'substrate_commands.add_parser("evidence")',
-        'substrate_commands.add_parser("claims")',
-        'substrate_commands.add_parser("trace")',
+        'commands.add_parser("awareness")',
+        'awareness_commands.add_parser("status")',
+        'awareness_commands.add_parser("refresh")',
+        'awareness_commands.add_parser("current")',
+        'awareness_commands.add_parser("revisions")',
+        'awareness_commands.add_parser("drill")',
     ]
     missing = [term for term in required if term not in source]
     if missing:
-        raise AssertionError(f"substrate CLI entrance missing: {missing}")
-    return "CLI exposes minimal substrate refresh and inspection commands"
+        raise AssertionError(f"awareness CLI entrance missing: {missing}")
+    return "CLI exposes minimal awareness status, refresh, current, revisions, and drill commands"
 
 
-def _t1_dependency_boundary() -> str:
-    runtime_source = ROOT / "product/core/tool_runtime.py"
-    runtime_tree = ast.parse(runtime_source.read_text(encoding="utf-8"), filename=str(runtime_source))
-    runtime_imports = [
-        module for module in _imports(runtime_tree) if module == "core" or module.startswith("core.")
-    ]
-    runtime_relative = [
-        node for node in ast.walk(runtime_tree) if isinstance(node, ast.ImportFrom) and node.level
-    ]
-    violations = []
-    if runtime_imports or runtime_relative:
-        violations.append("core.tool_runtime imports higher core subsystem")
-    for source in sorted((ROOT / "product/tools").glob("*/tool.py")):
+def _lower_layers_do_not_import_awareness() -> str:
+    violations: list[str] = []
+    for source in sorted((ROOT / "product").rglob("*.py")):
+        if source.name == "awareness.py":
+            continue
         tree = ast.parse(source.read_text(encoding="utf-8"), filename=str(source))
-        for imported in _imports(tree):
-            if (
-                imported == "core"
-                or imported.startswith("core.")
-                and imported != "core.tool_runtime"
-                and not imported.startswith("core.tool_runtime.")
-            ):
-                violations.append(f"{source.relative_to(ROOT).as_posix()} imports {imported}")
+        imports = _imports(tree)
+        if source.name == "cli.py":
+            imports = [item for item in imports if item != "core.awareness"]
+        leaked = [
+            item
+            for item in imports
+            if item == "core.awareness" or item.startswith("core.awareness.")
+        ]
+        if leaked:
+            violations.append(f"{source.relative_to(ROOT).as_posix()} imports {leaked}")
     if violations:
         raise AssertionError("; ".join(violations))
-    return "T1 mechanical dependency boundary remains intact"
+    return "lower product layers do not depend upward on awareness"
 
 
-def _focused_t3_product_evidence() -> str:
-    process = _run([sys.executable, "-m", "pytest", "tests/test_t3_epistemic_substrate.py", "-q"])
+def _focused_t4_product_evidence() -> str:
+    process = _run([sys.executable, "-m", "pytest", "tests/test_t4_awareness.py", "-q"])
     if process.returncode:
         raise AssertionError(process.stdout.strip() or process.stderr.strip())
     return process.stdout.strip().splitlines()[-1]
@@ -202,25 +187,17 @@ def _product_boundary() -> str:
     return f"{scanned} product modules remain independent of factory, tests, and construction"
 
 
-def _no_t4_or_out_of_scope_surfaces() -> str:
-    plan = (ROOT / ".builder/TRANCHE_PLAN.md").read_text(encoding="utf-8")
-    t4_has_started = "T4 Awareness | PROVISIONAL" not in plan
-    source_paths = [
-        ROOT / "product/core/storage.py",
-        ROOT / "product/core/substrate.py",
-        ROOT / "product/core/cli.py",
-    ]
+def _no_out_of_scope_surfaces() -> str:
+    forbidden = ("mcp", "gui", "embedding", "vector", "preview", "approve", "verification_workflow")
     violations: list[str] = []
-    for source in source_paths:
+    for source in [ROOT / "product/core/awareness.py", ROOT / "product/core/storage.py"]:
         text = source.read_text(encoding="utf-8").lower()
-        for term in FORBIDDEN_T3_TERMS:
-            if t4_has_started and term == "awareness_revisions":
-                continue
+        for term in forbidden:
             if term in text:
                 violations.append(f"{source.relative_to(ROOT).as_posix()} mentions {term}")
     if violations:
         raise AssertionError("; ".join(violations))
-    return "T3 introduces no awareness, vector, MCP, GUI, or cartridge authority"
+    return "T4 introduces no MCP, GUI, vector, local-AI, cartridge, or mutation-governance surface"
 
 
 def _journal_continuity() -> str:
@@ -228,8 +205,8 @@ def _journal_continuity() -> str:
     numbers = [int(name.split("-", 1)[0]) for name in entries]
     if numbers != list(range(1, len(numbers) + 1)):
         raise AssertionError(f"journal sequence is not contiguous: {numbers}")
-    if "0023-t3-execution-start.md" not in entries:
-        raise AssertionError("T3 execution start is not recorded")
+    if "0028-t4-execution-start.md" not in entries:
+        raise AssertionError("T4 execution start is not recorded")
     return f"journal is contiguous through {entries[-1]}"
 
 
@@ -251,50 +228,33 @@ def _static_discovery() -> str:
     return f"Ruff passed and {parsed} Python sources parsed"
 
 
-def _assert_no_receipt_journal_collapse(substrate_source: str) -> None:
-    forbidden = ("operational_artifacts", "operation_receipts", "app_journal_entries")
-    leaked = [term for term in forbidden if term in substrate_source]
-    if leaked:
-        raise AssertionError(f"substrate collapsed into non-epistemic tables: {leaked}")
-
-
-def _assert_claim_provenance(substrate_source: str) -> None:
-    claim_index = substrate_source.index("INSERT INTO claims")
-    derived_index = substrate_source.find('predicate="derived_from"', claim_index)
-    if derived_index == -1:
-        raise AssertionError("claims can be inserted without derived_from provenance")
-
-
-def _assert_version_immutability(substrate_source: str) -> None:
-    if "INSERT OR IGNORE INTO resource_versions" not in substrate_source:
-        raise AssertionError("resource versions are not immutable append/ignore records")
-    if "UPDATE resource_versions" in substrate_source:
-        raise AssertionError("resource versions can be overwritten")
+def _assert_awareness_owner(source: str) -> None:
+    if "UPDATE awareness_revisions" in source:
+        raise AssertionError("awareness revisions can be overwritten")
+    if "awareness:" not in source or "revision:" in source:
+        raise AssertionError("awareness does not use one canonical awareness: handle")
+    for table in T3_TABLES:
+        if re.search(rf"\b(?:FROM|JOIN|INTO|UPDATE|DELETE FROM)\s+{table}\b", source, re.I):
+            raise AssertionError(f"awareness directly queries T3 table {table}")
+    if "no substrate observations exist" not in source:
+        raise AssertionError("awareness can fabricate rich orientation without substrate basis")
+    if '"stale"' not in source:
+        raise AssertionError("awareness lacks stale freshness path")
 
 
 def _discrimination_witness() -> str:
-    storage_source = (ROOT / "product/core/storage.py").read_text(encoding="utf-8")
-    substrate_source = (ROOT / "product/core/substrate.py").read_text(encoding="utf-8")
-
-    collapsed_storage = storage_source.replace("resource_versions", "resources")
-    operational_evidence = substrate_source.replace("epistemic_evidence", "operational_artifacts")
-    no_derived_claim = substrate_source.replace('predicate="derived_from"', 'predicate="related_to"')
-    mutable_versions = substrate_source.replace("INSERT OR IGNORE INTO resource_versions", "UPDATE resource_versions")
-    awareness_storage = storage_source + "\nCREATE TABLE awareness_revisions (id TEXT)\n"
-
+    source = (ROOT / "product/core/awareness.py").read_text(encoding="utf-8")
     witnessed: list[str] = []
-    for label, function in (
-        ("resource/version table collapse", lambda: _assert_t3_schema(collapsed_storage)),
-        (
-            "epistemic evidence stored as operational artifact",
-            lambda: _assert_no_receipt_journal_collapse(operational_evidence),
-        ),
-        ("claim without derived_from provenance", lambda: _assert_claim_provenance(no_derived_claim)),
-        ("mutable resource versions", lambda: _assert_version_immutability(mutable_versions)),
-        ("awareness table introduced in T3", lambda: _assert_t3_schema(awareness_storage)),
-    ):
+    mutations = {
+        "mutable awareness revision": source + "\n# UPDATE awareness_revisions\n",
+        "direct T3 table query": source + "\n# SELECT * FROM resources\n",
+        "generic revision handle": source.replace("awareness:", "revision:"),
+        "missing unknown-basis guard": source.replace("no substrate observations exist", "substrate observed rich target"),
+        "missing stale freshness": source.replace('"stale"', '"current"'),
+    }
+    for label, mutated in mutations.items():
         try:
-            function()
+            _assert_awareness_owner(mutated)
         except AssertionError:
             witnessed.append(label)
         else:
@@ -344,11 +304,11 @@ def _source_digest() -> str:
 
 
 def _arguments() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the authoritative T3 substrate gate")
+    parser = argparse.ArgumentParser(description="Run the authoritative T4 awareness gate")
     parser.add_argument(
         "--evidence-root",
         type=Path,
-        default=ROOT / ".builder/evidence/T3",
+        default=ROOT / ".builder/evidence/T4",
         help="directory beneath which a unique immutable run directory is created",
     )
     return parser.parse_args()
@@ -357,14 +317,14 @@ def _arguments() -> argparse.Namespace:
 def main() -> int:
     arguments = _arguments()
     checks = [
-        _check("t3_schema", _t3_schema),
-        _check("substrate_owner", _substrate_owner),
+        _check("t4_schema", _t4_schema),
+        _check("awareness_owner", _awareness_owner),
         _check("cli_entrance", _cli_entrance),
-        _check("t1_dependency_boundary", _t1_dependency_boundary),
-        _check("focused_t3_product_evidence", _focused_t3_product_evidence),
+        _check("lower_layers_do_not_import_awareness", _lower_layers_do_not_import_awareness),
+        _check("focused_t4_product_evidence", _focused_t4_product_evidence),
         _check("canonical_product_regression", _canonical_product_regression),
         _check("positive_product_boundary", _product_boundary),
-        _check("no_t4_or_out_of_scope_surfaces", _no_t4_or_out_of_scope_surfaces),
+        _check("no_out_of_scope_surfaces", _no_out_of_scope_surfaces),
         _check("journal_continuity", _journal_continuity),
         _check("static_discovery", _static_discovery),
         _check("discrimination_witness", _discrimination_witness),
@@ -375,10 +335,10 @@ def main() -> int:
     run_id = recorded.strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:8]
     evidence_directory = arguments.evidence_root.resolve() / run_id
     evidence_directory.mkdir(parents=True, exist_ok=False)
-    evidence_path = evidence_directory / "t3-gate.json"
+    evidence_path = evidence_directory / "t4-gate.json"
     evidence = {
         "schema_version": 1,
-        "gate": "T3-epistemic-substrate",
+        "gate": "T4-awareness",
         "status": "PASS" if passed else "FAIL",
         "recorded_at": recorded.isoformat(),
         "run_id": run_id,

@@ -188,6 +188,39 @@ def _migrate(connection: sqlite3.Connection) -> None:
                 """
             )
             connection.execute(f"PRAGMA user_version = {DATABASE_SCHEMA_VERSION}")
+        version = 3
+    if version < 4:
+        with connection:
+            connection.execute(
+                """
+                CREATE TABLE awareness_revisions (
+                    awareness_id TEXT PRIMARY KEY,
+                    created_at TEXT NOT NULL,
+                    basis_status TEXT NOT NULL,
+                    basis_signature TEXT,
+                    target_signature TEXT,
+                    summary_json TEXT NOT NULL,
+                    limitations_json TEXT NOT NULL,
+                    unknowns_json TEXT NOT NULL,
+                    source_handles_json TEXT NOT NULL
+                )
+                """
+            )
+            connection.execute(
+                """
+                CREATE TABLE awareness_items (
+                    item_id TEXT PRIMARY KEY,
+                    awareness_id TEXT NOT NULL REFERENCES awareness_revisions(awareness_id),
+                    item_type TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    statement TEXT NOT NULL,
+                    priority INTEGER NOT NULL,
+                    source_handles_json TEXT NOT NULL,
+                    provenance_json TEXT NOT NULL
+                )
+                """
+            )
+            connection.execute(f"PRAGMA user_version = {DATABASE_SCHEMA_VERSION}")
 
 
 def _instances_table_exists(connection: sqlite3.Connection) -> bool:
