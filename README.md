@@ -33,9 +33,10 @@ T3 Epistemic Substrate is **PARKED by operator approval** in
 T3 epistemic-substrate outcomes. Product STOP remains incomplete because P4-P8 remain
 UNSCORED.
 
-T4 Awareness is declared for operator review in
-`.builder/journal/0026-t4-awareness-declaration.md`. No T4 implementation has begun, and
-P4 receives no credit until a later implementation is approved and parked.
+T4 Awareness is implementing under the amended declaration in
+`.builder/journal/0027-t4-declaration-boundary-amendment.md` and execution start
+`.builder/journal/0028-t4-execution-start.md`. P4 receives no credit until a later
+implementation is approved and parked.
 
 Read construction authority in this order:
 

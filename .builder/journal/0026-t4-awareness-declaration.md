@@ -85,10 +85,12 @@ Record ownership is:
   or `unknown`, but must not silently pass when no basis exists.
 - **Limitations and unknowns:** explicit projection facts. Empty or thin substrate
   evidence yields thin awareness; unobserved material remains unknown, not absent.
-- **Handles:** awareness exposes and verifies handles owned by their source layers, such
-  as `path:...`, `version:...`, `observation:...`, `evidence:...`, `claim:...`,
-  `revision:...`, `operation:...`, and `journal:...` where applicable. T4 may introduce
-  `awareness:<revision-id>` or `revision:<digest>` handles for its own records.
+- **Handles:** initial awareness directly exposes and verifies T3-owned handles:
+  `path:...`, `version:...`, `observation:...`, `evidence:...`, `claim:...`, and
+  provenance relation references. T2 receipt or App Journal information is reachable
+  only if explicitly mediated by an owning provenance layer rather than independently
+  consumed by T4. T4 introduces one canonical `awareness:<digest-or-id>` handle form for
+  its own records.
 
 Awareness does not own resources, versions, observations, epistemic evidence, claims,
 relations, operational receipts, operational artifacts, App Journal entries, mechanical
@@ -106,10 +108,14 @@ CLI awareness command
   -> immutable awareness revision / compact projection
 ```
 
-Awareness may query T3 substrate records through product-owned APIs or verified storage.
-It must not scan the target independently in a way that bypasses the substrate owner.
-It may compute a cheap freshness signature from host-known target metadata if needed, but
-freshness must remain a projection status, not a replacement substrate observation.
+Awareness may query T3 substrate records only through `product/core/substrate.py` APIs
+and handles. It may use verified storage for awareness-owned tables. It must not scan
+the target independently in a way that bypasses the substrate owner. It may compute a
+cheap freshness signature from host-known target metadata if needed, but freshness must
+remain a projection status, not a replacement substrate observation. A direct target
+signature used by T4 is an ephemeral invalidation/freshness signal only. It must not
+create awareness findings or substrate facts, and lack of a comparable basis yields
+`unknown`.
 
 The CLI remains an entrance. MCP remains absent and removable. Mechanical tools and App
 Journal semantics must not import or depend on awareness.
