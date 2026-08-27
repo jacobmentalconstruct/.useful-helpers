@@ -31,7 +31,11 @@ T3 Epistemic Substrate is **PARKED by operator approval** in
 `.builder/journal/0025-t3-park.md`, supported by authoritative T3 gate run
 `20260827T103210Z-7c9533eb`. P3 is credited for the combined parked T2 runtime-memory and
 T3 epistemic-substrate outcomes. Product STOP remains incomplete because P4-P8 remain
-UNSCORED, and T4 has not begun.
+UNSCORED.
+
+T4 Awareness is declared for operator review in
+`.builder/journal/0026-t4-awareness-declaration.md`. No T4 implementation has begun, and
+P4 receives no credit until a later implementation is approved and parked.
 
 Read construction authority in this order:
 

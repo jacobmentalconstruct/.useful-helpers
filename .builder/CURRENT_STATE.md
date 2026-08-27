@@ -2,12 +2,12 @@
 
 This file is a resumability projection, not authority.
 
-- Current tranche: **T3 Epistemic Substrate**
-- Current state: **PARKED**
-- Operator direction: T3 approved and parked; do not begin T4 until explicitly instructed
+- Current tranche: **T4 Awareness**
+- Current state: **DECLARED**
+- Operator direction: review the T4 declaration; do not implement T4 until explicitly approved
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0025-t3-park.md`
+- Latest journal position: `0026-t4-awareness-declaration.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate
 - Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4-P8 UNSCORED
@@ -170,5 +170,6 @@ substrate outcomes. T4 has not begun.
 
 ## Next entering-builder action
 
-Await explicit operator direction for T4 declaration or other bounded work. Do not begin
-T4 implementation.
+Await operator review of the T4 declaration in entry `0026`. If approved, enter
+IMPLEMENTING under that declaration. Do not implement T4 or begin T5 without explicit
+operator approval.
