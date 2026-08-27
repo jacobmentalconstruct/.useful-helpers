@@ -83,6 +83,10 @@ def _resource_id(handle: str) -> str:
     return handle
 
 
+def _basis_id(signature: str) -> str:
+    return f"basis:{signature[:32]}"
+
+
 def _version_id(handle: str, evidence_id: str, mtime_ns: int | None) -> str:
     digest = hashlib.sha256(f"{handle}\0{evidence_id}\0{mtime_ns}".encode("utf-8")).hexdigest()
     return f"version:{digest[:32]}"
@@ -156,6 +160,21 @@ def _resource_records(context: InstanceContext) -> list[dict]:
     return records
 
 
+def _resource_signature(records: list[dict]) -> str:
+    payload = [
+        {
+            "handle": record["handle"],
+            "kind": record["kind"],
+            "path": record["path"],
+            "size_bytes": record.get("size_bytes"),
+            "mtime_ns": record.get("mtime_ns"),
+            "content_hash": record.get("content_hash"),
+        }
+        for record in sorted(records, key=lambda item: item["handle"])
+    ]
+    return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
+
+
 def _inside_or_equal(candidate: Path, root: Path) -> bool:
     try:
         candidate.relative_to(root)
@@ -191,6 +210,114 @@ def status(context: InstanceContext) -> dict:
     finally:
         connection.close()
     return {"ok": True, "counts": counts}
+
+
+def target_signature(context: InstanceContext) -> str:
+    return _resource_signature(_resource_records(context))
+
+
+def current_awareness_basis(context: InstanceContext) -> dict:
+    connection = storage.connect(context)
+    try:
+        inventory = connection.execute(
+            """
+            SELECT rowid AS row_number, observation_id, producer, observed_at, subject_handle,
+                   observation_type, data_json, evidence_id
+            FROM observations
+            WHERE producer = 'substrate.resource_inventory'
+              AND subject_handle = 'path:.'
+              AND observation_type = 'resource_inventory'
+            ORDER BY rowid DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        if inventory is None:
+            return {
+                "status": "missing",
+                "basis_id": None,
+                "basis_signature": None,
+                "observed_at": None,
+                "target_signature": None,
+                "resource_handles": [],
+                "resources": [],
+                "claims": [],
+                "observations": [],
+                "evidence_handles": [],
+                "provenance_handles": [],
+                "source_handles": [],
+            }
+
+        inventory_document = _decode(inventory)
+        inventory_evidence = read_evidence(context, inventory_document["evidence_id"])
+        resource_handles = list(inventory_evidence["body"].get("handles", []))
+        current_observations = _current_refresh_observations(
+            connection,
+            inventory_row=int(inventory["row_number"]),
+            inventory_observation_id=inventory_document["observation_id"],
+            resource_handles=resource_handles,
+        )
+        resources = _current_refresh_resources(connection, resource_handles)
+        claims = _claims_for_observations(
+            connection,
+            [item["observation_id"] for item in current_observations],
+        )
+        relations = _relations_for_basis(
+            connection,
+            observation_ids=[item["observation_id"] for item in current_observations],
+            claim_ids=[item["claim_id"] for item in claims],
+        )
+        resource_records = [
+            item["data"]
+            for item in current_observations
+            if item["observation_type"] in {"file_hash", "resource_seen"}
+        ]
+        observed_target_signature = _resource_signature(resource_records)
+        evidence_handles = sorted(
+            {
+                inventory_document["evidence_id"],
+                *[item["evidence_id"] for item in current_observations],
+                *[
+                    relation["object_id"]
+                    for relation in relations
+                    if relation["object_type"] == "evidence"
+                ],
+            }
+        )
+        provenance_handles = [f"relation:{item['relation_id']}" for item in relations]
+        source_handles = [
+            *resource_handles,
+            *[item["latest_version_id"] for item in resources if item.get("latest_version_id")],
+            *[item["observation_id"] for item in current_observations],
+            *evidence_handles,
+            *[item["claim_id"] for item in claims],
+            *provenance_handles,
+        ]
+        signature = _basis_signature(
+            observed_at=inventory_document["observed_at"],
+            inventory_observation_id=inventory_document["observation_id"],
+            target_signature=observed_target_signature,
+            resources=resources,
+            claims=claims,
+            observations=current_observations,
+            evidence_handles=evidence_handles,
+            provenance_handles=provenance_handles,
+        )
+    finally:
+        connection.close()
+    return {
+        "status": "observed",
+        "basis_id": _basis_id(signature),
+        "basis_signature": signature,
+        "observed_at": inventory_document["observed_at"],
+        "target_signature": observed_target_signature,
+        "resource_handles": resource_handles,
+        "resources": resources,
+        "claims": claims,
+        "observations": current_observations,
+        "evidence_handles": evidence_handles,
+        "provenance_handles": provenance_handles,
+        "source_handles": source_handles,
+    }
 
 
 def refresh(context: InstanceContext) -> dict:
@@ -457,6 +584,7 @@ def refresh(context: InstanceContext) -> dict:
             "observation_count": len(records) + 1,
             "claim_count": claim_count,
             "digest": last_digest,
+            "target_signature": _resource_signature(records),
             "limitations": [],
             "unknown": "anything not observed by this refresh remains unknown",
         },
@@ -694,6 +822,153 @@ def _load_node(
     if row is None:
         raise SubstrateError(f"trace node not found: {identifier}")
     return _row_to_dict(row)
+
+
+def _current_refresh_observations(
+    connection: sqlite3.Connection,
+    *,
+    inventory_row: int,
+    inventory_observation_id: str,
+    resource_handles: list[str],
+) -> list[dict]:
+    rows = connection.execute(
+        """
+        SELECT observation_id, producer, observed_at, subject_handle, observation_type,
+               data_json, evidence_id
+        FROM observations
+        WHERE rowid >= ?
+          AND producer = 'substrate.resource_inventory'
+        ORDER BY rowid
+        """,
+        (inventory_row,),
+    ).fetchall()
+    allowed_subjects = set(resource_handles)
+    observations: list[dict] = []
+    for row in rows:
+        document = _decode(row)
+        if document["observation_id"] == inventory_observation_id:
+            observations.append(document)
+        elif document["subject_handle"] in allowed_subjects:
+            observations.append(document)
+    return observations
+
+
+def _current_refresh_resources(
+    connection: sqlite3.Connection,
+    resource_handles: list[str],
+) -> list[dict]:
+    if not resource_handles:
+        return []
+    placeholders = ", ".join("?" for _ in resource_handles)
+    rows = connection.execute(
+        f"""
+        SELECT resource_id, handle, path, kind, first_seen_at, last_seen_at,
+               latest_version_id
+        FROM resources
+        WHERE handle IN ({placeholders})
+        ORDER BY path
+        """,
+        tuple(resource_handles),
+    ).fetchall()
+    return [_row_to_dict(row) for row in rows]
+
+
+def _claims_for_observations(
+    connection: sqlite3.Connection,
+    observation_ids: list[str],
+) -> list[dict]:
+    if not observation_ids:
+        return []
+    placeholders = ", ".join("?" for _ in observation_ids)
+    rows = connection.execute(
+        f"""
+        SELECT DISTINCT claims.claim_id, claims.created_at, claims.claim_type,
+               claims.statement, claims.derivation_method, claims.confidence,
+               claims.data_json, claims.rowid
+        FROM claims
+        JOIN relations ON relations.subject_type = 'claim'
+          AND relations.subject_id = claims.claim_id
+          AND relations.predicate = 'derived_from'
+          AND relations.object_type = 'observation'
+        WHERE relations.object_id IN ({placeholders})
+        ORDER BY claims.rowid
+        """,
+        tuple(observation_ids),
+    ).fetchall()
+    decoded = []
+    for row in rows:
+        document = _decode(row)
+        document.pop("rowid", None)
+        decoded.append(document)
+    return decoded
+
+
+def _relations_for_basis(
+    connection: sqlite3.Connection,
+    *,
+    observation_ids: list[str],
+    claim_ids: list[str],
+) -> list[dict]:
+    identifiers = [*observation_ids, *claim_ids]
+    if not identifiers:
+        return []
+    placeholders = ", ".join("?" for _ in identifiers)
+    rows = connection.execute(
+        f"""
+        SELECT relation_id, created_at, subject_type, subject_id, predicate,
+               object_type, object_id
+        FROM relations
+        WHERE subject_id IN ({placeholders})
+        ORDER BY relation_id
+        """,
+        tuple(identifiers),
+    ).fetchall()
+    return [_row_to_dict(row) for row in rows]
+
+
+def _basis_signature(
+    *,
+    observed_at: str,
+    inventory_observation_id: str,
+    target_signature: str,
+    resources: list[dict],
+    claims: list[dict],
+    observations: list[dict],
+    evidence_handles: list[str],
+    provenance_handles: list[str],
+) -> str:
+    payload = {
+        "observed_at": observed_at,
+        "inventory_observation_id": inventory_observation_id,
+        "target_signature": target_signature,
+        "resources": [
+            {
+                "handle": item["handle"],
+                "latest_version_id": item.get("latest_version_id"),
+            }
+            for item in resources
+        ],
+        "claims": [
+            {
+                "claim_id": item["claim_id"],
+                "claim_type": item["claim_type"],
+                "statement": item["statement"],
+            }
+            for item in claims
+        ],
+        "observations": [
+            {
+                "observation_id": item["observation_id"],
+                "subject_handle": item["subject_handle"],
+                "observation_type": item["observation_type"],
+                "evidence_id": item["evidence_id"],
+            }
+            for item in observations
+        ],
+        "evidence_handles": evidence_handles,
+        "provenance_handles": provenance_handles,
+    }
+    return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
 
 
 def _bounded_limit(limit: int) -> int:

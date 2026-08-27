@@ -131,6 +131,44 @@ class T4AwarenessTests(InstalledFixture):
         self.assertEqual(current["awareness_id"], revision["awareness_id"])
         self.assertEqual(current["freshness"], "stale")
 
+    def test_t3_basis_mismatch_is_stale_during_awareness_refresh(self) -> None:
+        target = self.target()
+        note = target / "note.txt"
+        note.write_text("observed by substrate\n", encoding="utf-8")
+        self.attach(target)
+        self.substrate(target, "refresh")
+
+        note.write_text("changed after substrate refresh\n", encoding="utf-8")
+
+        revision = self.awareness(target, "refresh")["revision"]
+        self.assertEqual(revision["basis"]["status"], "observed")
+        self.assertEqual(revision["summary"]["target_state"], "observed_non_empty")
+        self.assertEqual(revision["freshness"], "stale")
+
+    def test_latest_empty_basis_does_not_leak_historical_resources_or_claims(self) -> None:
+        target = self.target()
+        note = target / "note.txt"
+        note.write_text("temporary\n", encoding="utf-8")
+        self.attach(target)
+        self.substrate(target, "refresh")
+
+        note.unlink()
+        self.substrate(target, "refresh")
+
+        revision = self.awareness(target, "refresh")["revision"]
+        self.assertEqual(revision["basis"]["status"], "observed")
+        self.assertEqual(revision["freshness"], "current")
+        self.assertEqual(revision["summary"]["target_state"], "observed_empty")
+        self.assertEqual(revision["summary"]["resource_count"], 0)
+        self.assertEqual(revision["summary"]["claim_count"], 1)
+        self.assertNotIn("path:note.txt", revision["source_handles"])
+        self.assertFalse(
+            any("path:note.txt" in item["source_handles"] for item in revision["findings"])
+        )
+        self.assertFalse(
+            any(item["title"] == "target_has_text_files" for item in revision["findings"])
+        )
+
     def test_awareness_does_not_collapse_runtime_journal_or_substrate_owners(self) -> None:
         target = self.target()
         (target / "note.txt").write_text("separation\n", encoding="utf-8")

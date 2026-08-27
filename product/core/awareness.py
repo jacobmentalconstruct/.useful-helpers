@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-import hashlib
 import json
-import os
 import sqlite3
 import uuid
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any
 
 from . import storage, substrate
@@ -44,6 +41,7 @@ def _decode_revision(row: sqlite3.Row) -> dict:
     revision["source_handles"] = json.loads(revision.pop("source_handles_json"))
     revision["basis"] = {
         "status": revision.pop("basis_status"),
+        "id": _basis_id(revision["basis_signature"]),
         "signature": revision.pop("basis_signature"),
     }
     revision["freshness"] = "unknown"
@@ -58,68 +56,17 @@ def _decode_item(row: sqlite3.Row) -> dict:
     return item
 
 
-def _inside_or_equal(candidate: Path, root: Path) -> bool:
-    try:
-        candidate.relative_to(root)
-        return True
-    except ValueError:
-        return False
-
-
-def _target_signature(context: InstanceContext) -> str:
-    digest = hashlib.sha256()
-    excluded = context.instance_root.resolve()
-    for current, directory_names, file_names in os.walk(context.target_root):
-        here = Path(current)
-        directory_names[:] = [
-            name
-            for name in sorted(directory_names)
-            if not _inside_or_equal((here / name).resolve(strict=False), excluded)
-        ]
-        for name in directory_names:
-            path = here / name
-            stat = path.lstat()
-            digest.update(f"D\0{path.relative_to(context.target_root).as_posix()}\0{stat.st_mtime_ns}".encode("utf-8"))
-            digest.update(b"\0")
-        for name in sorted(file_names):
-            path = here / name
-            if _inside_or_equal(path.resolve(strict=False), excluded):
-                continue
-            stat = path.lstat()
-            digest.update(f"F\0{path.relative_to(context.target_root).as_posix()}\0{stat.st_size}\0{stat.st_mtime_ns}".encode("utf-8"))
-            digest.update(b"\0")
-            if path.is_file() and not path.is_symlink():
-                digest.update(hashlib.sha256(path.read_bytes()).digest())
-    return digest.hexdigest()
-
-
-def _basis_signature(status: dict, resources: list[dict], claims: list[dict]) -> str:
-    payload = {
-        "counts": status["counts"],
-        "resources": [
-            {
-                "handle": item["handle"],
-                "latest_version_id": item.get("latest_version_id"),
-            }
-            for item in resources
-        ],
-        "claims": [
-            {
-                "claim_id": item["claim_id"],
-                "claim_type": item["claim_type"],
-                "statement": item["statement"],
-            }
-            for item in claims
-        ],
-    }
-    return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
+def _basis_id(signature: str | None) -> str | None:
+    if signature is None:
+        return None
+    return f"basis:{signature[:32]}"
 
 
 def _freshness(revision: dict, context: InstanceContext) -> str:
     stored = revision.get("target_signature")
     if not stored:
         return "unknown"
-    current = _target_signature(context)
+    current = substrate.target_signature(context)
     return "current" if current == stored else "stale"
 
 
@@ -137,15 +84,8 @@ def status(context: InstanceContext) -> dict:
 
 def refresh(context: InstanceContext) -> dict:
     created_at = _now()
-    substrate_status = substrate.status(context)
-    resources = substrate.list_resources(context, 100)
-    claims = substrate.list_claims(context, 100)
-    basis_missing = (
-        substrate_status["counts"]["resources"] == 0
-        and substrate_status["counts"]["observations"] == 0
-        and substrate_status["counts"]["claims"] == 0
-    )
-    target_signature = _target_signature(context)
+    basis_view = substrate.current_awareness_basis(context)
+    basis_missing = basis_view["status"] == "missing"
 
     if basis_missing:
         basis_status = "missing"
@@ -161,10 +101,10 @@ def refresh(context: InstanceContext) -> dict:
         unknowns = ["target content has not been observed by substrate; unobserved remains unknown"]
     else:
         basis_status = "observed"
-        basis = _basis_signature(substrate_status, resources, claims)
-        resource_handles = [item["handle"] for item in resources]
-        claim_handles = [item["claim_id"] for item in claims]
-        source_handles = [*resource_handles[:25], *claim_handles[:25]]
+        basis = basis_view["basis_signature"]
+        resources = basis_view["resources"]
+        claims = basis_view["claims"]
+        source_handles = basis_view["source_handles"][:100]
         empty_claim = next((item for item in claims if item["claim_type"] == "target_empty"), None)
         target_state = "observed_empty" if empty_claim else "observed_non_empty"
         summary = {
@@ -180,15 +120,16 @@ def refresh(context: InstanceContext) -> dict:
     revision = {
         "awareness_id": awareness_id,
         "created_at": created_at,
-        "basis": {"status": basis_status, "signature": basis},
-        "target_signature": target_signature if basis else None,
-        "freshness": "current" if basis else "unknown",
+        "basis": {"status": basis_status, "id": _basis_id(basis), "signature": basis},
+        "target_signature": basis_view["target_signature"] if basis else None,
+        "freshness": "unknown",
         "summary": summary,
         "limitations": limitations,
         "unknowns": unknowns,
         "source_handles": source_handles,
         "findings": findings,
     }
+    revision["freshness"] = _freshness(revision, context)
 
     connection = storage.connect(context)
     try:
@@ -206,7 +147,7 @@ def refresh(context: InstanceContext) -> dict:
                     created_at,
                     basis_status,
                     basis,
-                    target_signature if basis else None,
+                    basis_view["target_signature"] if basis else None,
                     _json(summary),
                     _json(limitations),
                     _json(unknowns),

@@ -98,6 +98,8 @@ def _awareness_owner() -> str:
         "def read_revision(",
         "def drill(",
         "awareness:",
+        "current_awareness_basis",
+        "target_signature",
         "basis_status",
         "unknown",
         "stale",
@@ -166,6 +168,19 @@ def _focused_t4_product_evidence() -> str:
     if process.returncode:
         raise AssertionError(process.stdout.strip() or process.stderr.strip())
     return process.stdout.strip().splitlines()[-1]
+
+
+def _basis_freshness_behavior() -> str:
+    tests = [
+        "tests/test_t4_awareness.py::"
+        "T4AwarenessTests::test_t3_basis_mismatch_is_stale_during_awareness_refresh",
+        "tests/test_t4_awareness.py::"
+        "T4AwarenessTests::test_latest_empty_basis_does_not_leak_historical_resources_or_claims",
+    ]
+    process = _run([sys.executable, "-m", "pytest", *tests, "-q"])
+    if process.returncode:
+        raise AssertionError(process.stdout.strip() or process.stderr.strip())
+    return "behavioral basis/freshness witnesses passed for mismatch and latest-empty refresh"
 
 
 def _canonical_product_regression() -> str:
@@ -321,6 +336,7 @@ def main() -> int:
         _check("awareness_owner", _awareness_owner),
         _check("cli_entrance", _cli_entrance),
         _check("lower_layers_do_not_import_awareness", _lower_layers_do_not_import_awareness),
+        _check("basis_freshness_behavior", _basis_freshness_behavior),
         _check("focused_t4_product_evidence", _focused_t4_product_evidence),
         _check("canonical_product_regression", _canonical_product_regression),
         _check("positive_product_boundary", _product_boundary),
