@@ -3,11 +3,11 @@
 This file is a resumability projection, not authority.
 
 - Current tranche: **T4 Awareness**
-- Current state: **IMPLEMENTING**
-- Operator direction: implement T4 under amended declaration; stop at AWAITING_APPROVAL
+- Current state: **AWAITING_APPROVAL**
+- Operator direction: review submitted T4 implementation; do not park T4 or begin T5
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0028-t4-execution-start.md`
+- Latest journal position: `0029-t4-awaiting-approval.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate
 - Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4-P8 UNSCORED
@@ -170,6 +170,6 @@ substrate outcomes. T4 has not begun.
 
 ## Next entering-builder action
 
-Continue T4 implementation under entries `0026`, `0027`, and execution start `0028`.
-Add and run the declared evidence, consolidate, synchronize review documentation, and
-stop at AWAITING_APPROVAL. Do not park T4, claim P4 credit, or begin T5.
+Await operator review of T4. If approved, park T4 under the normal closeout mechanism.
+If returned, repair only the bounded review finding. Do not begin T5 until explicitly
+instructed.

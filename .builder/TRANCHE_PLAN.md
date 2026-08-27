@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **ACTIVE - T4 IMPLEMENTING**
+Status: **ACTIVE - T4 AWAITING APPROVAL**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -14,7 +14,7 @@ Charter and are referenced here without redefinition.
 | T1 Mechanical Hands + Governed Host | PARKED | Manifest-defined mechanical capabilities run on host-transported context through one contained CLI seam without importing higher projections. | T0 PARKED; declaration approved | P1, P2 |
 | T2 Runtime Receipts + Work Memory | PARKED | Governed runtime calls after trusted state ownership produce durable operational receipts/artifacts while a blank-start App Journal records deliberate work memory separately. | T1 PARKED; amended declaration approved | P3 partial |
 | T3 Epistemic Substrate | PARKED | Resources, versions, observations, evidence, claims, and provenance persist without becoming receipts or journal entries. | T2 PARKED; declaration approved | P3 |
-| T4 Awareness | IMPLEMENTING | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 PARKED; amended declaration approved | P4 |
+| T4 Awareness | AWAITING_APPROVAL | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 PARKED; amended declaration approved | P4 |
 | T5 Governed Mutation Loop | PROVISIONAL | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 | P5 |
 | T6 Removable MCP Entrance | PROVISIONAL | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 | P6 |
 | T7 Domain Truth | PROVISIONAL | Software, mixed records/documents, and empty targets degrade truthfully. | T6 | P7 |
@@ -157,14 +157,15 @@ remains incomplete.
 
 ## T4 synopsis
 
-T4 Awareness is IMPLEMENTING after an operator-approved boundary-hardening amendment.
+T4 Awareness is AWAITING_APPROVAL after implementation under the operator-approved boundary-hardening amendment.
 The sequence outcome above remains the Plan-owned tranche property; entry `0026` owns
 its initial measured scope, non-goals, completion evidence, risks, and ordered
 implementation plan; entry `0027` narrows source access, freshness semantics, and initial
-handle scope; entry `0028` records execution start. T4 must consume T3 substrate records
-through `substrate.py` APIs/handles without owning or mutating resources, versions,
-observations, epistemic evidence, claims, receipts, operational artifacts, or App
-Journal memory. It may not grant P4 credit or begin T5 without operator approval.
+handle scope; entry `0028` records execution start; entry `0029` owns the current
+implementation review submission. T4 consumes T3 substrate records through `substrate.py`
+APIs/handles without owning or mutating resources, versions, observations, epistemic
+evidence, claims, receipts, operational artifacts, or App Journal memory. It may not
+park, grant P4 credit, or begin T5 without operator approval.
 
 ## T4 declaration record
 
@@ -174,6 +175,8 @@ Journal memory. It may not grant P4 credit or begin T5 without operator approval
   `journal/0027-t4-declaration-boundary-amendment.md`
 - Execution start:
   `journal/0028-t4-execution-start.md`
+- Implementation review submission:
+  `journal/0029-t4-awaiting-approval.md`
 
 Entry `0026` declares the awareness outcome: compact immutable revisions with freshness,
 limitations, explicit unknowns, stable handles, and drill/provenance references over the
@@ -184,6 +187,9 @@ semantics only through `substrate.py` APIs/handles, treats direct target signatu
 ephemeral freshness signals only, narrows initial awareness source handles to T3-owned
 handles, and prefers one canonical `awareness:` identifier. Entry `0028` records
 operator authorization to enter IMPLEMENTING under the amended declaration.
+Entry `0029` submits the implemented T4 outcome for operator review with authoritative
+T4 gate run `20260827T112959Z-3b4dd2a9`. It does not park T4, begin T5, or grant P4
+credit without operator approval.
 
 ## Project closure
 

@@ -1,6 +1,6 @@
 # Architecture
 
-Status: **T3 PARKED IMPLEMENTATION MAP**
+Status: **T4 IMPLEMENTATION REVIEW CANDIDATE - AWAITING OPERATOR APPROVAL**
 
 ## Charter relationship
 
@@ -9,7 +9,8 @@ invariants, topology and dependency direction, runtime state classes, P1-P8, the
 acceptance walk, Product STOP, and product non-goals. This document does not redefine
 those facts. It maps the implementation currently present in the repository to the
 Charter responsibilities it is intended to realize. T1 and T2 are parked by operator
-approval. T3 is parked by operator approval. T4 awareness has not begun.
+approval. T3 is parked by operator approval. The T4 awareness implementation is a review
+candidate and is not parked until the operator grants that terminal disposition.
 
 ## Current installed-instance realization
 
@@ -56,6 +57,9 @@ inconsistent instance. No fallback identity-discovery path is present.
 - `product/core/substrate.py` owns T3 resources, resource versions, deterministic
   observations, epistemic evidence, derived claims, provenance relations, and trace
   traversal.
+- `product/core/awareness.py` owns T4 compact immutable awareness revisions, awareness
+  items, freshness status, limitation/unknown projection, and drill mapping over T3
+  substrate handles.
 - `product/core/tool_runtime.py` owns the product-neutral mechanical subprocess protocol,
   strict transported context, target-relative handles, excluded-root behavior, and
   deterministic error serialization.
@@ -166,9 +170,38 @@ thin deterministic claims: observed empty target, or observed text-like files. T
 derived claims, not awareness findings and not deterministic facts beyond their stated
 support.
 
-The database still does not implement awareness revisions, semantic/vector indexes,
-domain cartridges, preview/apply mutation governance, or a graph database. The objects
-directory is created but has no accepted object-store contract.
+The database still does not implement semantic/vector indexes, domain cartridges,
+preview/apply mutation governance, or a graph database. The objects directory is created
+but has no accepted object-store contract.
+
+## Current awareness implementation
+
+Schema version 4 adds distinct T4 awareness projection tables:
+
+- `awareness_revisions` records immutable compact projection envelopes with an
+  `awareness:` identifier, creation time, basis status/signature, target freshness
+  signature, summary, limitations, unknowns, and source handles.
+- `awareness_items` records compact findings inside an awareness revision with item
+  type, title, statement, priority, T3 source handles, and provenance metadata.
+
+`product/core/awareness.py` composes awareness revisions through `product/core/substrate.py`
+APIs and handles rather than querying T3-owned tables directly. It uses verified storage
+only for awareness-owned tables. Its direct target signature is an ephemeral freshness
+signal: it can mark an existing revision `current`, `stale`, or `unknown`, but it cannot
+create substrate facts or awareness findings.
+
+Awareness refresh on an unobserved target records an immutable revision with missing
+basis, no findings, explicit limitations, and explicit unknowns. Awareness refresh after
+a T3 substrate refresh records compact findings from T3 claim/resource handles. Prior
+awareness revisions remain inspectable after later refreshes. `awareness current`
+recomputes freshness against the current target signature and can report `stale` after a
+target change without implementing the T5 mutation loop.
+
+The CLI exposes `awareness status`, `awareness refresh`, `awareness current`,
+`awareness revisions list/read`, and `awareness drill`. Drill resolves awareness items
+back through T3 substrate APIs such as claim trace and resource lookup. Awareness does
+not create App Journal entries, operational artifacts, or operation receipts for its
+projection records.
 
 ## Current tool contract
 
@@ -247,5 +280,24 @@ create App Journal entries or T2 operational artifacts.
 
 Authoritative T3 gate evidence is recorded by journal entry `0024`, and operator
 approval plus terminal park is recorded by journal entry `0025`. T3 parks the epistemic
-substrate portion of P3. T4 awareness has not begun, P4-P8 remain UNSCORED, and Product
-STOP remains incomplete.
+substrate portion of P3.
+
+## T4 review evidence
+
+T4 product fixtures report that fresh attach starts with blank awareness state while
+runtime receipts and substrate records remain blank until explicit actions run.
+Awareness refresh on an unobserved target reports missing basis and `unknown` freshness
+without rich findings. Awareness refresh after an empty substrate refresh produces a
+thin immutable revision with explicit unknowns. Awareness refresh after a non-empty
+substrate refresh produces compact findings with T3 handles that resolve through
+substrate CLI/API calls.
+
+The fixtures prove that later awareness refreshes create new revisions without
+overwriting prior revisions, that `awareness current` reports `stale` after target
+content changes without a matching refresh, and that awareness drill resolves through
+T3 provenance rather than direct T3 table ownership. Separation fixtures prove awareness
+does not create T2 operational artifacts or App Journal entries.
+
+Authoritative T4 gate evidence is expected to be recorded by the review submission
+journal entry. Until operator approval, T4 remains an implementation review candidate;
+P4 credit is not parked and Product STOP remains incomplete.
