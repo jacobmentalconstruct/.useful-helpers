@@ -47,6 +47,10 @@ Read construction authority in this order:
 4. [`.builder/TRANCHE_PROTOCOL.md`](.builder/TRANCHE_PROTOCOL.md)
 5. [`.builder/CURRENT_STATE.md`](.builder/CURRENT_STATE.md)
 
+Incoming or replacement agents should start with
+[`.builder/ROLE_ONBOARDING.md`](.builder/ROLE_ONBOARDING.md), then follow the authority
+read order above and their role-specific manifest.
+
 The canonical product-test entrance is:
 
 ```powershell
