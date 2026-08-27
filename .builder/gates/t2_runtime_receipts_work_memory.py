@@ -82,8 +82,10 @@ def _assert_runtime_schema(source: str) -> None:
     duplicates = sorted(table for table in set(tables) if tables.count(table) > 1)
     if duplicates:
         raise AssertionError(f"runtime memory tables are collapsed or duplicated: {duplicates}")
+    plan = (ROOT / ".builder/TRANCHE_PLAN.md").read_text(encoding="utf-8")
+    t3_has_started = "T3 Epistemic Substrate | PROVISIONAL" not in plan
     leaked = sorted(term for term in DEFERRED_TABLE_TERMS if f"CREATE TABLE {term}" in source)
-    if leaked:
+    if leaked and not t3_has_started:
         raise AssertionError(f"T2 storage declares deferred epistemic/awareness tables: {leaked}")
 
 

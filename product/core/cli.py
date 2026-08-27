@@ -6,7 +6,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-from . import app_journal, registry, runtime_records, storage
+from . import app_journal, registry, runtime_records, storage, substrate
 from .control import ControlPlane
 from .instance import InstanceError, load
 
@@ -56,6 +56,43 @@ def _parser() -> argparse.ArgumentParser:
     journal_link = journal_commands.add_parser("link")
     journal_link.add_argument("entry_id")
     journal_link.add_argument("target_id")
+
+    substrate_parser = commands.add_parser("substrate")
+    substrate_commands = substrate_parser.add_subparsers(
+        dest="substrate_command",
+        required=True,
+    )
+    substrate_commands.add_parser("status")
+    substrate_commands.add_parser("refresh")
+    resources = substrate_commands.add_parser("resources")
+    resource_commands = resources.add_subparsers(dest="resource_command", required=True)
+    resource_list = resource_commands.add_parser("list")
+    resource_list.add_argument("--limit", type=int, default=100)
+    resource_read = resource_commands.add_parser("read")
+    resource_read.add_argument("handle")
+    versions = substrate_commands.add_parser("versions")
+    version_commands = versions.add_subparsers(dest="version_command", required=True)
+    version_list = version_commands.add_parser("list")
+    version_list.add_argument("handle", nargs="?")
+    observations = substrate_commands.add_parser("observations")
+    observation_commands = observations.add_subparsers(
+        dest="observation_command",
+        required=True,
+    )
+    observation_list = observation_commands.add_parser("list")
+    observation_list.add_argument("--limit", type=int, default=100)
+    evidence = substrate_commands.add_parser("evidence")
+    evidence_commands = evidence.add_subparsers(dest="evidence_command", required=True)
+    evidence_read = evidence_commands.add_parser("read")
+    evidence_read.add_argument("evidence_id")
+    claims = substrate_commands.add_parser("claims")
+    claim_commands = claims.add_subparsers(dest="claim_command", required=True)
+    claim_list = claim_commands.add_parser("list")
+    claim_list.add_argument("--limit", type=int, default=100)
+    claim_read = claim_commands.add_parser("read")
+    claim_read.add_argument("claim_id")
+    trace = substrate_commands.add_parser("trace")
+    trace.add_argument("handle")
     return parser
 
 
@@ -158,6 +195,50 @@ def main(instance_root: str | Path, argv: list[str] | None = None) -> int:
                         arguments.target_id,
                     ),
                 }
+        elif arguments.command == "substrate":
+            if arguments.substrate_command == "status":
+                response = substrate.status(context)
+            elif arguments.substrate_command == "refresh":
+                response = substrate.refresh(context)
+            elif arguments.substrate_command == "resources":
+                if arguments.resource_command == "list":
+                    response = {
+                        "ok": True,
+                        "resources": substrate.list_resources(context, arguments.limit),
+                    }
+                else:
+                    response = {
+                        "ok": True,
+                        "resource": substrate.read_resource(context, arguments.handle),
+                    }
+            elif arguments.substrate_command == "versions":
+                response = {
+                    "ok": True,
+                    "versions": substrate.list_versions(context, arguments.handle),
+                }
+            elif arguments.substrate_command == "observations":
+                response = {
+                    "ok": True,
+                    "observations": substrate.list_observations(context, arguments.limit),
+                }
+            elif arguments.substrate_command == "evidence":
+                response = {
+                    "ok": True,
+                    "evidence": substrate.read_evidence(context, arguments.evidence_id),
+                }
+            elif arguments.substrate_command == "claims":
+                if arguments.claim_command == "list":
+                    response = {
+                        "ok": True,
+                        "claims": substrate.list_claims(context, arguments.limit),
+                    }
+                else:
+                    response = {
+                        "ok": True,
+                        "claim": substrate.read_claim(context, arguments.claim_id),
+                    }
+            else:
+                response = {"ok": True, "trace": substrate.trace(context, arguments.handle)}
         else:
             response = {"ok": False, "error": {"code": "unknown_command"}}
     except (
@@ -166,6 +247,7 @@ def main(instance_root: str | Path, argv: list[str] | None = None) -> int:
         registry.RegistryError,
         runtime_records.RecordError,
         app_journal.JournalError,
+        substrate.SubstrateError,
     ) as exc:
         _emit(
             {

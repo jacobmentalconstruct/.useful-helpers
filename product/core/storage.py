@@ -105,6 +105,88 @@ def _migrate(connection: sqlite3.Connection) -> None:
                 )
                 """
             )
+            connection.execute("PRAGMA user_version = 2")
+        version = 2
+    if version < 3:
+        with connection:
+            connection.execute(
+                """
+                CREATE TABLE resources (
+                    resource_id TEXT PRIMARY KEY,
+                    handle TEXT NOT NULL UNIQUE,
+                    path TEXT NOT NULL UNIQUE,
+                    kind TEXT NOT NULL,
+                    first_seen_at TEXT NOT NULL,
+                    last_seen_at TEXT NOT NULL,
+                    latest_version_id TEXT
+                )
+                """
+            )
+            connection.execute(
+                """
+                CREATE TABLE epistemic_evidence (
+                    evidence_id TEXT PRIMARY KEY,
+                    digest TEXT NOT NULL UNIQUE,
+                    created_at TEXT NOT NULL,
+                    kind TEXT NOT NULL,
+                    media_type TEXT NOT NULL,
+                    body_json TEXT NOT NULL
+                )
+                """
+            )
+            connection.execute(
+                """
+                CREATE TABLE resource_versions (
+                    version_id TEXT PRIMARY KEY,
+                    resource_id TEXT NOT NULL REFERENCES resources(resource_id),
+                    observed_at TEXT NOT NULL,
+                    kind TEXT NOT NULL,
+                    content_hash TEXT,
+                    size_bytes INTEGER,
+                    mtime_ns INTEGER,
+                    evidence_id TEXT NOT NULL REFERENCES epistemic_evidence(evidence_id)
+                )
+                """
+            )
+            connection.execute(
+                """
+                CREATE TABLE observations (
+                    observation_id TEXT PRIMARY KEY,
+                    producer TEXT NOT NULL,
+                    observed_at TEXT NOT NULL,
+                    subject_handle TEXT NOT NULL,
+                    observation_type TEXT NOT NULL,
+                    data_json TEXT NOT NULL,
+                    evidence_id TEXT NOT NULL REFERENCES epistemic_evidence(evidence_id)
+                )
+                """
+            )
+            connection.execute(
+                """
+                CREATE TABLE claims (
+                    claim_id TEXT PRIMARY KEY,
+                    created_at TEXT NOT NULL,
+                    claim_type TEXT NOT NULL,
+                    statement TEXT NOT NULL,
+                    derivation_method TEXT NOT NULL,
+                    confidence REAL NOT NULL,
+                    data_json TEXT NOT NULL
+                )
+                """
+            )
+            connection.execute(
+                """
+                CREATE TABLE relations (
+                    relation_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    created_at TEXT NOT NULL,
+                    subject_type TEXT NOT NULL,
+                    subject_id TEXT NOT NULL,
+                    predicate TEXT NOT NULL,
+                    object_type TEXT NOT NULL,
+                    object_id TEXT NOT NULL
+                )
+                """
+            )
             connection.execute(f"PRAGMA user_version = {DATABASE_SCHEMA_VERSION}")
 
 

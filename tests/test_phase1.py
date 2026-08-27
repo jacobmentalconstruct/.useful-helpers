@@ -121,7 +121,7 @@ class PhaseOneAcceptanceTests(InstalledFixture):
         finally:
             connection.close()
         self.assertEqual(row, (manifest["instance_uuid"], ".."))
-        self.assertEqual(schema, 2)
+        self.assertEqual(schema, 3)
 
         _, catalog = self.sidecar(target, "tools")
         self.assertEqual(
