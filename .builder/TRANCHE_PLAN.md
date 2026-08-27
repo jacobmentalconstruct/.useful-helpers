@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **ACTIVE - T2 AWAITING APPROVAL**
+Status: **T2 PARKED - T3 PROVISIONAL**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -12,7 +12,7 @@ Charter and are referenced here without redefinition.
 |---|---|---|---|---|
 | T0 Bootstrap | PARKED | One approved construction system and aligned product authority exist around provisional source. | Operator vision-alignment ruling | Construction ability |
 | T1 Mechanical Hands + Governed Host | PARKED | Manifest-defined mechanical capabilities run on host-transported context through one contained CLI seam without importing higher projections. | T0 PARKED; declaration approved | P1, P2 |
-| T2 Runtime Receipts + Work Memory | AWAITING_APPROVAL | Governed runtime calls after trusted state ownership produce durable operational receipts/artifacts while a blank-start App Journal records deliberate work memory separately. | T1 PARKED; amended declaration approved | P3 |
+| T2 Runtime Receipts + Work Memory | PARKED | Governed runtime calls after trusted state ownership produce durable operational receipts/artifacts while a blank-start App Journal records deliberate work memory separately. | T1 PARKED; amended declaration approved | P3 partial |
 | T3 Epistemic Substrate | PROVISIONAL | Resources, versions, observations, evidence, claims, and provenance persist without becoming receipts or journal entries. | T2 | P3 |
 | T4 Awareness | PROVISIONAL | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 | P4 |
 | T5 Governed Mutation Loop | PROVISIONAL | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 | P5 |
@@ -42,9 +42,11 @@ checkpoint T1 remained undeclared; its later records appear below.
 ## Product STOP coverage
 
 T0 grants no P1-P8 credit. T1 grants P1/P2 credit for the declared mechanical-host
-boundary only. P3-P8 remain UNSCORED, and Product STOP remains incomplete. Each later
-declaration must name the P-conditions it advances and the exact gate assertions that do
-so.
+boundary only. T2 grants partial P3 credit for runtime operational receipts/artifacts and
+blank-start App Journal work memory. P3 remains incomplete until T3 proves the epistemic
+substrate portion. P4-P8 remain UNSCORED, and Product STOP remains incomplete. Each
+later declaration must name the P-conditions it advances and the exact gate assertions
+that do so.
 
 ## T1 synopsis
 
@@ -77,12 +79,12 @@ credit while leaving P3-P8 UNSCORED.
 
 ## T2 synopsis
 
-T2 Runtime Receipts + Work Memory is AWAITING_APPROVAL after implementation and a bounded
-verification repair. The sequence outcome above remains the Plan-owned tranche property;
-entry `0016` owns the historical initial declaration, entry `0017` amends its scope
-before implementation, and the latest T2 awaiting-approval journal entry owns the current
-review submission. The amended outcome must add durable runtime receipts/artifacts and a
-clean blank-start App Journal without collapsing into construction history, T3 epistemic
+T2 Runtime Receipts + Work Memory is PARKED by operator approval. The sequence outcome
+above remains the Plan-owned tranche property; entry `0016` owns the historical initial
+declaration, entry `0017` amends its scope before implementation, entry `0020` owns the
+repaired review submission, and entry `0021` owns the terminal approval and park
+disposition. The parked outcome adds durable runtime receipts/artifacts and a clean
+blank-start App Journal without collapsing into construction history, T3 epistemic
 substrate, T4 awareness, or the later T5 governed mutation loop.
 
 ## T2 declaration record
@@ -97,6 +99,8 @@ substrate, T4 awareness, or the later T5 governed mutation loop.
   `journal/0019-t2-awaiting-approval.md`
 - Verification repair and current review submission:
   `journal/0020-t2-verification-repair-awaiting-approval.md`
+- Operator approval and terminal park:
+  `journal/0021-t2-park.md`
 
 Entry `0016` does not authorize implementation, create the T2 gate, change product
 source, or grant product credit. Entry `0017` narrows T2 by moving preview-first mutation,
@@ -113,6 +117,9 @@ ownership and coherent receipt completion. It supersedes `0019` only as the curr
 review submission, preserves `0019` as historical evidence, and submits repaired T2 gate
 run `20260827T084412Z-8f66c495` at AWAITING_APPROVAL without parking T2 or granting P3
 credit.
+Entry `0021` records operator approval, grants the terminal PARKED disposition, and parks
+partial P3 credit for runtime receipts/artifacts and App Journal memory. P3 remains
+incomplete pending T3's epistemic substrate outcome.
 
 ## Project closure
 

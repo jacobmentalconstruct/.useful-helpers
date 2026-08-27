@@ -2,15 +2,15 @@
 
 This file is a resumability projection, not authority.
 
-- Current tranche: **T2 Runtime Receipts + Work Memory**
-- Current state: **AWAITING_APPROVAL**
-- Operator direction: review the repaired T2 verification submission; do not begin T3
+- Current tranche: **None active; next provisional tranche is T3 Epistemic Substrate**
+- Current state: **T2 PARKED**
+- Operator direction: T2 is operator-approved and parked; do not begin T3
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0020-t2-verification-repair-awaiting-approval.md`
+- Latest journal position: `0021-t2-park.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
-- Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host
-- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3-P8 UNSCORED
+- Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory
+- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 partially advanced by parked T2 and pending T3; P4-P8 UNSCORED
 - Project closure: not eligible
 
 ## Measured implementation
@@ -54,9 +54,11 @@ five manifest-owned tools with no forbidden upward imports, and five explicitly
 acknowledged provisional shared-runtime dependencies. Entry `0007` records operator
 approval and PARKED status for this subsequent authority correction.
 
-The operator classifies `/_projectmapper/` as transient file-dump output. It is absent
-and covered by a root-scoped ignore rule; recurrence is routine cleanliness and does not
-reopen T0.
+The operator classifies `/_projectmapper/` as transient file-dump output. It is covered
+by a root-scoped ignore rule; recurrence is routine cleanliness and does not reopen T0.
+During T2 park closeout, deletion was attempted after recurrence was found, but the
+remaining SQLite snapshot file was locked by another process. It is ignored and not
+project-owned; remove it when the external lock is released.
 
 ## T1 synopsis
 
@@ -128,11 +130,13 @@ refusal, automatic receipt-to-journal projection, split artifact/receipt complet
 missing receipt failure guard.
 
 Cumulative T1 run `20260827T084428Z-1bf73de6` passed 9/9. Cumulative T0 run
-`20260827T084450Z-53e248ca` passed 13/13. T2 is not PARKED. P3 and Product STOP remain
-UNSCORED pending operator review.
+`20260827T084450Z-53e248ca` passed 13/13. Entry `0021` records operator approval and
+parks T2. T2 grants partial P3 credit for runtime receipts/artifacts and App Journal
+memory. P3 remains incomplete pending T3's epistemic substrate outcome, and Product STOP
+remains incomplete.
 
 ## Next entering-builder action
 
-Review entry `0020` and its cited receipts. The builder must stop until the operator
-approves, requests revision, narrows or enlarges scope, rejects, or reopens a premise.
-Do not park T2 and do not begin T3.
+Read entry `0021` and the Plan. The next useful action is a T3 Epistemic Substrate
+declaration for operator review, if the operator requests it. Do not implement T3 without
+explicit operator direction.

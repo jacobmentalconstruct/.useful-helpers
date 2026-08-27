@@ -1,6 +1,6 @@
 # Architecture
 
-Status: **T2 IMPLEMENTATION REVIEW CANDIDATE - AWAITING OPERATOR APPROVAL**
+Status: **T2 PARKED IMPLEMENTATION MAP**
 
 ## Charter relationship
 
@@ -200,6 +200,7 @@ receipt/artifact/journal CLI entrances refuse before reading, writing, or migrat
 state. A receipt-completion trigger proves finalization failure after a child write does
 not leave an orphan operational artifact claiming durable governance.
 
-Authoritative T2 gate evidence is expected to be recorded by the review submission
-journal entry. Until operator approval, T2 remains an implementation review candidate;
-P3 is not parked and Product STOP remains incomplete.
+Authoritative T2 gate evidence is recorded in journal entries `0020` and `0021`. Entry
+`0021` records operator approval and parks T2. T2 parks the runtime receipts/artifacts
+and App Journal portion of P3; P3 remains incomplete pending T3's epistemic substrate
+outcome, and Product STOP remains incomplete.
