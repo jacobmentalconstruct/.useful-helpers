@@ -3,11 +3,11 @@
 This file is a resumability projection, not authority.
 
 - Current tranche: **T3 Epistemic Substrate**
-- Current state: **DECLARED - AWAITING DECLARATION REVIEW**
-- Operator direction: review the T3 declaration; do not implement T3 until approved
+- Current state: **IMPLEMENTING**
+- Operator direction: implement T3 under the approved declaration; stop at AWAITING_APPROVAL
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0022-t3-epistemic-substrate-declaration.md`
+- Latest journal position: `0023-t3-execution-start.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory
 - Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 partially advanced by parked T2 and pending T3 implementation; P4-P8 UNSCORED
@@ -137,6 +137,6 @@ remains incomplete.
 
 ## Next entering-builder action
 
-Review entry `0022` and the Plan. The builder must stop until the operator approves,
-requests amendment, narrows or enlarges scope, rejects, or reopens a premise. Do not
-implement T3 and do not begin T4.
+Continue T3 implementation under entry `0022` and execution start `0023`. Add and run
+the declared evidence, consolidate, synchronize review documentation, and stop at
+AWAITING_APPROVAL. Do not park T3, claim full P3 credit, or begin T4.
