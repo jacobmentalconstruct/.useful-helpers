@@ -296,8 +296,9 @@ runtime receipts and substrate records remain blank until explicit actions run.
 Awareness refresh on an unobserved target reports missing basis and `unknown` freshness
 without rich findings. Awareness refresh after an empty substrate refresh produces a
 thin immutable revision with explicit unknowns. Awareness refresh after a non-empty
-substrate refresh produces compact findings with T3 handles that resolve through
-substrate CLI/API calls.
+substrate refresh produces compact findings with T3 handles, but later acceptance review
+found that not every emitted provenance handle currently round-trips through a T3-owned
+resolver.
 
 The fixtures prove that later awareness refreshes create new revisions without
 overwriting prior revisions, that `awareness current` reports `stale` after target
@@ -310,5 +311,8 @@ awareness does not create T2 operational artifacts or App Journal entries.
 
 Authoritative repaired T4 gate evidence is recorded by journal entry `0031`: run
 `20260827T121444Z-3713df86` passed 13/13, including a behavioral basis/freshness witness.
-Until operator approval, T4 remains an implementation review candidate; P4 credit is not
+Entry `0032` records subsequent Acceptance Auditor and Reviewer evidence recommending a
+bounded return for observed awareness limitations, emitted `relation:` handle
+round-tripping, and the noncanonical `awareness-item:` handle form. Until operator
+approval or return, T4 remains an implementation review candidate; P4 credit is not
 parked and Product STOP remains incomplete.

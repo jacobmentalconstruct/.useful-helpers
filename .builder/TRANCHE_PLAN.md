@@ -164,11 +164,12 @@ its initial measured scope, non-goals, completion evidence, risks, and ordered
 implementation plan; entry `0027` narrows source access, freshness semantics, and initial
 handle scope; entry `0028` records execution start; entry `0029` owns the initial
 implementation review submission; entry `0030` records the operator verification return;
-entry `0031` owns the current repaired implementation review submission. T4 consumes T3
-substrate records through `substrate.py` APIs/handles without owning or mutating
-resources, versions, observations, epistemic evidence, claims, receipts, operational
-artifacts, or App Journal memory. It may not park, grant P4 credit, or begin T5 without
-operator approval.
+entry `0031` owns the repaired implementation review submission. Entry `0032` records
+later Acceptance Auditor and Reviewer evidence recommending a bounded return before T4
+parks. T4 consumes T3 substrate records through `substrate.py` APIs/handles without
+owning or mutating resources, versions, observations, epistemic evidence, claims,
+receipts, operational artifacts, or App Journal memory. It may not park, grant P4 credit,
+or begin T5 without operator approval.
 
 ## T4 declaration record
 
@@ -184,6 +185,8 @@ operator approval.
   `journal/0030-t4-verification-return.md`
 - Basis/freshness repair and current review submission:
   `journal/0031-t4-basis-freshness-repair-awaiting-approval.md`
+- Acceptance/reviewer return evidence record:
+  `journal/0032-t4-acceptance-review-return.md`
 
 Entry `0026` declares the awareness outcome: compact immutable revisions with freshness,
 limitations, explicit unknowns, stable handles, and drill/provenance references over the
@@ -203,6 +206,10 @@ avoid leaking historical substrate records into current orientation.
 Entry `0031` submits the repaired T4 outcome for operator review with authoritative
 repaired T4 gate run `20260827T121444Z-3713df86`. It does not park T4, begin T5, or
 grant P4 credit without operator approval.
+Entry `0032` records Acceptance Auditor and Reviewer evidence recommending a bounded
+return to VERIFYING for observed awareness limitations, unresolved emitted `relation:`
+handles, and the noncanonical `awareness-item:` handle form. It does not itself park T4,
+grant P4 credit, begin T5, or reopen T0-T3.
 
 ## Project closure
 

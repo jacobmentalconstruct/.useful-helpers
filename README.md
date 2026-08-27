@@ -34,8 +34,10 @@ UNSCORED.
 
 T4 Awareness is submitted for operator review in
 `.builder/journal/0031-t4-basis-freshness-repair-awaiting-approval.md`, supported by
-authoritative repaired T4 gate run `20260827T121444Z-3713df86`. T4 is not parked, P4 is
-not credited, and T5 has not begun.
+authoritative repaired T4 gate run `20260827T121444Z-3713df86`. Later acceptance and
+reviewer evidence is recorded in `.builder/journal/0032-t4-acceptance-review-return.md`
+and recommends a bounded return before park. T4 is not parked, P4 is not credited, and
+T5 has not begun.
 
 Read construction authority in this order:
 
