@@ -1,6 +1,6 @@
 # Architecture
 
-Status: **T2 PARKED IMPLEMENTATION MAP**
+Status: **T3 IMPLEMENTATION REVIEW CANDIDATE - AWAITING OPERATOR APPROVAL**
 
 ## Charter relationship
 
@@ -8,9 +8,9 @@ The [Product Charter](PRODUCT_CHARTER.md) owns product identity, method/product 
 invariants, topology and dependency direction, runtime state classes, P1-P8, the
 acceptance walk, Product STOP, and product non-goals. This document does not redefine
 those facts. It maps the implementation currently present in the repository to the
-Charter responsibilities it is intended to realize. The T1 mechanical-host boundary is
-parked by operator approval. The T2 runtime memory implementation is a review candidate
-and is not parked until the operator grants that terminal disposition.
+Charter responsibilities it is intended to realize. T1 and T2 are parked by operator
+approval. The T3 epistemic substrate implementation is a review candidate and is not
+parked until the operator grants that terminal disposition.
 
 ## Current installed-instance realization
 
@@ -54,6 +54,9 @@ inconsistent instance. No fallback identity-discovery path is present.
   artifacts.
 - `product/core/app_journal.py` owns deliberate runtime App Journal entries and their
   links to receipt or artifact identifiers.
+- `product/core/substrate.py` owns T3 resources, resource versions, deterministic
+  observations, epistemic evidence, derived claims, provenance relations, and trace
+  traversal.
 - `product/core/tool_runtime.py` owns the product-neutral mechanical subprocess protocol,
   strict transported context, target-relative handles, excluded-root behavior, and
   deterministic error serialization.
@@ -141,10 +144,32 @@ Schema version 2 adds distinct T2 runtime tables:
   identifiers without turning receipts into journal entries.
 
 These operational artifacts are evidence of runtime operations only. They are not the T3
-epistemic evidence owner for target observations or claims. The database still does not
-implement canonical resource inventory, observations, derived claims, provenance graph,
-awareness revisions, or semantic/vector indexes. The objects directory is created but has
-no accepted object-store contract.
+epistemic evidence owner for target observations or claims.
+
+Schema version 3 adds distinct T3 epistemic substrate tables:
+
+- `resources` records target-relative resource handles such as `path:docs/readme.txt`.
+- `resource_versions` records immutable resource versions linked to resources and
+  epistemic evidence.
+- `observations` records deterministic producer statements with structured data and
+  evidence links.
+- `epistemic_evidence` stores content-addressed JSON support for resource versions,
+  observations, and claims.
+- `claims` records derived interpretations with derivation method, confidence, and
+  structured data.
+- `relations` records typed provenance edges such as `version_of`, `supported_by`,
+  `concerns`, and `derived_from`.
+
+`product/core/substrate.py` performs explicit refreshes against trusted instance context,
+excludes the `.sidecar` subtree, records path-based resource identity, and preserves
+historical resource versions instead of overwriting them. It currently generates only
+thin deterministic claims: observed empty target, or observed text-like files. Those are
+derived claims, not awareness findings and not deterministic facts beyond their stated
+support.
+
+The database still does not implement awareness revisions, semantic/vector indexes,
+domain cartridges, preview/apply mutation governance, or a graph database. The objects
+directory is created but has no accepted object-store contract.
 
 ## Current tool contract
 
@@ -204,3 +229,23 @@ Authoritative T2 gate evidence is recorded in journal entries `0020` and `0021`.
 `0021` records operator approval and parks T2. T2 parks the runtime receipts/artifacts
 and App Journal portion of P3; P3 remains incomplete pending T3's epistemic substrate
 outcome, and Product STOP remains incomplete.
+
+## T3 review evidence
+
+T3 product fixtures report that a fresh attach starts with blank resources, resource
+versions, observations, epistemic evidence, claims, and relations while T2 receipts and
+App Journal entries remain blank. Explicit substrate refresh on an empty target records a
+thin truthful inventory observation and an observed-empty derived claim without fake
+richness. Explicit refresh on a non-empty target records target resources while excluding
+`.sidecar`, persists immutable resource versions, and stores content-addressed epistemic
+evidence.
+
+A changed-file fixture proves that a later refresh creates a new version while the prior
+version and evidence remain inspectable. A trace fixture resolves a derived claim through
+`derived_from`, `supported_by`, and `concerns` relations to observations, epistemic
+evidence, and target resources. Separation fixtures prove substrate observation does not
+create App Journal entries or T2 operational artifacts.
+
+Authoritative T3 gate evidence is expected to be recorded by the review submission
+journal entry. Until operator approval, T3 remains an implementation review candidate;
+full P3 credit is not parked and Product STOP remains incomplete.

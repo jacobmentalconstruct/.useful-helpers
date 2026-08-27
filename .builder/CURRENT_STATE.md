@@ -3,14 +3,14 @@
 This file is a resumability projection, not authority.
 
 - Current tranche: **T3 Epistemic Substrate**
-- Current state: **IMPLEMENTING**
-- Operator direction: implement T3 under the approved declaration; stop at AWAITING_APPROVAL
+- Current state: **AWAITING_APPROVAL**
+- Operator direction: review submitted T3 implementation; do not park T3 or begin T4
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0023-t3-execution-start.md`
+- Latest journal position: `0024-t3-awaiting-approval.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory
-- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 partially advanced by parked T2 and pending T3 implementation; P4-P8 UNSCORED
+- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 partially advanced by parked T2 and submitted by T3 for operator review; P4-P8 UNSCORED
 - Project closure: not eligible
 
 ## Measured implementation
@@ -135,8 +135,40 @@ parks T2. T2 grants partial P3 credit for runtime receipts/artifacts and App Jou
 memory. P3 remains incomplete pending T3's epistemic substrate outcome, and Product STOP
 remains incomplete.
 
+## T3 review position
+
+T3 adds schema version 3 with distinct `resources`, `resource_versions`,
+`observations`, `epistemic_evidence`, `claims`, and `relations` tables.
+`substrate.py` owns refresh, resource/version lookup, deterministic observation
+records, content-addressed epistemic evidence, derived claims, typed provenance
+relations, and trace traversal. The CLI exposes `substrate status`, `substrate refresh`,
+and read/list/trace inspection commands.
+
+The implemented substrate starts blank on fresh attach, records an empty target as thin
+truthful evidence and a derived empty-target claim, records non-empty targets while
+excluding `.sidecar`, preserves immutable file versions across refreshes, and traces a
+claim through observations, evidence, and target resources. Substrate refresh does not
+create T2 operational artifacts or App Journal entries.
+
+Authoritative T3 run `20260827T103210Z-7c9533eb` passed 12/12 from clean commit
+`a09e304`, with receipt SHA-256
+`C3C4815D17091E6323F671F6F90D63EC1DD446FEA9648B9C7D339F93839B5544`. It proves schema
+separation, substrate ownership, CLI entrance, T1 dependency preservation, focused T3
+behavior, canonical regression, positive product boundary, no T4/out-of-scope surfaces,
+journal continuity, static discovery, discrimination witnesses, and repository hygiene.
+
+Cumulative T2 run `20260827T103245Z-ae8818aa` passed 13/13 with SHA-256
+`A3B739D260A9AFE275859FF7DDFE09E88DF788121386266E9044FB74F73771E1`. Cumulative T1 run
+`20260827T103301Z-d348eec4` passed 9/9 with SHA-256
+`684851D752F07F36F028E8F2C6E7C9F10915CC3A87760FE0C015E95C167B52BC`. Cumulative T0 run
+`20260827T103326Z-083b10d0` passed 13/13 with SHA-256
+`7BB4EAA389397F953800ED595C499FAC7BD8CC4D5906AB3679FBC7154CCA6A14`.
+
+Entry `0024` submits T3 for operator review. T3 is not parked, full P3 credit is not
+claimed, and T4 has not begun.
+
 ## Next entering-builder action
 
-Continue T3 implementation under entry `0022` and execution start `0023`. Add and run
-the declared evidence, consolidate, synchronize review documentation, and stop at
-AWAITING_APPROVAL. Do not park T3, claim full P3 credit, or begin T4.
+Await operator review of T3. If approved, park T3 under the normal closeout mechanism.
+If returned, repair only the bounded review finding. Do not begin T4 until explicitly
+instructed.

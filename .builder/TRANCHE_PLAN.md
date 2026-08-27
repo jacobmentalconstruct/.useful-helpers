@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **ACTIVE - T3 IMPLEMENTING**
+Status: **ACTIVE - T3 AWAITING APPROVAL**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -13,7 +13,7 @@ Charter and are referenced here without redefinition.
 | T0 Bootstrap | PARKED | One approved construction system and aligned product authority exist around provisional source. | Operator vision-alignment ruling | Construction ability |
 | T1 Mechanical Hands + Governed Host | PARKED | Manifest-defined mechanical capabilities run on host-transported context through one contained CLI seam without importing higher projections. | T0 PARKED; declaration approved | P1, P2 |
 | T2 Runtime Receipts + Work Memory | PARKED | Governed runtime calls after trusted state ownership produce durable operational receipts/artifacts while a blank-start App Journal records deliberate work memory separately. | T1 PARKED; amended declaration approved | P3 partial |
-| T3 Epistemic Substrate | IMPLEMENTING | Resources, versions, observations, evidence, claims, and provenance persist without becoming receipts or journal entries. | T2 PARKED; declaration approved | P3 |
+| T3 Epistemic Substrate | AWAITING_APPROVAL | Resources, versions, observations, evidence, claims, and provenance persist without becoming receipts or journal entries. | T2 PARKED; declaration approved | P3 |
 | T4 Awareness | PROVISIONAL | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 | P4 |
 | T5 Governed Mutation Loop | PROVISIONAL | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 | P5 |
 | T6 Removable MCP Entrance | PROVISIONAL | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 | P6 |
@@ -123,11 +123,11 @@ incomplete pending T3's epistemic substrate outcome.
 
 ## T3 synopsis
 
-T3 Epistemic Substrate is IMPLEMENTING after operator approval of its declaration. The
-sequence outcome above remains the Plan-owned tranche property; entry `0022` owns its
-measured scope, ownership model, non-goals, completion evidence, risks, and ordered
-implementation plan. T3 may not park, grant full P3 credit, or begin T4 without operator
-approval.
+T3 Epistemic Substrate is AWAITING_APPROVAL after implementation. The sequence outcome
+above remains the Plan-owned tranche property; entry `0022` owns its measured scope,
+ownership model, non-goals, completion evidence, risks, and ordered implementation plan,
+and the latest T3 awaiting-approval journal entry owns the current review submission. T3
+may not park, grant full P3 credit, or begin T4 without operator approval.
 
 ## T3 declaration record
 
@@ -135,6 +135,8 @@ approval.
   `journal/0022-t3-epistemic-substrate-declaration.md`
 - Execution start:
   `journal/0023-t3-execution-start.md`
+- Implementation review submission:
+  `journal/0024-t3-awaiting-approval.md`
 
 Entry `0022` declares the first epistemic substrate outcome: resources, resource
 versions, deterministic observations, immutable epistemic evidence, derived claims, and
@@ -143,6 +145,9 @@ memory, and T4 awareness. It does not authorize implementation, create the T3 ga
 change product source, or grant additional P3 credit.
 Entry `0023` records operator approval of the declaration and starts implementation. It
 does not park T3, begin T4, or grant full P3 credit.
+Entry `0024` submits the implemented T3 outcome for operator review with authoritative
+T3 gate run `20260827T103210Z-7c9533eb`. It does not park T3, begin T4, or grant full P3
+credit without operator approval.
 
 ## Project closure
 
