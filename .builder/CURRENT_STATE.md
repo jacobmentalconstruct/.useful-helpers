@@ -4,10 +4,10 @@ This file is a resumability projection, not authority.
 
 - Current tranche: **T2 Runtime Receipts + Work Memory**
 - Current state: **AWAITING_APPROVAL**
-- Operator direction: review the submitted T2 implementation; do not begin T3
+- Operator direction: review the repaired T2 verification submission; do not begin T3
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0019-t2-awaiting-approval.md`
+- Latest journal position: `0020-t2-verification-repair-awaiting-approval.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host
 - Product STOP: PARTIAL - P1/P2 credited by parked T1; P3-P8 UNSCORED
@@ -107,20 +107,32 @@ T2 adds schema version 2 with distinct `operation_receipts`,
 `runtime_records.py` owns receipts/artifacts; `app_journal.py` owns deliberate work
 memory and links. The CLI exposes minimal receipt, artifact, and journal commands.
 
-Final T2 run `20260826T221856Z-b97a3845` passed 11/11 from clean commit `9b9920c`, with
-receipt SHA-256 `A190F0B6BBF646061B8183A2314E79FB37B778B8628A4BEB774DFA03A61DD308`.
-It proves runtime state separation, receipt failure guard, focused T2 behavior,
-canonical regression, T1 dependency preservation, product boundary, static discovery,
-repository hygiene, and discrimination against journal/receipt collapse, automatic
-receipt-to-journal projection, and missing receipt failure guard.
+Entry `0019` submitted the initial T2 implementation for review. A later audit returned
+it to VERIFYING for two bounded correctness blockers: T2 runtime-memory CLI entrances
+could bypass SQLite instance identity verification, and receipt completion could leave an
+orphan artifact if the receipt update failed. Entry `0020` supersedes `0019` only as the
+current review submission.
 
-Cumulative T1 run `20260826T221441Z-b2684cf6` passed 9/9. Cumulative T0 run
-`20260826T221803Z-a47fda50` passed 13/13 after a preserved failed run exposed stale T0
-lifecycle-status wording. T2 is not PARKED. P3 and Product STOP remain UNSCORED pending
-operator review.
+The repaired runtime now verifies state ownership before all T2 receipt/artifact/journal
+storage access, refuses mismatched legacy databases before migration, and persists
+artifact insertion plus receipt completion in one SQLite transaction.
+
+Final repaired T2 run `20260827T084412Z-8f66c495` passed 13/13 from clean commit
+`679eb22`, with receipt SHA-256
+`6476A7390A6962CB74C0224F2D53E23287CF7403B215A41D20C7FDD6BB309195`. It proves runtime
+state separation, trusted state ownership, receipt failure guard, coherent receipt
+completion, focused T2 behavior, canonical regression, T1 dependency preservation,
+product boundary, static discovery, repository hygiene, and discrimination against
+journal/receipt collapse, unverified storage connection, migration before identity
+refusal, automatic receipt-to-journal projection, split artifact/receipt completion, and
+missing receipt failure guard.
+
+Cumulative T1 run `20260827T084428Z-1bf73de6` passed 9/9. Cumulative T0 run
+`20260827T084450Z-53e248ca` passed 13/13. T2 is not PARKED. P3 and Product STOP remain
+UNSCORED pending operator review.
 
 ## Next entering-builder action
 
-Review entry `0019` and its cited receipts. The builder must stop until the operator
+Review entry `0020` and its cited receipts. The builder must stop until the operator
 approves, requests revision, narrows or enlarges scope, rejects, or reopens a premise.
 Do not park T2 and do not begin T3.

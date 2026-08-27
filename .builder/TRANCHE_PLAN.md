@@ -95,6 +95,8 @@ substrate, T4 awareness, or the later T5 governed mutation loop.
   `journal/0018-t2-execution-start.md`
 - Implementation review submission:
   `journal/0019-t2-awaiting-approval.md`
+- Verification repair and current review submission:
+  `journal/0020-t2-verification-repair-awaiting-approval.md`
 
 Entry `0016` does not authorize implementation, create the T2 gate, change product
 source, or grant product credit. Entry `0017` narrows T2 by moving preview-first mutation,
@@ -106,6 +108,11 @@ implementation. It does not park T2 or grant product credit.
 Entry `0019` submits the implemented T2 outcome for operator review with final T2 gate
 run `20260826T221856Z-b97a3845`. It does not park T2 or grant P3 credit without operator
 approval.
+Entry `0020` records an operator-returned bounded verification repair for trusted state
+ownership and coherent receipt completion. It supersedes `0019` only as the current T2
+review submission, preserves `0019` as historical evidence, and submits repaired T2 gate
+run `20260827T084412Z-8f66c495` at AWAITING_APPROVAL without parking T2 or granting P3
+credit.
 
 ## Project closure
 
