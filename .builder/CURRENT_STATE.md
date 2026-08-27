@@ -4,10 +4,10 @@ This file is a resumability projection, not authority.
 
 - Current tranche: **T4 Awareness**
 - Current state: **AWAITING_APPROVAL**
-- Operator direction: review submitted T4 implementation; do not park T4 or begin T5
+- Operator direction: review repaired T4 implementation; do not park T4 or begin T5
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0029-t4-awaiting-approval.md`
+- Latest journal position: `0031-t4-basis-freshness-repair-awaiting-approval.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate
 - Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4-P8 UNSCORED
@@ -168,8 +168,38 @@ Entry `0024` submits T3 for operator review. Entry `0025` records operator appro
 parks T3. P3 is now credited for the combined parked T2 runtime memory and T3 epistemic
 substrate outcomes. T4 has not begun.
 
+## T4 repaired review position
+
+T4 adds schema version 4 with distinct `awareness_revisions` and `awareness_items`
+tables. `awareness.py` owns compact immutable awareness revisions, awareness items,
+freshness, limitations, unknowns, source handles, and drill mapping. It consumes T3
+semantics through `substrate.py` APIs and handles rather than direct T3 table ownership.
+
+Entry `0029` submitted the initial T4 implementation for review. Entry `0030` records an
+operator-returned bounded repair because the first implementation could report `current`
+when the target changed after T3 refresh but before T4 refresh, and could leak historical
+substrate resources/claims into current orientation after deletion transitions.
+
+The repaired substrate now exposes a T3-owned coherent awareness basis/current refresh
+view with a stable basis identifier/signature, resource handles current at that refresh,
+claims, observations, evidence handles, and provenance handles. T4 awareness composes
+from that specific basis, stores the T3-observed target signature as its freshness
+baseline, and reports `stale` when the live target no longer matches that basis.
+
+Authoritative repaired T4 run `20260827T121444Z-3713df86` passed 13/13 from clean commit
+`ae5d5ac`, with receipt SHA-256
+`55D7B8629A42AB9648942553F187167468B6E555219BB91F2A402B165164E923`. It includes a
+behavioral `basis_freshness_behavior` witness for both `T3 refresh -> target mutation ->
+T4 refresh` and `non-empty -> T3 refresh -> delete -> T3 refresh -> T4 refresh`.
+Cumulative T3/T2/T1/T0 runs `20260827T121540Z-e2537cb9`,
+`20260827T121638Z-c56e1983`, `20260827T121715Z-4224b7b5`, and
+`20260827T121805Z-76c89c89` all passed from clean measured states.
+
+Entry `0031` submits the repaired implementation for operator review. T4 is not PARKED.
+P4 and Product STOP remain UNSCORED pending operator review.
+
 ## Next entering-builder action
 
-Await operator review of T4. If approved, park T4 under the normal closeout mechanism.
-If returned, repair only the bounded review finding. Do not begin T5 until explicitly
-instructed.
+Await operator review of the repaired T4 submission in entry `0031`. If approved, park
+T4 under the normal closeout mechanism. If returned, repair only the bounded review
+finding. Do not begin T5 until explicitly instructed.

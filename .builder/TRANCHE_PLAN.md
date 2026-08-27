@@ -157,12 +157,14 @@ remains incomplete.
 
 ## T4 synopsis
 
-T4 Awareness is AWAITING_APPROVAL after implementation under the operator-approved boundary-hardening amendment.
+T4 Awareness is AWAITING_APPROVAL after a bounded basis/freshness repair under the
+operator-approved boundary-hardening amendment.
 The sequence outcome above remains the Plan-owned tranche property; entry `0026` owns
 its initial measured scope, non-goals, completion evidence, risks, and ordered
 implementation plan; entry `0027` narrows source access, freshness semantics, and initial
-handle scope; entry `0028` records execution start; entry `0029` owns the current
-implementation review submission. T4 consumes T3 substrate records through `substrate.py`
+handle scope; entry `0028` records execution start; entry `0029` owns the initial
+implementation review submission; entry `0030` records the operator verification return;
+entry `0031` owns the current repaired implementation review submission. T4 consumes T3 substrate records through `substrate.py`
 APIs/handles without owning or mutating resources, versions, observations, epistemic
 evidence, claims, receipts, operational artifacts, or App Journal memory. It may not
 park, grant P4 credit, or begin T5 without operator approval.
@@ -177,6 +179,10 @@ park, grant P4 credit, or begin T5 without operator approval.
   `journal/0028-t4-execution-start.md`
 - Implementation review submission:
   `journal/0029-t4-awaiting-approval.md`
+- Verification return:
+  `journal/0030-t4-verification-return.md`
+- Basis/freshness repair and current review submission:
+  `journal/0031-t4-basis-freshness-repair-awaiting-approval.md`
 
 Entry `0026` declares the awareness outcome: compact immutable revisions with freshness,
 limitations, explicit unknowns, stable handles, and drill/provenance references over the
@@ -190,6 +196,12 @@ operator authorization to enter IMPLEMENTING under the amended declaration.
 Entry `0029` submits the implemented T4 outcome for operator review with authoritative
 T4 gate run `20260827T112959Z-3b4dd2a9`. It does not park T4, begin T5, or grant P4
 credit without operator approval.
+Entry `0030` returns T4 to VERIFYING for a bounded repair: awareness must compose from a
+coherent T3-owned current refresh basis, bind freshness to the T3-observed basis, and
+avoid leaking historical substrate records into current orientation.
+Entry `0031` submits the repaired T4 outcome for operator review with authoritative
+repaired T4 gate run `20260827T121444Z-3713df86`. It does not park T4, begin T5, or
+grant P4 credit without operator approval.
 
 ## Project closure
 

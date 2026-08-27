@@ -165,8 +165,11 @@ Schema version 3 adds distinct T3 epistemic substrate tables:
 
 `product/core/substrate.py` performs explicit refreshes against trusted instance context,
 excludes the `.sidecar` subtree, records path-based resource identity, and preserves
-historical resource versions instead of overwriting them. It currently generates only
-thin deterministic claims: observed empty target, or observed text-like files. Those are
+historical resource versions instead of overwriting them. It exposes a T3-owned current
+awareness basis view for projection consumers: the latest coherent refresh basis,
+resource handles current at that refresh, related claims, observations, evidence handles,
+provenance handles, and a stable basis signature. It currently generates only thin
+deterministic claims: observed empty target, or observed text-like files. Those are
 derived claims, not awareness findings and not deterministic facts beyond their stated
 support.
 
@@ -184,18 +187,22 @@ Schema version 4 adds distinct T4 awareness projection tables:
 - `awareness_items` records compact findings inside an awareness revision with item
   type, title, statement, priority, T3 source handles, and provenance metadata.
 
-`product/core/awareness.py` composes awareness revisions through `product/core/substrate.py`
-APIs and handles rather than querying T3-owned tables directly. It uses verified storage
-only for awareness-owned tables. Its direct target signature is an ephemeral freshness
-signal: it can mark an existing revision `current`, `stale`, or `unknown`, but it cannot
-create substrate facts or awareness findings.
+`product/core/awareness.py` composes awareness revisions through the coherent current
+basis exposed by `product/core/substrate.py` rather than querying T3-owned tables
+directly or reading accumulated substrate history. It uses verified storage only for
+awareness-owned tables. Its freshness baseline is the T3-observed target signature from
+that basis; the live target signature is an ephemeral comparison signal that can mark a
+revision `current`, `stale`, or `unknown`, but cannot create substrate facts or awareness
+findings.
 
 Awareness refresh on an unobserved target records an immutable revision with missing
 basis, no findings, explicit limitations, and explicit unknowns. Awareness refresh after
-a T3 substrate refresh records compact findings from T3 claim/resource handles. Prior
-awareness revisions remain inspectable after later refreshes. `awareness current`
-recomputes freshness against the current target signature and can report `stale` after a
-target change without implementing the T5 mutation loop.
+a T3 substrate refresh records compact findings from only the latest coherent T3 basis,
+so non-empty to empty, deletion, replacement, and similar transitions do not leak
+historical substrate records into current orientation. Prior awareness revisions remain
+inspectable after later refreshes. `awareness current` recomputes freshness against the
+current target signature and can report `stale` after a target change without
+implementing the T5 mutation loop.
 
 The CLI exposes `awareness status`, `awareness refresh`, `awareness current`,
 `awareness revisions list/read`, and `awareness drill`. Drill resolves awareness items
@@ -295,9 +302,13 @@ substrate CLI/API calls.
 The fixtures prove that later awareness refreshes create new revisions without
 overwriting prior revisions, that `awareness current` reports `stale` after target
 content changes without a matching refresh, and that awareness drill resolves through
-T3 provenance rather than direct T3 table ownership. Separation fixtures prove awareness
-does not create T2 operational artifacts or App Journal entries.
+T3 provenance rather than direct T3 table ownership. Additional adversarial fixtures
+prove that a target mutation after T3 refresh but before T4 refresh cannot receive
+`current`, and that a latest empty T3 refresh does not leak historical non-empty
+resources or claims into current awareness orientation. Separation fixtures prove
+awareness does not create T2 operational artifacts or App Journal entries.
 
-Authoritative T4 gate evidence is expected to be recorded by the review submission
-journal entry. Until operator approval, T4 remains an implementation review candidate;
-P4 credit is not parked and Product STOP remains incomplete.
+Authoritative repaired T4 gate evidence is recorded by journal entry `0031`: run
+`20260827T121444Z-3713df86` passed 13/13, including a behavioral basis/freshness witness.
+Until operator approval, T4 remains an implementation review candidate; P4 credit is not
+parked and Product STOP remains incomplete.
