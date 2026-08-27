@@ -166,7 +166,7 @@ Cumulative T2 run `20260827T103245Z-ae8818aa` passed 13/13 with SHA-256
 
 Entry `0024` submits T3 for operator review. Entry `0025` records operator approval and
 parks T3. P3 is now credited for the combined parked T2 runtime memory and T3 epistemic
-substrate outcomes. T4 has not begun.
+substrate outcomes.
 
 ## T4 repaired review position
 

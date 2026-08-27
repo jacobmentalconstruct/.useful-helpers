@@ -23,9 +23,8 @@ Hands + Governed Host is **PARKED by operator approval** in
 `20260826T133048Z-8782844f`. T2 Runtime Receipts + Work Memory is **PARKED by operator
 approval** in `.builder/journal/0021-t2-park.md`, supported by repaired T2 gate run
 `20260827T084412Z-8f66c495`. P1/P2 are credited for the declared T1 boundary, and T2
-partially advances P3 for runtime receipts/artifacts and App Journal memory. Product STOP
-remains incomplete because T3 still owns the epistemic substrate portion of P3 and P4-P8
-remain UNSCORED.
+partially advanced P3 for runtime receipts/artifacts and App Journal memory before T3
+completed the epistemic substrate portion.
 
 T3 Epistemic Substrate is **PARKED by operator approval** in
 `.builder/journal/0025-t3-park.md`, supported by authoritative T3 gate run
