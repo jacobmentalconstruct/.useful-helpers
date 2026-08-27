@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "gate": "T1-mechanical-host",
+  "status": "PASS",
+  "recorded_at": "2026-08-27T10:33:01.765406+00:00",
+  "run_id": "20260827T103301Z-d348eec4",
+  "head_commit": "a09e30436ee3c60c4c61535c9f611369f9833e4e",
+  "working_tree": "?? .builder/evidence/T2/20260827T103245Z-ae8818aa/\n?? .builder/evidence/T3/20260827T103210Z-7c9533eb/",
+  "source_digest": "d4641fd7bd1379bc23896d254666e66b850f160b05075edd5983c986e29d59f5",
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "manifest_contracts",
+      "status": "PASS",
+      "detail": "five manifests own explicit input/output, authority, domain, and invocation contracts"
+    },
+    {
+      "name": "mechanical_dependency_direction",
+      "status": "PASS",
+      "detail": "tools import only core.tool_runtime; shared runtime imports no higher core subsystem"
+    },
+    {
+      "name": "dependency_rule_discrimination",
+      "status": "PASS",
+      "detail": "positive dependency assertion rejected tool/runtime mutations: core.containment, core.contracts, core.instance"
+    },
+    {
+      "name": "focused_product_evidence",
+      "status": "PASS",
+      "detail": ".....                                                                    [100%]"
+    },
+    {
+      "name": "consumer_regression",
+      "status": "PASS",
+      "detail": "..........                                                               [100%]"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "27 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "journal_and_authority_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0023-t3-execution-start.md and gate authority remains singular"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 40 Python sources parsed"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "PASS",
+      "detail": "no generated cache, bytecode, build, release, or fixture debris remains"
+    }
+  ]
+}
