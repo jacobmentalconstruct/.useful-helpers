@@ -1,6 +1,6 @@
 # Architecture
 
-Status: **T3 IMPLEMENTATION REVIEW CANDIDATE - AWAITING OPERATOR APPROVAL**
+Status: **T3 PARKED IMPLEMENTATION MAP**
 
 ## Charter relationship
 
@@ -9,8 +9,7 @@ invariants, topology and dependency direction, runtime state classes, P1-P8, the
 acceptance walk, Product STOP, and product non-goals. This document does not redefine
 those facts. It maps the implementation currently present in the repository to the
 Charter responsibilities it is intended to realize. T1 and T2 are parked by operator
-approval. The T3 epistemic substrate implementation is a review candidate and is not
-parked until the operator grants that terminal disposition.
+approval. T3 is parked by operator approval. T4 awareness has not begun.
 
 ## Current installed-instance realization
 
@@ -246,6 +245,7 @@ version and evidence remain inspectable. A trace fixture resolves a derived clai
 evidence, and target resources. Separation fixtures prove substrate observation does not
 create App Journal entries or T2 operational artifacts.
 
-Authoritative T3 gate evidence is expected to be recorded by the review submission
-journal entry. Until operator approval, T3 remains an implementation review candidate;
-full P3 credit is not parked and Product STOP remains incomplete.
+Authoritative T3 gate evidence is recorded by journal entry `0024`, and operator
+approval plus terminal park is recorded by journal entry `0025`. T3 parks the epistemic
+substrate portion of P3. T4 awareness has not begun, P4-P8 remain UNSCORED, and Product
+STOP remains incomplete.

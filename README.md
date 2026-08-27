@@ -27,10 +27,11 @@ partially advances P3 for runtime receipts/artifacts and App Journal memory. Pro
 remains incomplete because T3 still owns the epistemic substrate portion of P3 and P4-P8
 remain UNSCORED.
 
-T3 Epistemic Substrate is submitted for operator review in
-`.builder/journal/0024-t3-awaiting-approval.md`, supported by authoritative T3 gate run
-`20260827T103210Z-7c9533eb`. T3 is not parked, full P3 credit is not granted, and T4 has
-not begun.
+T3 Epistemic Substrate is **PARKED by operator approval** in
+`.builder/journal/0025-t3-park.md`, supported by authoritative T3 gate run
+`20260827T103210Z-7c9533eb`. P3 is credited for the combined parked T2 runtime-memory and
+T3 epistemic-substrate outcomes. Product STOP remains incomplete because P4-P8 remain
+UNSCORED, and T4 has not begun.
 
 Read construction authority in this order:
 

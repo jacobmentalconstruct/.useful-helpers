@@ -3,14 +3,14 @@
 This file is a resumability projection, not authority.
 
 - Current tranche: **T3 Epistemic Substrate**
-- Current state: **AWAITING_APPROVAL**
-- Operator direction: review submitted T3 implementation; do not park T3 or begin T4
+- Current state: **PARKED**
+- Operator direction: T3 approved and parked; do not begin T4 until explicitly instructed
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0024-t3-awaiting-approval.md`
+- Latest journal position: `0025-t3-park.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
-- Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory
-- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 partially advanced by parked T2 and submitted by T3 for operator review; P4-P8 UNSCORED
+- Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate
+- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4-P8 UNSCORED
 - Project closure: not eligible
 
 ## Measured implementation
@@ -164,11 +164,11 @@ Cumulative T2 run `20260827T103245Z-ae8818aa` passed 13/13 with SHA-256
 `20260827T103326Z-083b10d0` passed 13/13 with SHA-256
 `7BB4EAA389397F953800ED595C499FAC7BD8CC4D5906AB3679FBC7154CCA6A14`.
 
-Entry `0024` submits T3 for operator review. T3 is not parked, full P3 credit is not
-claimed, and T4 has not begun.
+Entry `0024` submits T3 for operator review. Entry `0025` records operator approval and
+parks T3. P3 is now credited for the combined parked T2 runtime memory and T3 epistemic
+substrate outcomes. T4 has not begun.
 
 ## Next entering-builder action
 
-Await operator review of T3. If approved, park T3 under the normal closeout mechanism.
-If returned, repair only the bounded review finding. Do not begin T4 until explicitly
-instructed.
+Await explicit operator direction for T4 declaration or other bounded work. Do not begin
+T4 implementation.
