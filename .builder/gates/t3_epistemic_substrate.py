@@ -78,7 +78,7 @@ def _storage_tables(source: str) -> list[str]:
     return re.findall(r"CREATE TABLE\s+([a-z_]+)", source)
 
 
-def _assert_t3_schema(source: str) -> None:
+def _assert_t3_schema(source: str, *, t4_has_started: bool = False) -> None:
     tables = _storage_tables(source)
     missing = sorted(T3_TABLES - set(tables))
     if missing:
@@ -87,6 +87,8 @@ def _assert_t3_schema(source: str) -> None:
     if duplicates:
         raise AssertionError(f"substrate tables are collapsed or duplicated: {duplicates}")
     forbidden = sorted(term for term in FORBIDDEN_T3_TERMS if f"CREATE TABLE {term}" in source)
+    if t4_has_started:
+        forbidden = [term for term in forbidden if term != "awareness_revisions"]
     if forbidden:
         raise AssertionError(f"T3 storage declares deferred projection/domain tables: {forbidden}")
 
@@ -94,10 +96,13 @@ def _assert_t3_schema(source: str) -> None:
 def _t3_schema() -> str:
     storage_source = (ROOT / "product/core/storage.py").read_text(encoding="utf-8")
     constants_source = (ROOT / "product/core/constants.py").read_text(encoding="utf-8")
-    if "DATABASE_SCHEMA_VERSION = 3" not in constants_source:
-        raise AssertionError("database schema version was not advanced to 3")
-    _assert_t3_schema(storage_source)
-    return "schema version 3 declares distinct resource, evidence, claim, and relation tables"
+    match = re.search(r"DATABASE_SCHEMA_VERSION\s*=\s*(\d+)", constants_source)
+    if not match or int(match.group(1)) < 3:
+        raise AssertionError("database schema version no longer includes T3 schema")
+    plan = (ROOT / ".builder/TRANCHE_PLAN.md").read_text(encoding="utf-8")
+    t4_has_started = "T4 Awareness | PROVISIONAL" not in plan
+    _assert_t3_schema(storage_source, t4_has_started=t4_has_started)
+    return "current schema includes distinct T3 resource, evidence, claim, and relation tables"
 
 
 def _assert_substrate_owner(source: str) -> None:
