@@ -68,6 +68,11 @@ class T2RuntimeMemoryTests(InstalledFixture):
         self.assertEqual(process.returncode, 0, response)
         return response["artifacts"]
 
+    def artifact(self, target: Path, artifact_id: str) -> dict:
+        process, response = self.sidecar_raw(target, "artifacts", "read", artifact_id)
+        self.assertEqual(process.returncode, 0, response)
+        return response["artifact"]
+
     def journal_entries(self, target: Path) -> list[dict]:
         process, response = self.sidecar_raw(target, "journal", "list")
         self.assertEqual(process.returncode, 0, response)
@@ -117,6 +122,85 @@ class T2RuntimeMemoryTests(InstalledFixture):
         finally:
             connection.close()
         self.assertEqual(counts, {name: 0 for name in counts})
+
+    def test_t2_storage_entrances_refuse_untrusted_state_before_read_or_write(self) -> None:
+        target = self.target()
+        self.attach(target)
+        database = target / ".sidecar" / "state" / "workbench.sqlite3"
+        connection = sqlite3.connect(database)
+        try:
+            connection.execute("UPDATE instances SET instance_uuid = ?", ("wrong",))
+            connection.commit()
+        finally:
+            connection.close()
+
+        commands = (
+            ("receipts", "list"),
+            ("artifacts", "list"),
+            ("journal", "list"),
+            (
+                "journal",
+                "add",
+                "--title",
+                "Must not write",
+                "--body",
+                "The database identity is already rejected.",
+            ),
+        )
+        for command in commands:
+            with self.subTest(command=command):
+                process, response = self.sidecar_raw(target, *command)
+                self.assertNotEqual(process.returncode, 0)
+                self.assertEqual(response["error"]["code"], "StorageError")
+                self.assertIn("does not agree", response["error"]["message"])
+
+        connection = sqlite3.connect(database)
+        try:
+            self.assertEqual(
+                connection.execute("SELECT COUNT(*) FROM app_journal_entries").fetchone()[0],
+                0,
+            )
+        finally:
+            connection.close()
+
+    def test_mismatched_legacy_state_is_not_migrated_before_identity_refusal(self) -> None:
+        target = self.target()
+        self.attach(target)
+        database = target / ".sidecar" / "state" / "workbench.sqlite3"
+        connection = sqlite3.connect(database)
+        try:
+            connection.execute("PRAGMA foreign_keys = OFF")
+            for table in (
+                "app_journal_links",
+                "app_journal_entries",
+                "operation_receipts",
+                "operational_artifacts",
+            ):
+                connection.execute(f"DROP TABLE {table}")
+            connection.execute("UPDATE instances SET instance_uuid = ?", ("wrong",))
+            connection.execute("PRAGMA user_version = 1")
+            connection.commit()
+        finally:
+            connection.close()
+
+        process, response = self.sidecar_raw(target, "receipts", "list")
+        self.assertNotEqual(process.returncode, 0)
+        self.assertEqual(response["error"]["code"], "StorageError")
+        self.assertIn("does not agree", response["error"]["message"])
+
+        connection = sqlite3.connect(database)
+        try:
+            self.assertEqual(connection.execute("PRAGMA user_version").fetchone()[0], 1)
+            tables = {
+                row[0]
+                for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type = 'table'"
+                ).fetchall()
+            }
+            self.assertNotIn("operation_receipts", tables)
+            self.assertNotIn("app_journal_entries", tables)
+        finally:
+            connection.close()
 
     def test_receipts_record_success_refusal_malformed_output_and_process_failure(self) -> None:
         target = self.target()
@@ -168,6 +252,70 @@ class T2RuntimeMemoryTests(InstalledFixture):
         self.assertEqual(artifact["artifact"]["body"]["envelope"]["tool_id"], "read_file")
         self.assertEqual(artifact["artifact"]["body"]["envelope"]["result"]["content"], "hello receipts\n")
 
+    def test_successful_write_file_route_has_coherent_receipt_and_artifact(self) -> None:
+        target = self.target()
+        self.attach(target)
+
+        process, response = self.call(
+            target,
+            "write_file",
+            {"path": "created.txt", "content": "write receipt witness\n", "confirm": True},
+            authority="apply",
+        )
+        self.assertEqual(process.returncode, 0, response)
+        self.assertTrue(response["durably_governed"])
+        self.assertEqual((target / "created.txt").read_text(encoding="utf-8"), "write receipt witness\n")
+
+        receipts = self.receipts(target)
+        self.assertEqual(len(receipts), 1)
+        receipt = receipts[0]
+        self.assertEqual(receipt["tool_id"], "write_file")
+        self.assertEqual(receipt["status"], "success")
+        self.assertTrue(receipt["result_ok"])
+        self.assertEqual(receipt["artifact_id"], response["artifact_id"])
+
+        artifact = self.artifact(target, receipt["artifact_id"])
+        envelope = artifact["body"]["envelope"]
+        self.assertEqual(envelope["receipt_id"], receipt["receipt_id"])
+        self.assertTrue(envelope["durably_governed"])
+        self.assertEqual(envelope["result"]["handle"], "path:created.txt")
+
+    def test_finalization_failure_leaves_no_orphan_artifact_claiming_governance(self) -> None:
+        target = self.target()
+        self.attach(target)
+        database = target / ".sidecar" / "state" / "workbench.sqlite3"
+        connection = sqlite3.connect(database)
+        try:
+            connection.execute(
+                """
+                CREATE TRIGGER refuse_receipt_completion
+                BEFORE UPDATE ON operation_receipts
+                BEGIN
+                    SELECT RAISE(ABORT, 'forced receipt completion failure');
+                END
+                """
+            )
+            connection.commit()
+        finally:
+            connection.close()
+
+        process, response = self.call(
+            target,
+            "write_file",
+            {"path": "created.txt", "content": "child already ran\n", "confirm": True},
+            authority="apply",
+        )
+        self.assertNotEqual(process.returncode, 0)
+        self.assertEqual(response["error"]["code"], "receipt_persistence_failed")
+        self.assertFalse(response["durably_governed"])
+        self.assertEqual((target / "created.txt").read_text(encoding="utf-8"), "child already ran\n")
+
+        receipts = self.receipts(target)
+        self.assertEqual(len(receipts), 1)
+        self.assertEqual(receipts[0]["status"], "started")
+        self.assertIsNone(receipts[0]["artifact_id"])
+        self.assertEqual(self.artifacts(target), [])
+
     def test_app_journal_is_deliberate_memory_not_receipt_projection(self) -> None:
         target = self.target()
         (target / "note.txt").write_bytes(b"journal witness\n")
@@ -208,6 +356,29 @@ class T2RuntimeMemoryTests(InstalledFixture):
             {receipt_id, artifact_id},
         )
         self.assertEqual(read_response["result"]["content"], "journal witness\n")
+
+    def test_app_journal_can_exist_before_any_operation_receipt(self) -> None:
+        target = self.target()
+        self.attach(target)
+        self.assertEqual(self.receipts(target), [])
+
+        process, created = self.sidecar_raw(
+            target,
+            "journal",
+            "add",
+            "--type",
+            "status",
+            "--status",
+            "open",
+            "--title",
+            "Blank start",
+            "--body",
+            "Journal memory is deliberate and not derived from a tool event.",
+        )
+        self.assertEqual(process.returncode, 0, created)
+        self.assertEqual(created["entry"]["entry_id"], "journal:1")
+        self.assertEqual(self.receipts(target), [])
+        self.assertEqual(self.journal_entries(target)[0]["title"], "Blank start")
 
     def test_state_changing_call_refuses_when_receipt_creation_fails(self) -> None:
         target = self.target()

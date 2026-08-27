@@ -77,12 +77,13 @@ credit while leaving P3-P8 UNSCORED.
 
 ## T2 synopsis
 
-T2 Runtime Receipts + Work Memory is DECLARED for operator review. The sequence outcome
-above remains the Plan-owned tranche property; entry `0016` owns the historical initial
-declaration, and entry `0017` amends its scope before implementation. The amended outcome
-must add durable runtime receipts/artifacts and a clean blank-start App Journal without
-collapsing into construction history, T3 epistemic substrate, T4 awareness, or the later
-T5 governed mutation loop.
+T2 Runtime Receipts + Work Memory is AWAITING_APPROVAL after implementation and a bounded
+verification repair. The sequence outcome above remains the Plan-owned tranche property;
+entry `0016` owns the historical initial declaration, entry `0017` amends its scope
+before implementation, and the latest T2 awaiting-approval journal entry owns the current
+review submission. The amended outcome must add durable runtime receipts/artifacts and a
+clean blank-start App Journal without collapsing into construction history, T3 epistemic
+substrate, T4 awareness, or the later T5 governed mutation loop.
 
 ## T2 declaration record
 

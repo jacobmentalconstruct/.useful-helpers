@@ -108,10 +108,30 @@ def _migrate(connection: sqlite3.Connection) -> None:
             connection.execute(f"PRAGMA user_version = {DATABASE_SCHEMA_VERSION}")
 
 
+def _instances_table_exists(connection: sqlite3.Connection) -> bool:
+    return (
+        connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'instances'"
+        ).fetchone()
+        is not None
+    )
+
+
+def _verify_existing_identity(connection: sqlite3.Connection, context: InstanceContext) -> None:
+    if not _instances_table_exists(connection):
+        return
+    rows = connection.execute("SELECT instance_uuid FROM instances").fetchall()
+    if rows and (len(rows) != 1 or rows[0]["instance_uuid"] != context.instance_uuid):
+        raise StorageError(
+            "SQLite instance identity does not agree with instance.json; refusing re-entry"
+        )
+
+
 def bootstrap(context: InstanceContext) -> Path:
     path = database_path(context)
     connection = _connect(path)
     try:
+        _verify_existing_identity(connection, context)
         _migrate(connection)
         rows = connection.execute("SELECT * FROM instances").fetchall()
         if not rows:
@@ -126,20 +146,18 @@ def bootstrap(context: InstanceContext) -> Path:
                         context.target_relation,
                     ),
                 )
-        elif len(rows) != 1 or rows[0]["instance_uuid"] != context.instance_uuid:
-            raise StorageError(
-                "SQLite instance identity does not agree with instance.json; refusing re-entry"
-            )
+        else:
+            _verify_existing_identity(connection, context)
     finally:
         connection.close()
     return path
 
 
 def connect(context: InstanceContext) -> sqlite3.Connection:
-    path = database_path(context)
+    path = bootstrap(context)
     connection = _connect(path)
     try:
-        _migrate(connection)
+        _verify_existing_identity(connection, context)
     except Exception:
         connection.close()
         raise

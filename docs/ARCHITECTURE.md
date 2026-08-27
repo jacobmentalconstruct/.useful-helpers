@@ -83,16 +83,20 @@ The current implementation approaches Charter product invariants 3 and 4 through
 `product/core/control.py`. Its invocation sequence is:
 
 1. load an explicitly named instance root;
-2. discover and validate the requested manifest;
-3. compare requested and declared authority;
-4. validate input shape;
-5. resolve declared target or instance paths through containment;
-6. shape product-neutral context from the already validated host facts;
-7. establish a durable operation receipt after trusted state ownership is available;
-8. invoke the tool in a child Python process with serialized arguments and context;
-9. validate the structured result;
-10. record a durable operational artifact supporting the receipt; and
-11. return a common envelope containing receipt and artifact identifiers when recording
+2. bootstrap SQLite state and verify that the persisted instance UUID agrees with
+   `instance.json`;
+3. establish a durable operation receipt for the requested invocation after trusted
+   state ownership exists;
+4. validate client, authority, and input shape;
+5. discover and validate the requested manifest;
+6. compare requested and declared authority;
+7. resolve declared target or instance paths through containment;
+8. shape product-neutral context from the already validated host facts;
+9. invoke the tool in a child Python process with serialized arguments and context;
+10. validate the structured result;
+11. record a durable operational artifact supporting the receipt in the same persistence
+    operation that completes the receipt; and
+12. return a common envelope containing receipt and artifact identifiers when recording
     succeeds.
 
 The host resolves complete instance identity and containment before dispatch. The JSON
@@ -104,6 +108,11 @@ If receipt creation fails, the control plane reports `receipt_persistence_failed
 state-changing tool does not silently proceed as durably governed when the required
 operation record cannot be established.
 
+If receipt completion fails after a child process has already run, the control plane also
+reports `receipt_persistence_failed` with `durably_governed = false`. Artifact insertion
+and receipt completion occur in one SQLite transaction, so completion failure must not
+leave an orphan artifact whose envelope claims durable governance.
+
 Preview/apply governance, stale approval binding, governed mutation measurement,
 target-native verification workflow, refresh, cancellation, and invalidation are not
 present and receive no architectural or Product STOP credit in T2.
@@ -114,6 +123,11 @@ The current foundation for Charter product invariants 6 and 7 is
 `.sidecar/state/workbench.sqlite3`. `product/core/storage.py` enables foreign keys, WAL,
 and full synchronous writes; applies `PRAGMA user_version` migrations; and stores one
 instance row whose UUID must agree with `instance.json` on re-entry.
+
+Every T2 runtime-memory entrance uses verified storage. `storage.connect()` delegates to
+`storage.bootstrap()`, and `bootstrap()` rejects an existing database whose instance UUID
+does not agree with `instance.json` before applying migrations. Receipts, artifacts, and
+App Journal CLI commands therefore share the same state-owner check as the control plane.
 
 Schema version 2 adds distinct T2 runtime tables:
 
@@ -166,17 +180,25 @@ implementation state; Product STOP remains incomplete until P3-P8 are also prove
 T2 product fixtures report that a fresh attach starts with blank runtime receipts,
 operational artifacts, App Journal entries, and App Journal links. Successful reads,
 authority refusals before child launch, malformed child JSON, child process failure, and
-the existing immediate write route are recorded after state ownership is resolved.
+the existing immediate write route are recorded after state ownership is resolved. The
+successful write fixture inspects the completed receipt and artifact rather than relying
+only on the target file appearing.
 
 Receipts and operational artifacts remain distinct from App Journal entries. Journal
 entries are deliberate work-memory records with entry type and status, may link to
-receipt or artifact identifiers, do not appear automatically after tool calls, and remain
-available across process restart/re-entry without awareness or MCP.
+receipt or artifact identifiers, do not appear automatically after tool calls, can exist
+in a fresh runtime with zero operation receipts, and remain available across process
+restart/re-entry without awareness or MCP.
 
 A failure-injection fixture adds a SQLite trigger that rejects receipt creation and then
 attempts an apply-authority write. The control plane returns `receipt_persistence_failed`
 with `durably_governed = false`, and the target file is not created. This proves the T2
 failure invariant without implementing the later T5 preview/apply loop.
+
+Additional failure-injection fixtures corrupt SQLite instance ownership and prove T2
+receipt/artifact/journal CLI entrances refuse before reading, writing, or migrating that
+state. A receipt-completion trigger proves finalization failure after a child write does
+not leave an orphan operational artifact claiming durable governance.
 
 Authoritative T2 gate evidence is expected to be recorded by the review submission
 journal entry. Until operator approval, T2 remains an implementation review candidate;

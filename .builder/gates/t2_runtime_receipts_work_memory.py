@@ -124,6 +124,49 @@ def _assert_receipt_failure_guard(control_source: str) -> None:
         raise AssertionError("receipt creation occurs after child process launch")
 
 
+def _function_block(source: str, name: str) -> str:
+    marker = f"def {name}("
+    start = source.index(marker)
+    next_function = source.find("\ndef ", start + len(marker))
+    if next_function == -1:
+        return source[start:]
+    return source[start:next_function]
+
+
+def _assert_trusted_state_owner(storage_source: str) -> None:
+    bootstrap_source = _function_block(storage_source, "bootstrap")
+    connect_source = _function_block(storage_source, "connect")
+    if "path = bootstrap(context)" not in connect_source:
+        raise AssertionError("storage.connect does not establish verified state ownership")
+    verify_index = bootstrap_source.index("_verify_existing_identity(connection, context)")
+    migrate_index = bootstrap_source.index("_migrate(connection)")
+    if verify_index > migrate_index:
+        raise AssertionError("storage.bootstrap migrates existing state before identity refusal")
+
+
+def _trusted_state_owner() -> str:
+    source = (ROOT / "product/core/storage.py").read_text(encoding="utf-8")
+    _assert_trusted_state_owner(source)
+    return "runtime storage entrances verify instance ownership before migration or access"
+
+
+def _assert_receipt_completion_coherence(records_source: str) -> None:
+    complete_source = _function_block(records_source, "complete_receipt")
+    if "create_artifact(" in complete_source:
+        raise AssertionError("receipt completion delegates artifact persistence to a separate operation")
+    artifact_index = complete_source.index("INSERT OR IGNORE INTO operational_artifacts")
+    receipt_index = complete_source.index("UPDATE operation_receipts")
+    transaction_index = complete_source.index("with connection:")
+    if not transaction_index < artifact_index < receipt_index:
+        raise AssertionError("artifact insert and receipt completion are not one ordered transaction")
+
+
+def _receipt_completion_coherence() -> str:
+    source = (ROOT / "product/core/runtime_records.py").read_text(encoding="utf-8")
+    _assert_receipt_completion_coherence(source)
+    return "receipt completion persists artifact and receipt update as one coherent transaction"
+
+
 def _receipt_failure_guard() -> str:
     source = (ROOT / "product/core/control.py").read_text(encoding="utf-8")
     _assert_receipt_failure_guard(source)
@@ -218,15 +261,32 @@ def _discrimination_witness() -> str:
     control_source = (ROOT / "product/core/control.py").read_text(encoding="utf-8")
 
     collapsed_storage = storage_source.replace("app_journal_entries", "operation_receipts")
+    unverified_connect = storage_source.replace("path = bootstrap(context)", "path = database_path(context)")
+    migrate_before_verify = storage_source.replace(
+        "        _verify_existing_identity(connection, context)\n        _migrate(connection)",
+        "        _migrate(connection)\n        _verify_existing_identity(connection, context)",
+        1,
+    )
     auto_projection_records = records_source + "\n# app_journal_entries automatic projection\n"
+    split_completion_records = records_source.replace(
+        "    artifact_body = {",
+        "    artifact = create_artifact(context, 'tool_result', {})\n    artifact_body = {",
+        1,
+    )
     unguarded_control = control_source.replace("receipt_persistence_failed", "receipt_problem")
 
     witnessed: list[str] = []
     for label, function in (
         ("journal/receipt table collapse", lambda: _assert_runtime_schema(collapsed_storage)),
+        ("unverified runtime storage connection", lambda: _assert_trusted_state_owner(unverified_connect)),
+        ("migration before identity refusal", lambda: _assert_trusted_state_owner(migrate_before_verify)),
         (
             "automatic receipt-to-journal projection",
             lambda: _assert_runtime_owner_separation(auto_projection_records, journal_source),
+        ),
+        (
+            "split artifact/receipt completion",
+            lambda: _assert_receipt_completion_coherence(split_completion_records),
         ),
         ("missing receipt failure guard", lambda: _assert_receipt_failure_guard(unguarded_control)),
     ):
@@ -294,7 +354,9 @@ def main() -> int:
     checks = [
         _check("runtime_schema_separation", _runtime_schema_separation),
         _check("runtime_owner_separation", _runtime_owner_separation),
+        _check("trusted_state_owner", _trusted_state_owner),
         _check("receipt_failure_guard", _receipt_failure_guard),
+        _check("receipt_completion_coherence", _receipt_completion_coherence),
         _check("t1_dependency_boundary", _t1_dependency_boundary),
         _check("focused_t2_product_evidence", _focused_t2_product_evidence),
         _check("canonical_product_regression", _canonical_product_regression),

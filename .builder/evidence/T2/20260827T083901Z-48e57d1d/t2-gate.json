@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "gate": "T2-runtime-receipts-work-memory",
+  "status": "FAIL",
+  "recorded_at": "2026-08-27T08:39:01.301015+00:00",
+  "run_id": "20260827T083901Z-48e57d1d",
+  "head_commit": "b00a16c713bc6cb89ad2f5939b1b7503015a8d0c",
+  "working_tree": "M .builder/gates/t2_runtime_receipts_work_memory.py\n M product/core/runtime_records.py\n M product/core/storage.py\n M tests/test_t2_runtime_memory.py",
+  "source_digest": "b830821af850219fbeab2125d79e60c829254b8f4add1b26985726bce881d9b9",
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "runtime_schema_separation",
+      "status": "PASS",
+      "detail": "storage declares distinct T2 receipt, artifact, App Journal, and link tables only"
+    },
+    {
+      "name": "runtime_owner_separation",
+      "status": "PASS",
+      "detail": "receipts/artifacts and App Journal have separate runtime owners"
+    },
+    {
+      "name": "trusted_state_owner",
+      "status": "PASS",
+      "detail": "runtime storage entrances verify instance ownership before migration or access"
+    },
+    {
+      "name": "receipt_failure_guard",
+      "status": "PASS",
+      "detail": "state-changing calls cannot be reported durably governed without receipt creation"
+    },
+    {
+      "name": "receipt_completion_coherence",
+      "status": "PASS",
+      "detail": "receipt completion persists artifact and receipt update as one coherent transaction"
+    },
+    {
+      "name": "t1_dependency_boundary",
+      "status": "PASS",
+      "detail": "T1 mechanical dependency boundary remains intact"
+    },
+    {
+      "name": "focused_t2_product_evidence",
+      "status": "PASS",
+      "detail": "..........                                                               [100%]"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": ".........................                                                [100%]"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "26 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "journal_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0019-t2-awaiting-approval.md"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 37 Python sources parsed"
+    },
+    {
+      "name": "discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: journal/receipt table collapse; unverified runtime storage connection; migration before identity refusal; automatic receipt-to-journal projection; split artifact/receipt completion; missing receipt failure guard"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "FAIL",
+      "detail": "AssertionError: generated debris remains: ['factory/__pycache__', 'product/__pycache__', 'product/core/__pycache__', 'tests/__pycache__']"
+    }
+  ]
+}

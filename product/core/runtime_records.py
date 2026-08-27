@@ -115,18 +115,32 @@ def complete_receipt(
     manifest_digest: str | None = None,
     process: dict | None = None,
 ) -> str:
-    artifact = create_artifact(
-        context,
-        "tool_result",
-        {
-            "envelope": envelope,
-            "process": process or {},
-        },
-    )
+    artifact_body = {
+        "envelope": envelope,
+        "process": process or {},
+    }
+    payload = _json_bytes(artifact_body)
+    digest = hashlib.sha256(payload).hexdigest()
+    artifact_id = _artifact_id(digest)
     try:
         connection = storage.connect(context)
         try:
             with connection:
+                connection.execute(
+                    """
+                    INSERT OR IGNORE INTO operational_artifacts
+                        (artifact_id, created_at, kind, media_type, digest, body_json)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        artifact_id,
+                        _now(),
+                        "tool_result",
+                        "application/json",
+                        digest,
+                        payload.decode("utf-8"),
+                    ),
+                )
                 updated = connection.execute(
                     """
                     UPDATE operation_receipts
@@ -148,7 +162,7 @@ def complete_receipt(
                         exit_code,
                         duration_ms,
                         manifest_digest,
-                        artifact["artifact_id"],
+                        artifact_id,
                         receipt_id,
                     ),
                 ).rowcount
@@ -158,7 +172,7 @@ def complete_receipt(
             connection.close()
     except (OSError, sqlite3.Error, storage.StorageError) as exc:
         raise RecordError(f"could not complete operation receipt: {exc}") from exc
-    return artifact["artifact_id"]
+    return artifact_id
 
 
 def list_receipts(context: InstanceContext, limit: int = 50) -> list[dict]:
