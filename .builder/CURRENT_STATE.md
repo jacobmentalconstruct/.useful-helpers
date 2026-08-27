@@ -2,15 +2,15 @@
 
 This file is a resumability projection, not authority.
 
-- Current tranche: **None active; next provisional tranche is T3 Epistemic Substrate**
-- Current state: **T2 PARKED**
-- Operator direction: T2 is operator-approved and parked; do not begin T3
+- Current tranche: **T3 Epistemic Substrate**
+- Current state: **DECLARED - AWAITING DECLARATION REVIEW**
+- Operator direction: review the T3 declaration; do not implement T3 until approved
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0021-t2-park.md`
+- Latest journal position: `0022-t3-epistemic-substrate-declaration.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory
-- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 partially advanced by parked T2 and pending T3; P4-P8 UNSCORED
+- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 partially advanced by parked T2 and pending T3 implementation; P4-P8 UNSCORED
 - Project closure: not eligible
 
 ## Measured implementation
@@ -137,6 +137,6 @@ remains incomplete.
 
 ## Next entering-builder action
 
-Read entry `0021` and the Plan. The next useful action is a T3 Epistemic Substrate
-declaration for operator review, if the operator requests it. Do not implement T3 without
-explicit operator direction.
+Review entry `0022` and the Plan. The builder must stop until the operator approves,
+requests amendment, narrows or enlarges scope, rejects, or reopens a premise. Do not
+implement T3 and do not begin T4.

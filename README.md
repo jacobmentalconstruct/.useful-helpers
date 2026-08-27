@@ -27,6 +27,10 @@ partially advances P3 for runtime receipts/artifacts and App Journal memory. Pro
 remains incomplete because T3 still owns the epistemic substrate portion of P3 and P4-P8
 remain UNSCORED.
 
+T3 Epistemic Substrate is declared for operator review in
+`.builder/journal/0022-t3-epistemic-substrate-declaration.md`. T3 implementation has not
+started and no additional P3 credit is granted by the declaration.
+
 Read construction authority in this order:
 
 1. [`.builder/BCC.md`](.builder/BCC.md)
