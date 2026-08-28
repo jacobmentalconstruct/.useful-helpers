@@ -98,6 +98,7 @@ def _awareness_owner() -> str:
         "def read_revision(",
         "def drill(",
         "awareness:",
+        "_observed_limitations",
         "current_awareness_basis",
         "target_signature",
         "basis_status",
@@ -108,6 +109,8 @@ def _awareness_owner() -> str:
     missing = [term for term in required if term not in source]
     if missing:
         raise AssertionError(f"awareness owner lacks required behavior: {missing}")
+    if "awareness-item:" in source:
+        raise AssertionError("awareness owner exposes a second awareness-owned handle prefix")
     forbidden = ["operational_artifacts", "app_journal_entries", "operation_receipts"]
     leaked = [term for term in forbidden if term in source]
     if leaked:
@@ -135,6 +138,9 @@ def _cli_entrance() -> str:
         'awareness_commands.add_parser("current")',
         'awareness_commands.add_parser("revisions")',
         'awareness_commands.add_parser("drill")',
+        'version_commands.add_parser("read")',
+        'observation_commands.add_parser("read")',
+        'relation_commands.add_parser("read")',
     ]
     missing = [term for term in required if term not in source]
     if missing:
@@ -181,6 +187,21 @@ def _basis_freshness_behavior() -> str:
     if process.returncode:
         raise AssertionError(process.stdout.strip() or process.stderr.strip())
     return "behavioral basis/freshness witnesses passed for mismatch and latest-empty refresh"
+
+
+def _handle_round_trip_behavior() -> str:
+    tests = [
+        "tests/test_t4_awareness.py::"
+        "T4AwarenessTests::test_all_emitted_t3_source_handles_round_trip_through_substrate_owner",
+        "tests/test_t4_awareness.py::"
+        "T4AwarenessTests::test_empty_target_awareness_is_thin_and_immutable",
+        "tests/test_t4_awareness.py::"
+        "T4AwarenessTests::test_non_empty_awareness_exposes_resolvable_t3_handles_and_drill",
+    ]
+    process = _run([sys.executable, "-m", "pytest", *tests, "-q"])
+    if process.returncode:
+        raise AssertionError(process.stdout.strip() or process.stderr.strip())
+    return "observed limitations, canonical awareness handles, and T3 handle round trips passed"
 
 
 def _canonical_product_regression() -> str:
@@ -248,6 +269,10 @@ def _assert_awareness_owner(source: str) -> None:
         raise AssertionError("awareness revisions can be overwritten")
     if "awareness:" not in source or "revision:" in source:
         raise AssertionError("awareness does not use one canonical awareness: handle")
+    if "awareness-item:" in source:
+        raise AssertionError("awareness exposes noncanonical awareness-item: handle")
+    if "_observed_limitations" not in source:
+        raise AssertionError("observed awareness can omit explicit limitations")
     for table in T3_TABLES:
         if re.search(rf"\b(?:FROM|JOIN|INTO|UPDATE|DELETE FROM)\s+{table}\b", source, re.I):
             raise AssertionError(f"awareness directly queries T3 table {table}")
@@ -264,7 +289,9 @@ def _discrimination_witness() -> str:
         "mutable awareness revision": source + "\n# UPDATE awareness_revisions\n",
         "direct T3 table query": source + "\n# SELECT * FROM resources\n",
         "generic revision handle": source.replace("awareness:", "revision:"),
+        "second awareness handle prefix": source + '\n# awareness-item:alternate\n',
         "missing unknown-basis guard": source.replace("no substrate observations exist", "substrate observed rich target"),
+        "missing observed limitations": source.replace("_observed_limitations", "_missing_limitations"),
         "missing stale freshness": source.replace('"stale"', '"current"'),
     }
     for label, mutated in mutations.items():
@@ -337,6 +364,7 @@ def main() -> int:
         _check("cli_entrance", _cli_entrance),
         _check("lower_layers_do_not_import_awareness", _lower_layers_do_not_import_awareness),
         _check("basis_freshness_behavior", _basis_freshness_behavior),
+        _check("handle_round_trip_behavior", _handle_round_trip_behavior),
         _check("focused_t4_product_evidence", _focused_t4_product_evidence),
         _check("canonical_product_regression", _canonical_product_regression),
         _check("positive_product_boundary", _product_boundary),

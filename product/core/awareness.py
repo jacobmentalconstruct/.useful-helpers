@@ -26,7 +26,7 @@ def _awareness_id() -> str:
 
 
 def _item_id() -> str:
-    return f"awareness-item:{uuid.uuid4().hex}"
+    return f"awareness:item:{uuid.uuid4().hex}"
 
 
 def _json(document: Any) -> str:
@@ -112,7 +112,7 @@ def refresh(context: InstanceContext) -> dict:
             "resource_count": len(resources),
             "claim_count": len(claims),
         }
-        limitations = []
+        limitations = _observed_limitations(resources)
         unknowns = ["anything not represented in substrate observations remains unknown"]
         findings = _findings_from_substrate(resources, claims)
 
@@ -340,6 +340,16 @@ def _findings_from_substrate(resources: list[dict], claims: list[dict]) -> list[
             }
         )
     return findings
+
+
+def _observed_limitations(resources: list[dict]) -> list[str]:
+    limitations = [
+        "awareness is a compact projection over the latest substrate refresh, not a complete target scan",
+        "domain-specific contributors have not run; orientation is limited to generic substrate records",
+    ]
+    if not resources:
+        limitations.append("substrate observed no target resources, so awareness is intentionally thin")
+    return limitations
 
 
 def _bounded_limit(limit: int) -> int:

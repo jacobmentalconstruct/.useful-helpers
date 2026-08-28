@@ -669,6 +669,25 @@ def list_versions(context: InstanceContext, resource_handle: str | None = None) 
     return [_row_to_dict(row) for row in rows]
 
 
+def read_version(context: InstanceContext, version_id: str) -> dict:
+    connection = storage.connect(context)
+    try:
+        row = connection.execute(
+            """
+            SELECT version_id, resource_id, observed_at, kind, content_hash,
+                   size_bytes, mtime_ns, evidence_id
+            FROM resource_versions
+            WHERE version_id = ?
+            """,
+            (version_id,),
+        ).fetchone()
+    finally:
+        connection.close()
+    if row is None:
+        raise SubstrateError(f"version not found: {version_id}")
+    return _row_to_dict(row)
+
+
 def list_observations(context: InstanceContext, limit: int = 100) -> list[dict]:
     connection = storage.connect(context)
     try:
@@ -685,6 +704,25 @@ def list_observations(context: InstanceContext, limit: int = 100) -> list[dict]:
     finally:
         connection.close()
     return [_decode(row) for row in rows]
+
+
+def read_observation(context: InstanceContext, observation_id: str) -> dict:
+    connection = storage.connect(context)
+    try:
+        row = connection.execute(
+            """
+            SELECT observation_id, producer, observed_at, subject_handle, observation_type,
+                   data_json, evidence_id
+            FROM observations
+            WHERE observation_id = ?
+            """,
+            (observation_id,),
+        ).fetchone()
+    finally:
+        connection.close()
+    if row is None:
+        raise SubstrateError(f"observation not found: {observation_id}")
+    return _decode(row)
 
 
 def read_evidence(context: InstanceContext, evidence_id: str) -> dict:
@@ -742,6 +780,28 @@ def read_claim(context: InstanceContext, claim_id: str) -> dict:
     if row is None:
         raise SubstrateError(f"claim not found: {claim_id}")
     return _decode(row)
+
+
+def read_relation(context: InstanceContext, relation_handle: str) -> dict:
+    relation_id = _relation_number(relation_handle)
+    connection = storage.connect(context)
+    try:
+        row = connection.execute(
+            """
+            SELECT relation_id, created_at, subject_type, subject_id, predicate,
+                   object_type, object_id
+            FROM relations
+            WHERE relation_id = ?
+            """,
+            (relation_id,),
+        ).fetchone()
+    finally:
+        connection.close()
+    if row is None:
+        raise SubstrateError(f"relation not found: {relation_handle}")
+    relation = _row_to_dict(row)
+    relation["handle"] = f"relation:{relation['relation_id']}"
+    return relation
 
 
 def trace(context: InstanceContext, start_id: str) -> dict:
@@ -813,15 +873,32 @@ def _load_node(
             "SELECT claim_id AS id, 'claim' AS type, claim_type, statement FROM claims "
             "WHERE claim_id = ?",
         ),
+        "relation": (
+            "relations",
+            "SELECT relation_id AS id, 'relation' AS type, subject_type, subject_id, "
+            "predicate, object_type, object_id FROM relations WHERE relation_id = ?",
+        ),
     }
     if kind not in table_sql:
         raise SubstrateError(f"unsupported trace node type: {kind}")
     _, sql = table_sql[kind]
-    parameters: tuple[str, ...] = (identifier, identifier) if kind == "resource" else (identifier,)
+    if kind == "resource":
+        parameters: tuple[str | int, ...] = (identifier, identifier)
+    elif kind == "relation":
+        parameters = (_relation_number(identifier),)
+    else:
+        parameters = (identifier,)
     row = connection.execute(sql, parameters).fetchone()
     if row is None:
         raise SubstrateError(f"trace node not found: {identifier}")
     return _row_to_dict(row)
+
+
+def _relation_number(relation_handle: str) -> int:
+    prefix, separator, value = relation_handle.partition(":")
+    if prefix != "relation" or not separator or not value.isdecimal():
+        raise SubstrateError(f"invalid relation handle: {relation_handle}")
+    return int(value)
 
 
 def _current_refresh_observations(

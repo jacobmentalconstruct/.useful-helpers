@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "gate": "T4-awareness",
+  "status": "FAIL",
+  "recorded_at": "2026-08-28T11:16:57.192204+00:00",
+  "run_id": "20260828T111657Z-1721f2c2",
+  "head_commit": "1761dc48d8ba9969599d6f18371c614ad145f085",
+  "working_tree": "M .builder/gates/t4_awareness.py\n M product/core/awareness.py\n M product/core/cli.py\n M product/core/substrate.py\n M tests/test_t4_awareness.py\n?? .builder/journal/0033-t4-acceptance-repair-start.md",
+  "source_digest": "ee13693a17268de47c79a1c74e6ca8bd9ec8b81d8a0e00206c4cd39c962fe6a8",
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "t4_schema",
+      "status": "PASS",
+      "detail": "schema version 4 declares distinct awareness revision and item tables"
+    },
+    {
+      "name": "awareness_owner",
+      "status": "PASS",
+      "detail": "awareness owner projects through substrate APIs and owns only awareness records"
+    },
+    {
+      "name": "cli_entrance",
+      "status": "PASS",
+      "detail": "CLI exposes minimal awareness status, refresh, current, revisions, and drill commands"
+    },
+    {
+      "name": "lower_layers_do_not_import_awareness",
+      "status": "PASS",
+      "detail": "lower product layers do not depend upward on awareness"
+    },
+    {
+      "name": "basis_freshness_behavior",
+      "status": "PASS",
+      "detail": "behavioral basis/freshness witnesses passed for mismatch and latest-empty refresh"
+    },
+    {
+      "name": "handle_round_trip_behavior",
+      "status": "PASS",
+      "detail": "observed limitations, canonical awareness handles, and T3 handle round trips passed"
+    },
+    {
+      "name": "focused_t4_product_evidence",
+      "status": "PASS",
+      "detail": ".........                                                                [100%]"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": "........................................                                 [100%]"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "28 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "no_out_of_scope_surfaces",
+      "status": "PASS",
+      "detail": "T4 introduces no MCP, GUI, vector, local-AI, cartridge, or mutation-governance surface"
+    },
+    {
+      "name": "journal_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0033-t4-acceptance-repair-start.md"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 43 Python sources parsed"
+    },
+    {
+      "name": "discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: mutable awareness revision; direct T3 table query; generic revision handle; second awareness handle prefix; missing unknown-basis guard; missing observed limitations; missing stale freshness"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "FAIL",
+      "detail": "AssertionError: generated debris remains: ['factory/__pycache__', 'product/__pycache__', 'product/core/__pycache__']"
+    }
+  ]
+}

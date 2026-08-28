@@ -41,6 +41,21 @@ class T4AwarenessTests(InstalledFixture):
         self.assertTrue(response["ok"], response)
         return response
 
+    def resolve_substrate_handle(self, target: Path, handle: str) -> dict:
+        if handle.startswith("path:"):
+            return self.substrate(target, "resources", "read", handle)["resource"]
+        if handle.startswith("version:"):
+            return self.substrate(target, "versions", "read", handle)["version"]
+        if handle.startswith("observation:"):
+            return self.substrate(target, "observations", "read", handle)["observation"]
+        if handle.startswith("evidence:"):
+            return self.substrate(target, "evidence", "read", handle)["evidence"]
+        if handle.startswith("claim:"):
+            return self.substrate(target, "claims", "read", handle)["claim"]
+        if handle.startswith("relation:"):
+            return self.substrate(target, "relations", "read", handle)["relation"]
+        self.fail(f"unexpected substrate handle emitted by awareness: {handle}")
+
     def test_fresh_attach_starts_with_blank_awareness_and_runtime_state(self) -> None:
         target = self.target()
         self.attach(target)
@@ -80,8 +95,12 @@ class T4AwarenessTests(InstalledFixture):
         self.assertTrue(first["awareness_id"].startswith("awareness:"))
         self.assertEqual(first["summary"]["target_state"], "observed_empty")
         self.assertEqual(first["freshness"], "current")
+        self.assertTrue(first["limitations"])
+        self.assertTrue(any("intentionally thin" in item for item in first["limitations"]))
         self.assertTrue(first["findings"])
         self.assertTrue(any(item["source_handles"][0].startswith("claim:") for item in first["findings"]))
+        self.assertTrue(all(item["item_id"].startswith("awareness:") for item in first["findings"]))
+        self.assertFalse(any(item["item_id"].startswith("awareness-item:") for item in first["findings"]))
         self.assertNotEqual(first["awareness_id"], second["awareness_id"])
 
         read_back = self.awareness(target, "revisions", "read", first["awareness_id"])["revision"]
@@ -98,6 +117,8 @@ class T4AwarenessTests(InstalledFixture):
         revision = self.awareness(target, "refresh")["revision"]
         self.assertEqual(revision["basis"]["status"], "observed")
         self.assertEqual(revision["summary"]["target_state"], "observed_non_empty")
+        self.assertTrue(revision["limitations"])
+        self.assertTrue(any("compact projection" in item for item in revision["limitations"]))
 
         handles = {handle for item in revision["findings"] for handle in item["source_handles"]}
         self.assertIn("path:docs/note.txt", handles)
@@ -115,6 +136,30 @@ class T4AwarenessTests(InstalledFixture):
         self.assertEqual(drill["item"]["awareness_id"], revision["awareness_id"])
         self.assertTrue(any(node["id"].startswith(("claim:", "path:")) for node in drill["nodes"]))
         self.assertTrue(drill["relations"])
+
+    def test_all_emitted_t3_source_handles_round_trip_through_substrate_owner(self) -> None:
+        target = self.target()
+        (target / "docs").mkdir()
+        (target / "docs" / "note.txt").write_text("round trip handles\n", encoding="utf-8")
+        self.attach(target)
+        self.substrate(target, "refresh")
+
+        revision = self.awareness(target, "refresh")["revision"]
+        handles = set(revision["source_handles"])
+        self.assertTrue(handles)
+        self.assertTrue(any(handle.startswith("relation:") for handle in handles))
+
+        resolved_prefixes = set()
+        for handle in handles:
+            resolved = self.resolve_substrate_handle(target, handle)
+            resolved_prefixes.add(handle.split(":", 1)[0])
+            if handle.startswith("relation:"):
+                self.assertEqual(resolved["handle"], handle)
+
+        self.assertGreaterEqual(
+            resolved_prefixes,
+            {"path", "version", "observation", "evidence", "claim", "relation"},
+        )
 
     def test_freshness_becomes_stale_after_target_change_without_refresh(self) -> None:
         target = self.target()

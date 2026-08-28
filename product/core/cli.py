@@ -74,6 +74,8 @@ def _parser() -> argparse.ArgumentParser:
     version_commands = versions.add_subparsers(dest="version_command", required=True)
     version_list = version_commands.add_parser("list")
     version_list.add_argument("handle", nargs="?")
+    version_read = version_commands.add_parser("read")
+    version_read.add_argument("version_id")
     observations = substrate_commands.add_parser("observations")
     observation_commands = observations.add_subparsers(
         dest="observation_command",
@@ -81,6 +83,8 @@ def _parser() -> argparse.ArgumentParser:
     )
     observation_list = observation_commands.add_parser("list")
     observation_list.add_argument("--limit", type=int, default=100)
+    observation_read = observation_commands.add_parser("read")
+    observation_read.add_argument("observation_id")
     evidence = substrate_commands.add_parser("evidence")
     evidence_commands = evidence.add_subparsers(dest="evidence_command", required=True)
     evidence_read = evidence_commands.add_parser("read")
@@ -91,6 +95,10 @@ def _parser() -> argparse.ArgumentParser:
     claim_list.add_argument("--limit", type=int, default=100)
     claim_read = claim_commands.add_parser("read")
     claim_read.add_argument("claim_id")
+    relations = substrate_commands.add_parser("relations")
+    relation_commands = relations.add_subparsers(dest="relation_command", required=True)
+    relation_read = relation_commands.add_parser("read")
+    relation_read.add_argument("relation_id")
     trace = substrate_commands.add_parser("trace")
     trace.add_argument("handle")
 
@@ -232,15 +240,30 @@ def main(instance_root: str | Path, argv: list[str] | None = None) -> int:
                         "resource": substrate.read_resource(context, arguments.handle),
                     }
             elif arguments.substrate_command == "versions":
-                response = {
-                    "ok": True,
-                    "versions": substrate.list_versions(context, arguments.handle),
-                }
+                if arguments.version_command == "list":
+                    response = {
+                        "ok": True,
+                        "versions": substrate.list_versions(context, arguments.handle),
+                    }
+                else:
+                    response = {
+                        "ok": True,
+                        "version": substrate.read_version(context, arguments.version_id),
+                    }
             elif arguments.substrate_command == "observations":
-                response = {
-                    "ok": True,
-                    "observations": substrate.list_observations(context, arguments.limit),
-                }
+                if arguments.observation_command == "list":
+                    response = {
+                        "ok": True,
+                        "observations": substrate.list_observations(context, arguments.limit),
+                    }
+                else:
+                    response = {
+                        "ok": True,
+                        "observation": substrate.read_observation(
+                            context,
+                            arguments.observation_id,
+                        ),
+                    }
             elif arguments.substrate_command == "evidence":
                 response = {
                     "ok": True,
@@ -257,6 +280,11 @@ def main(instance_root: str | Path, argv: list[str] | None = None) -> int:
                         "ok": True,
                         "claim": substrate.read_claim(context, arguments.claim_id),
                     }
+            elif arguments.substrate_command == "relations":
+                response = {
+                    "ok": True,
+                    "relation": substrate.read_relation(context, arguments.relation_id),
+                }
             else:
                 response = {"ok": True, "trace": substrate.trace(context, arguments.handle)}
         elif arguments.command == "awareness":
