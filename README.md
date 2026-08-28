@@ -33,11 +33,9 @@ T3 epistemic-substrate outcomes. Product STOP remains incomplete because P4-P8 r
 UNSCORED.
 
 T4 Awareness is submitted for operator review in
-`.builder/journal/0031-t4-basis-freshness-repair-awaiting-approval.md`, supported by
-authoritative repaired T4 gate run `20260827T121444Z-3713df86`. Later acceptance and
-reviewer evidence is recorded in `.builder/journal/0032-t4-acceptance-review-return.md`
-and recommends a bounded return before park. T4 is not parked, P4 is not credited, and
-T5 has not begun.
+`.builder/journal/0034-t4-acceptance-repair-awaiting-approval.md`, supported by
+authoritative repaired T4 gate run `20260828T111925Z-d9548015`. T4 is not parked, P4 is
+not credited, and T5 has not begun.
 
 Read construction authority in this order:
 

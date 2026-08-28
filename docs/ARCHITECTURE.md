@@ -295,10 +295,11 @@ T4 product fixtures report that fresh attach starts with blank awareness state w
 runtime receipts and substrate records remain blank until explicit actions run.
 Awareness refresh on an unobserved target reports missing basis and `unknown` freshness
 without rich findings. Awareness refresh after an empty substrate refresh produces a
-thin immutable revision with explicit unknowns. Awareness refresh after a non-empty
-substrate refresh produces compact findings with T3 handles, but later acceptance review
-found that not every emitted provenance handle currently round-trips through a T3-owned
-resolver.
+thin immutable revision with explicit unknowns and limitations. Awareness refresh after
+a non-empty substrate refresh produces compact findings with T3 handles and explicit
+limitations. T3-owned resource, version, observation, evidence, claim, and relation
+handles emitted by awareness round-trip through substrate API/CLI read or trace
+entrances.
 
 The fixtures prove that later awareness refreshes create new revisions without
 overwriting prior revisions, that `awareness current` reports `stale` after target
@@ -313,6 +314,7 @@ Authoritative repaired T4 gate evidence is recorded by journal entry `0031`: run
 `20260827T121444Z-3713df86` passed 13/13, including a behavioral basis/freshness witness.
 Entry `0032` records subsequent Acceptance Auditor and Reviewer evidence recommending a
 bounded return for observed awareness limitations, emitted `relation:` handle
-round-tripping, and the noncanonical `awareness-item:` handle form. Until operator
-approval or return, T4 remains an implementation review candidate; P4 credit is not
-parked and Product STOP remains incomplete.
+round-tripping, and the noncanonical `awareness-item:` handle form. Entry `0034` records
+the repaired acceptance candidate: run `20260828T111925Z-d9548015` passed 14/14 with a
+handle/limitations witness. Until operator approval, T4 remains an implementation review
+candidate; P4 credit is not parked and Product STOP remains incomplete.

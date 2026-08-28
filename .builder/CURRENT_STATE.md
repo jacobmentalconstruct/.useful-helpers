@@ -4,10 +4,10 @@ This file is a resumability projection, not authority.
 
 - Current tranche: **T4 Awareness**
 - Current state: **AWAITING_APPROVAL**
-- Operator direction: T4 has new acceptance/reviewer evidence recommending bounded return; do not park T4 or begin T5 without explicit ruling
+- Operator direction: review repaired T4 acceptance repair; do not park T4 or begin T5 without explicit approval
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0032-t4-acceptance-review-return.md`
+- Latest journal position: `0034-t4-acceptance-repair-awaiting-approval.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate
 - Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4-P8 UNSCORED
@@ -199,12 +199,18 @@ Entry `0031` submits the repaired implementation for operator review. Entry `003
 records later Acceptance Auditor and Reviewer evidence recommending that T4 return to
 VERIFYING for three bounded repair items: observed awareness limitations, emitted
 `relation:` handle round-tripping, and a single canonical `awareness:` handle namespace.
-T4 is not PARKED. P4 and Product STOP remain UNSCORED pending operator ruling.
+Entry `0033` records the operator-approved repair start.
+
+Entry `0034` submits the repaired T4 acceptance candidate for operator review. Observed
+awareness revisions now emit explicit limitations; T3 owns read/trace resolution for
+emitted version, observation, evidence, claim, resource, and relation handles; and public
+awareness item identifiers use the canonical `awareness:item:<id>` namespace. The T4 gate
+now passes 14/14 with a handle/limitations witness. T4 is not PARKED. P4 and Product STOP
+remain UNSCORED pending operator review.
 
 ## Next entering-builder action
 
-Await operator ruling on the T4 acceptance/reviewer findings recorded in entry `0032`.
-If returned, repair only the three bounded T4 findings, strengthen the focused tests and
-T4 gate for those witnesses, rerun the declared T4 and cumulative checks, and resubmit
-T4 for review. If the operator explicitly approves instead, park T4 under the normal
-closeout mechanism. Do not begin T5 until explicitly instructed.
+Await operator, Reviewer, and Acceptance Auditor review of the repaired T4 submission in
+entry `0034`. If approved by operator ruling, park T4 under the normal closeout
+mechanism and credit P4. If returned, repair only the bounded review finding. Do not
+begin T5 until explicitly instructed.
