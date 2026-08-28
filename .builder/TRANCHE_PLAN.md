@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **ACTIVE - T4 AWAITING APPROVAL**
+Status: **T4 PARKED - T5 PROVISIONAL**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -14,8 +14,8 @@ Charter and are referenced here without redefinition.
 | T1 Mechanical Hands + Governed Host | PARKED | Manifest-defined mechanical capabilities run on host-transported context through one contained CLI seam without importing higher projections. | T0 PARKED; declaration approved | P1, P2 |
 | T2 Runtime Receipts + Work Memory | PARKED | Governed runtime calls after trusted state ownership produce durable operational receipts/artifacts while a blank-start App Journal records deliberate work memory separately. | T1 PARKED; amended declaration approved | P3 partial |
 | T3 Epistemic Substrate | PARKED | Resources, versions, observations, evidence, claims, and provenance persist without becoming receipts or journal entries. | T2 PARKED; declaration approved | P3 |
-| T4 Awareness | AWAITING_APPROVAL | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 PARKED; amended declaration approved | P4 |
-| T5 Governed Mutation Loop | PROVISIONAL | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 | P5 |
+| T4 Awareness | PARKED | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 PARKED; amended declaration approved | P4 |
+| T5 Governed Mutation Loop | PROVISIONAL | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 PARKED | P5 |
 | T6 Removable MCP Entrance | PROVISIONAL | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 | P6 |
 | T7 Domain Truth | PROVISIONAL | Software, mixed records/documents, and empty targets degrade truthfully. | T6 | P7 |
 | T8 Release and STOP | PROVISIONAL | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 | P1-P8 |
@@ -44,7 +44,8 @@ checkpoint T1 remained undeclared; its later records appear below.
 T0 grants no P1-P8 credit. T1 grants P1/P2 credit for the declared mechanical-host
 boundary only. T2 grants partial P3 credit for runtime operational receipts/artifacts and
 blank-start App Journal work memory. T3 completes and parks the epistemic substrate
-portion of P3. P4-P8 remain UNSCORED, and Product STOP remains incomplete. Each later
+portion of P3. T4 grants P4 credit for compact immutable awareness. P5-P8 remain
+UNSCORED, and Product STOP remains incomplete. Each later
 declaration must name the P-conditions it advances and the exact gate assertions that do
 so.
 
@@ -152,12 +153,12 @@ Entry `0024` submits the implemented T3 outcome for operator review with authori
 T3 gate run `20260827T103210Z-7c9533eb`. It does not park T3, begin T4, or grant full P3
 credit without operator approval.
 Entry `0025` records operator approval, grants the terminal PARKED disposition, and
-parks the epistemic substrate portion of P3. P4-P8 remain UNSCORED and Product STOP
-remains incomplete.
+parked the epistemic substrate portion of P3. P4-P8 were UNSCORED and Product STOP
+remained incomplete at that time.
 
 ## T4 synopsis
 
-T4 Awareness is AWAITING_APPROVAL after a bounded acceptance repair under the
+T4 Awareness is PARKED by operator approval after a bounded acceptance repair under the
 operator-approved boundary-hardening amendment.
 The sequence outcome above remains the Plan-owned tranche property; entry `0026` owns
 its initial measured scope, non-goals, completion evidence, risks, and ordered
@@ -166,11 +167,12 @@ handle scope; entry `0028` records execution start; entry `0029` owns the initia
 implementation review submission; entry `0030` records the operator verification return;
 entry `0031` owns the basis/freshness repair submission; entry `0032` records later
 Acceptance Auditor and Reviewer evidence recommending a bounded return before T4 parks;
-entry `0033` records the operator-approved repair start; and entry `0034` owns the
-current repaired acceptance review submission. T4 consumes T3 substrate records through
+entry `0033` records the operator-approved repair start; entry `0034` owns the
+repaired acceptance review submission; and entry `0035` owns the terminal approval and
+park disposition. T4 consumes T3 substrate records through
 `substrate.py` APIs/handles without owning or mutating resources, versions,
 observations, epistemic evidence, claims, receipts, operational artifacts, or App
-Journal memory. It may not park, grant P4 credit, or begin T5 without operator approval.
+Journal memory. T5 may not begin without its own declaration and operator approval.
 
 ## T4 declaration record
 
@@ -192,6 +194,8 @@ Journal memory. It may not park, grant P4 credit, or begin T5 without operator a
   `journal/0033-t4-acceptance-repair-start.md`
 - Acceptance repair and current review submission:
   `journal/0034-t4-acceptance-repair-awaiting-approval.md`
+- Operator approval and terminal park:
+  `journal/0035-t4-park.md`
 
 Entry `0026` declares the awareness outcome: compact immutable revisions with freshness,
 limitations, explicit unknowns, stable handles, and drill/provenance references over the
@@ -219,6 +223,9 @@ Entry `0033` records the operator-approved repair start. Entry `0034` submits th
 repair with observed limitations, T3-owned source-handle round trips, and canonical
 `awareness:item:<id>` item handles. It does not park T4, grant P4 credit, begin T5, or
 reopen T0-T3.
+Entry `0035` records operator approval, grants the terminal PARKED disposition, and parks
+P4 credit. P5-P8 remain UNSCORED and Product STOP remains incomplete. T5 remains
+PROVISIONAL pending its own declaration and review.
 
 ## Project closure
 

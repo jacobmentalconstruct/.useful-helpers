@@ -316,5 +316,5 @@ Entry `0032` records subsequent Acceptance Auditor and Reviewer evidence recomme
 bounded return for observed awareness limitations, emitted `relation:` handle
 round-tripping, and the noncanonical `awareness-item:` handle form. Entry `0034` records
 the repaired acceptance candidate: run `20260828T111925Z-d9548015` passed 14/14 with a
-handle/limitations witness. Until operator approval, T4 remains an implementation review
-candidate; P4 credit is not parked and Product STOP remains incomplete.
+handle/limitations witness. Entry `0035` records operator approval and parks T4. P4 is
+credited; Product STOP remains incomplete because P5-P8 are not yet credited.

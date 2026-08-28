@@ -2,15 +2,15 @@
 
 This file is a resumability projection, not authority.
 
-- Current tranche: **T4 Awareness**
-- Current state: **AWAITING_APPROVAL**
-- Operator direction: review repaired T4 acceptance repair; do not park T4 or begin T5 without explicit approval
+- Current tranche: **none active; T5 Governed Mutation Loop is next**
+- Current state: **T4 PARKED**
+- Operator direction: T4 is approved and parked; do not begin T5 until its declaration is requested/reviewed
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0034-t4-acceptance-repair-awaiting-approval.md`
+- Latest journal position: `0035-t4-park.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
-- Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate
-- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4-P8 UNSCORED
+- Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness
+- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5-P8 UNSCORED
 - Project closure: not eligible
 
 ## Measured implementation
@@ -205,12 +205,12 @@ Entry `0034` submits the repaired T4 acceptance candidate for operator review. O
 awareness revisions now emit explicit limitations; T3 owns read/trace resolution for
 emitted version, observation, evidence, claim, resource, and relation handles; and public
 awareness item identifiers use the canonical `awareness:item:<id>` namespace. The T4 gate
-now passes 14/14 with a handle/limitations witness. T4 is not PARKED. P4 and Product STOP
-remain UNSCORED pending operator review.
+passes 14/14 with a handle/limitations witness.
+
+Entry `0035` records operator approval and parks T4. P4 is credited. Product STOP remains
+incomplete because P5-P8 are UNSCORED.
 
 ## Next entering-builder action
 
-Await operator, Reviewer, and Acceptance Auditor review of the repaired T4 submission in
-entry `0034`. If approved by operator ruling, park T4 under the normal closeout
-mechanism and credit P4. If returned, repair only the bounded review finding. Do not
-begin T5 until explicitly instructed.
+Await operator instruction to prepare the T5 Governed Mutation Loop declaration. Do not
+begin T5 implementation until its declaration is reviewed and approved.
