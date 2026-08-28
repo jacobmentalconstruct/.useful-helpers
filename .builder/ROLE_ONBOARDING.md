@@ -12,9 +12,8 @@ Identify your role before acting:
 
 - **Operator:** human decision authority.
 - **Builder:** implements approved construction work and submits it for review.
-- **Reviewer:** performs broad external review and assessment.
-- **Acceptance Auditor:** audits whether tranche closure/PARK/Product STOP credit is
-  justified.
+- **Reviewer:** performs broad external review and assessment, including closure review
+  for PARK/Product STOP credit when requested.
 
 Only the Operator approves, parks, credits Product STOP, reopens, or changes scope.
 
@@ -33,10 +32,12 @@ Then read the role-specific manifest:
 
 - Builder: `.builder/evidence/builder/BUILDER_MANIFEST.md`
 - Reviewer: `.builder/evidence/reviews/REVIEWER_MANIFEST.md`
-- Acceptance Auditor:
-  `.builder/evidence/acceptance/ACCEPTANCE_AUDITOR_MANIFEST.md`
 
 Then read the latest relevant journal entries and evidence named by `CURRENT_STATE.md`.
+
+The retired Acceptance Auditor manifest and T4 audit evidence under
+`.builder/evidence/acceptance/` are historical construction evidence. They are not an
+active standing role unless the Operator explicitly creates a temporary specialist audit.
 
 ## Current Handoff Rule
 
@@ -52,7 +53,7 @@ read it for the latest position.
 
 1. Builder submits tranche work at `AWAITING_APPROVAL`.
 2. Reviewer records broad review evidence under `.builder/evidence/reviews/`.
-3. Acceptance Auditor records closure audit evidence under `.builder/evidence/acceptance/`.
+3. Reviewer includes a closure review pass when PARK/Product STOP credit is at issue.
 4. Operator issues the actual ruling.
 5. Builder acts on the ruling and stops at the required boundary.
 
@@ -63,5 +64,5 @@ read it for the latest position.
 - Do not park, credit Product STOP, reopen, or begin the next tranche without explicit
   operator direction.
 - Do not save construction review/audit material in the product App Journal.
-- Do not collapse construction history, Reviewer evidence, Acceptance Auditor evidence,
+- Do not collapse construction history, Reviewer evidence, retired audit evidence,
   runtime receipts, App Journal memory, epistemic evidence, or awareness.
