@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **T4 PARKED - T5 PROVISIONAL**
+Status: **T5 DECLARED - AWAITING OPERATOR REVIEW**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -15,7 +15,7 @@ Charter and are referenced here without redefinition.
 | T2 Runtime Receipts + Work Memory | PARKED | Governed runtime calls after trusted state ownership produce durable operational receipts/artifacts while a blank-start App Journal records deliberate work memory separately. | T1 PARKED; amended declaration approved | P3 partial |
 | T3 Epistemic Substrate | PARKED | Resources, versions, observations, evidence, claims, and provenance persist without becoming receipts or journal entries. | T2 PARKED; declaration approved | P3 |
 | T4 Awareness | PARKED | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 PARKED; amended declaration approved | P4 |
-| T5 Governed Mutation Loop | PROVISIONAL | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 PARKED | P5 |
+| T5 Governed Mutation Loop | DECLARED | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 PARKED; declaration under review | P5 |
 | T6 Removable MCP Entrance | PROVISIONAL | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 | P6 |
 | T7 Domain Truth | PROVISIONAL | Software, mixed records/documents, and empty targets degrade truthfully. | T6 | P7 |
 | T8 Release and STOP | PROVISIONAL | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 | P1-P8 |
@@ -224,8 +224,34 @@ repair with observed limitations, T3-owned source-handle round trips, and canoni
 `awareness:item:<id>` item handles. It does not park T4, grant P4 credit, begin T5, or
 reopen T0-T3.
 Entry `0035` records operator approval, grants the terminal PARKED disposition, and parks
-P4 credit. P5-P8 remain UNSCORED and Product STOP remains incomplete. T5 remains
-PROVISIONAL pending its own declaration and review.
+P4 credit. P5-P8 remain UNSCORED and Product STOP remains incomplete. Entry `0036`
+declares T5 for operator review without authorizing implementation, parking T5, granting
+P5 credit, or beginning T6.
+
+## T5 synopsis
+
+T5 Governed Mutation Loop is DECLARED for operator review. The sequence outcome above
+remains the Plan-owned tranche property; entry `0036` owns its measured scope, non-goals,
+completion evidence, risks, and ordered implementation plan. T5 is intended to close the
+prototype's fundamental work loop: current awareness, reviewed preview, approval bound
+to that preview and basis, stale-state refusal, bounded mutation through the existing
+governed host, independent changed-path measurement, honest verification, substrate
+refresh, awareness refresh, and linked durable records. It may not enter IMPLEMENTING,
+park, grant P5 credit, or begin T6 without operator approval.
+
+## T5 declaration record
+
+- Declaration and scope-review submission:
+  `journal/0036-t5-governed-mutation-loop-declaration.md`
+
+Entry `0036` incorporates the operator's prototype-orientation clarification as planning
+input: Sidecar Workbench remains a directory-bound general-purpose workbench over
+arbitrary filesystem-backed targets; runtime entrances converge on one shared workbench;
+and construction process concepts must not be reproduced as runtime product concepts
+without an independent product requirement. It identifies no concrete contradiction with
+parked T0-T4 work. It names the migration-version-stamp repair as the first T5
+precondition and includes minimal child-process environment containment in scope for the
+governed mutation authority boundary. It does not authorize implementation.
 
 ## Project closure
 

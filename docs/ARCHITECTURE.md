@@ -1,6 +1,6 @@
 # Architecture
 
-Status: **T4 IMPLEMENTATION REVIEW CANDIDATE - AWAITING OPERATOR APPROVAL**
+Status: **T4 PARKED; T5 DECLARED - AWAITING OPERATOR REVIEW**
 
 ## Charter relationship
 
@@ -8,9 +8,9 @@ The [Product Charter](PRODUCT_CHARTER.md) owns product identity, method/product 
 invariants, topology and dependency direction, runtime state classes, P1-P8, the
 acceptance walk, Product STOP, and product non-goals. This document does not redefine
 those facts. It maps the implementation currently present in the repository to the
-Charter responsibilities it is intended to realize. T1 and T2 are parked by operator
-approval. T3 is parked by operator approval. The T4 awareness implementation is a review
-candidate and is not parked until the operator grants that terminal disposition.
+Charter responsibilities it is intended to realize. T1, T2, T3, and T4 are parked by
+operator approval. T5 Governed Mutation Loop is declared for operator review and is not
+implemented, parked, or credited.
 
 ## Current installed-instance realization
 
