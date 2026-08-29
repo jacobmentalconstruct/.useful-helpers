@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **T5 AWAITING_APPROVAL**
+Status: **T5 PARKED**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -15,8 +15,8 @@ Charter and are referenced here without redefinition.
 | T2 Runtime Receipts + Work Memory | PARKED | Governed runtime calls after trusted state ownership produce durable operational receipts/artifacts while a blank-start App Journal records deliberate work memory separately. | T1 PARKED; amended declaration approved | P3 partial |
 | T3 Epistemic Substrate | PARKED | Resources, versions, observations, evidence, claims, and provenance persist without becoming receipts or journal entries. | T2 PARKED; declaration approved | P3 |
 | T4 Awareness | PARKED | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 PARKED; amended declaration approved | P4 |
-| T5 Governed Mutation Loop | AWAITING_APPROVAL | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 PARKED; declaration approved | P5 candidate |
-| T6 Removable MCP Entrance | PROVISIONAL | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 | P6 |
+| T5 Governed Mutation Loop | PARKED | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 PARKED; declaration approved | P5 |
+| T6 Removable MCP Entrance | PROVISIONAL | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 PARKED | P6 |
 | T7 Domain Truth | PROVISIONAL | Software, mixed records/documents, and empty targets degrade truthfully. | T6 | P7 |
 | T8 Release and STOP | PROVISIONAL | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 | P1-P8 |
 
@@ -44,8 +44,9 @@ checkpoint T1 remained undeclared; its later records appear below.
 T0 grants no P1-P8 credit. T1 grants P1/P2 credit for the declared mechanical-host
 boundary only. T2 grants partial P3 credit for runtime operational receipts/artifacts and
 blank-start App Journal work memory. T3 completes and parks the epistemic substrate
-portion of P3. T4 grants P4 credit for compact immutable awareness. P5-P8 remain
-UNSCORED, and Product STOP remains incomplete. Each later
+portion of P3. T4 grants P4 credit for compact immutable awareness. T5 grants P5 credit
+for the governed mutation loop. P6-P8 remain UNSCORED, and Product STOP remains
+incomplete. Each later
 declaration must name the P-conditions it advances and the exact gate assertions that do
 so.
 
@@ -231,16 +232,16 @@ IMPLEMENTING under that declaration.
 
 ## T5 synopsis
 
-T5 Governed Mutation Loop is AWAITING_APPROVAL after implementation and verification.
-The sequence outcome above remains the Plan-owned tranche property; entry `0036` owns
-its measured scope, non-goals, completion evidence, risks, and ordered implementation
-plan. Entry `0037` owns the operator-approved transition into implementation. Entry
-`0038` owns the current review submission. T5 is intended to close the prototype's
-fundamental work loop: current awareness, reviewed preview, approval bound to that
-preview and basis, stale-state refusal, bounded mutation through the existing governed
-host, independent changed-path measurement, honest verification, substrate refresh,
-awareness refresh, and linked durable records. It may not park, grant P5 credit, or
-begin T6 without operator approval.
+T5 Governed Mutation Loop is PARKED by operator approval. The sequence outcome above
+remains the Plan-owned tranche property; entry `0036` owns its measured scope, non-goals,
+completion evidence, risks, and ordered implementation plan. Entry `0037` owns the
+operator-approved transition into implementation. Entry `0038` owns the review
+submission. Entry `0039` owns the terminal approval and park disposition. T5 closes the
+prototype's fundamental work loop: current awareness, reviewed preview, approval bound
+to that preview and basis, stale-state refusal, bounded mutation through the existing
+governed host, independent changed-path measurement, honest verification, substrate
+refresh, awareness refresh, and linked durable records. T6 may not begin without its own
+declaration and operator approval.
 
 ## T5 declaration record
 
@@ -250,6 +251,8 @@ begin T6 without operator approval.
   `journal/0037-t5-execution-start.md`
 - Implementation review submission:
   `journal/0038-t5-awaiting-approval.md`
+- Operator approval and terminal park:
+  `journal/0039-t5-park.md`
 
 Entry `0036` incorporates the operator's prototype-orientation clarification as planning
 input: Sidecar Workbench remains a directory-bound general-purpose workbench over
@@ -264,6 +267,8 @@ run `20260829T095546Z-e30c36d7` and cumulative T4/T3/T2/T1/T0 runs
 `20260829T095908Z-0024328c`, `20260829T100018Z-8db946ba`,
 `20260829T100131Z-0431a9bf`, `20260829T100153Z-73086b49`, and
 `20260829T100254Z-e375b5eb`. It does not park T5, grant P5 credit, or begin T6.
+Entry `0039` records operator approval, grants the terminal PARKED disposition, and parks
+P5 credit. P6-P8 remain UNSCORED and Product STOP remains incomplete.
 
 ## Project closure
 

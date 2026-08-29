@@ -1,6 +1,6 @@
 # Architecture
 
-Status: **T4 PARKED; T5 AWAITING_APPROVAL**
+Status: **T5 PARKED IMPLEMENTATION MAP**
 
 ## Charter relationship
 
@@ -9,8 +9,8 @@ invariants, topology and dependency direction, runtime state classes, P1-P8, the
 acceptance walk, Product STOP, and product non-goals. This document does not redefine
 those facts. It maps the implementation currently present in the repository to the
 Charter responsibilities it is intended to realize. T1, T2, T3, and T4 are parked by
-operator approval. T5 Governed Mutation Loop is implemented and awaiting operator
-approval; it is not parked or credited.
+operator approval. T5 Governed Mutation Loop is parked by operator approval and P5 is
+credited. Product STOP remains incomplete because P6-P8 are unscored.
 
 ## Current installed-instance realization
 
@@ -125,8 +125,7 @@ leave an orphan artifact whose envelope claims durable governance.
 T5 mutation governance sits above this invocation path and uses it for approved apply.
 T2 did not credit preview/apply governance, stale approval binding, mutation
 measurement, target-native verification workflow, refresh, cancellation, or invalidation;
-T5 now submits the bounded preview/apply portion for operator review without parking or
-credit.
+T5 parks the bounded preview/apply portion by operator approval and P5 credit.
 
 ## Current substrate implementation
 
@@ -275,7 +274,7 @@ child leaves no launch witness when identity, authority, input, or containment f
 Dependency mutation proves the T1 gate rejects `core.containment`, `core.contracts`, and
 `core.instance` when injected into both a mechanical tool and the shared runtime. Journal
 entry `0015` records operator approval and parks T1. This document maps the approved
-implementation state; Product STOP remains incomplete until P5-P8 are also proven.
+implementation state; Product STOP remains incomplete until P6-P8 are also proven.
 
 ## T2 review evidence
 
@@ -355,7 +354,8 @@ bounded return for observed awareness limitations, emitted `relation:` handle
 round-tripping, and the noncanonical `awareness-item:` handle form. Entry `0034` records
 the repaired acceptance candidate: run `20260828T111925Z-d9548015` passed 14/14 with a
 handle/limitations witness. Entry `0035` records operator approval and parks T4. P4 is
-credited; Product STOP remains incomplete because P5-P8 are not yet credited.
+credited. T5 is now parked by entry `0039`, and Product STOP remains incomplete because
+P6-P8 are not yet credited.
 
 ## T5 review evidence
 
@@ -381,5 +381,8 @@ Authoritative T5 review evidence is recorded by journal entry `0038`: run
 `2F1B92BA6337AC84C43FDC6FD1F4F0653BC2C4BEDBDD61A6D917F98DB03D7437`.
 Cumulative T4/T3/T2/T1/T0 gates also passed after the authoritative T5 receipt was
 preserved.
-T5 is awaiting operator approval; it is not parked, P5 is not credited, and T6 has not
-begun.
+External Reviewer evidence at
+`.builder/evidence/reviews/T5/20260829T104344Z-external-review.md` recommends APPROVE
+CANDIDATE, PARKED status, and P5 credit. Entry `0039` records operator approval and
+parks T5. P5 is credited; Product STOP remains incomplete because P6-P8 are unscored,
+and T6 has not begun.

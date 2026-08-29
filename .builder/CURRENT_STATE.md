@@ -2,15 +2,15 @@
 
 This file is a resumability projection, not authority.
 
-- Current tranche: **T5 Governed Mutation Loop**
-- Current state: **AWAITING_APPROVAL**
-- Operator direction: Review the T5 implementation candidate; do not park T5, credit P5, or begin T6 without explicit operator approval
+- Current tranche: **None active; next declaration is T6 Removable MCP Entrance**
+- Current state: **T5 PARKED**
+- Operator direction: T5 is approved for PARK/P5 credit; do not begin T6 implementation without its own declaration and explicit operator approval
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0038-t5-awaiting-approval.md`
+- Latest journal position: `0039-t5-park.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness
-- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5-P8 UNSCORED
+- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5 credited by parked T5; P6-P8 UNSCORED
 - Project closure: not eligible
 
 ## Measured implementation
@@ -207,16 +207,16 @@ emitted version, observation, evidence, claim, resource, and relation handles; a
 awareness item identifiers use the canonical `awareness:item:<id>` namespace. The T4 gate
 passes 14/14 with a handle/limitations witness.
 
-Entry `0035` records operator approval and parks T4. P4 is credited. Product STOP remains
-incomplete because P5-P8 are UNSCORED.
+Entry `0035` records operator approval and parks T4. P4 is credited. T5 is now also
+parked by entry `0039`; Product STOP remains incomplete because P6-P8 are UNSCORED.
 
 ## Next entering-builder action
 
-Remain stopped at T5 AWAITING_APPROVAL. The next builder action is review support only
-unless the operator returns T5 to implementation/verification or explicitly approves
-parking. Do not park T5, credit P5, or begin T6 without explicit operator approval.
+Prepare the T6 Removable MCP Entrance declaration for operator review when instructed.
+Do not begin T6 implementation without declaration review and explicit operator
+approval.
 
-## T5 review position
+## T5 parked position
 
 Entry `0036` declares T5 for operator review. It applies the operator's clarified
 prototype intent: Sidecar Workbench is a directory-bound general-purpose workbench for
@@ -250,3 +250,8 @@ Cumulative parked-tranche gates passed after the authoritative T5 receipt was pr
 T4 `20260829T095908Z-0024328c`, T3 `20260829T100018Z-8db946ba`,
 T2 `20260829T100131Z-0431a9bf`, T1 `20260829T100153Z-73086b49`, and
 T0 `20260829T100254Z-e375b5eb`.
+
+External Reviewer evidence at
+`.builder/evidence/reviews/T5/20260829T104344Z-external-review.md` recommends APPROVE
+CANDIDATE, PARKED status, and P5 credit. Entry `0039` records operator approval and parks
+T5. P5 is credited; P6-P8 remain UNSCORED and Product STOP remains incomplete.
