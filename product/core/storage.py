@@ -25,12 +25,21 @@ def _connect(path: Path) -> sqlite3.Connection:
     return connection
 
 
-def _migrate(connection: sqlite3.Connection) -> None:
+def _migrate(
+    connection: sqlite3.Connection,
+    *,
+    target_version: int = DATABASE_SCHEMA_VERSION,
+) -> None:
     version = int(connection.execute("PRAGMA user_version").fetchone()[0])
-    if version > DATABASE_SCHEMA_VERSION:
+    if target_version > DATABASE_SCHEMA_VERSION:
+        raise StorageError(
+            f"target schema {target_version} is newer than this runtime supports "
+            f"({DATABASE_SCHEMA_VERSION})"
+        )
+    if version > target_version:
         raise StorageError(
             f"database schema {version} is newer than this runtime supports "
-            f"({DATABASE_SCHEMA_VERSION})"
+            f"({target_version})"
         )
     if version == 0:
         with connection:
@@ -47,6 +56,8 @@ def _migrate(connection: sqlite3.Connection) -> None:
             )
             connection.execute("PRAGMA user_version = 1")
         version = 1
+    if target_version < 2:
+        return
     if version < 2:
         with connection:
             connection.execute(
@@ -107,6 +118,8 @@ def _migrate(connection: sqlite3.Connection) -> None:
             )
             connection.execute("PRAGMA user_version = 2")
         version = 2
+    if target_version < 3:
+        return
     if version < 3:
         with connection:
             connection.execute(
@@ -187,8 +200,10 @@ def _migrate(connection: sqlite3.Connection) -> None:
                 )
                 """
             )
-            connection.execute(f"PRAGMA user_version = {DATABASE_SCHEMA_VERSION}")
+            connection.execute("PRAGMA user_version = 3")
         version = 3
+    if target_version < 4:
+        return
     if version < 4:
         with connection:
             connection.execute(
@@ -220,7 +235,94 @@ def _migrate(connection: sqlite3.Connection) -> None:
                 )
                 """
             )
-            connection.execute(f"PRAGMA user_version = {DATABASE_SCHEMA_VERSION}")
+            connection.execute("PRAGMA user_version = 4")
+        version = 4
+    if target_version < 5:
+        return
+    if version < 5:
+        with connection:
+            connection.execute(
+                """
+                CREATE TABLE mutation_previews (
+                    preview_id TEXT PRIMARY KEY,
+                    created_at TEXT NOT NULL,
+                    instance_uuid TEXT NOT NULL REFERENCES instances(instance_uuid),
+                    operation TEXT NOT NULL,
+                    path TEXT NOT NULL,
+                    content_digest TEXT NOT NULL,
+                    before_exists INTEGER NOT NULL,
+                    before_digest TEXT,
+                    after_digest TEXT NOT NULL,
+                    overwrite INTEGER NOT NULL,
+                    expected_changed_paths_json TEXT NOT NULL,
+                    awareness_id TEXT NOT NULL,
+                    basis_signature TEXT,
+                    target_signature TEXT NOT NULL,
+                    preview_digest TEXT NOT NULL UNIQUE,
+                    payload_json TEXT NOT NULL,
+                    status TEXT NOT NULL
+                )
+                """
+            )
+            connection.execute(
+                """
+                CREATE TABLE mutation_approvals (
+                    approval_id TEXT PRIMARY KEY,
+                    created_at TEXT NOT NULL,
+                    instance_uuid TEXT NOT NULL REFERENCES instances(instance_uuid),
+                    preview_id TEXT NOT NULL REFERENCES mutation_previews(preview_id),
+                    preview_digest TEXT NOT NULL,
+                    basis_signature TEXT,
+                    target_signature TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    journal_entry_id TEXT
+                )
+                """
+            )
+            connection.execute(
+                """
+                CREATE TABLE mutation_verifications (
+                    verification_id TEXT PRIMARY KEY,
+                    created_at TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    method TEXT NOT NULL,
+                    detail_json TEXT NOT NULL
+                )
+                """
+            )
+            connection.execute(
+                """
+                CREATE TABLE mutation_records (
+                    mutation_id TEXT PRIMARY KEY,
+                    created_at TEXT NOT NULL,
+                    instance_uuid TEXT NOT NULL REFERENCES instances(instance_uuid),
+                    preview_id TEXT NOT NULL REFERENCES mutation_previews(preview_id),
+                    approval_id TEXT,
+                    status TEXT NOT NULL,
+                    refusal_code TEXT,
+                    receipt_id TEXT,
+                    artifact_id TEXT,
+                    measurement_json TEXT NOT NULL,
+                    verification_id TEXT,
+                    pre_awareness_id TEXT,
+                    post_awareness_id TEXT,
+                    substrate_refresh_json TEXT NOT NULL,
+                    detail_json TEXT NOT NULL
+                )
+                """
+            )
+            connection.execute(
+                """
+                CREATE TABLE mutation_links (
+                    link_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    created_at TEXT NOT NULL,
+                    source_id TEXT NOT NULL,
+                    target_type TEXT NOT NULL,
+                    target_id TEXT NOT NULL
+                )
+                """
+            )
+            connection.execute("PRAGMA user_version = 5")
 
 
 def _instances_table_exists(connection: sqlite3.Connection) -> bool:

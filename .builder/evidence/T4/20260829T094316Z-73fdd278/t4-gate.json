@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "gate": "T4-awareness",
+  "status": "FAIL",
+  "recorded_at": "2026-08-29T09:43:16.087635+00:00",
+  "run_id": "20260829T094316Z-73fdd278",
+  "head_commit": "2ea0b1b4979b5ac5fcae035e24706fc0c8a1860d",
+  "working_tree": "M product/core/cli.py\n M product/core/constants.py\n M product/core/control.py\n M product/core/storage.py\n M tests/test_phase1.py\n?? .builder/evidence/T3/20260829T094257Z-c41d94a1/\n?? .builder/evidence/T5/\n?? .builder/gates/t5_governed_mutation.py\n?? product/core/mutation.py\n?? tests/test_t5_governed_mutation.py",
+  "source_digest": "ca9edafb9dc6fb2bb664f6d0e644c910b2eca92c46aba58473f87f8c4ff0f5f3",
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "t4_schema",
+      "status": "FAIL",
+      "detail": "AssertionError: database schema version was not advanced to 4"
+    },
+    {
+      "name": "awareness_owner",
+      "status": "PASS",
+      "detail": "awareness owner projects through substrate APIs and owns only awareness records"
+    },
+    {
+      "name": "cli_entrance",
+      "status": "PASS",
+      "detail": "CLI exposes minimal awareness status, refresh, current, revisions, and drill commands"
+    },
+    {
+      "name": "lower_layers_do_not_import_awareness",
+      "status": "PASS",
+      "detail": "lower product layers do not depend upward on awareness"
+    },
+    {
+      "name": "basis_freshness_behavior",
+      "status": "PASS",
+      "detail": "behavioral basis/freshness witnesses passed for mismatch and latest-empty refresh"
+    },
+    {
+      "name": "handle_round_trip_behavior",
+      "status": "PASS",
+      "detail": "observed limitations, canonical awareness handles, and T3 handle round trips passed"
+    },
+    {
+      "name": "focused_t4_product_evidence",
+      "status": "PASS",
+      "detail": ".........                                                                [100%]"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": "................................................                         [100%]"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "29 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "no_out_of_scope_surfaces",
+      "status": "FAIL",
+      "detail": "AssertionError: product/core/storage.py mentions preview"
+    },
+    {
+      "name": "journal_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0037-t5-execution-start.md"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 46 Python sources parsed"
+    },
+    {
+      "name": "discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: mutable awareness revision; direct T3 table query; generic revision handle; second awareness handle prefix; missing unknown-basis guard; missing observed limitations; missing stale freshness"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "PASS",
+      "detail": "no generated cache, bytecode, build, release, or fixture debris remains"
+    }
+  ]
+}

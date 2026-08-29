@@ -6,7 +6,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-from . import app_journal, awareness, registry, runtime_records, storage, substrate
+from . import app_journal, awareness, mutation, registry, runtime_records, storage, substrate
 from .control import ControlPlane
 from .instance import InstanceError, load
 
@@ -121,6 +121,27 @@ def _parser() -> argparse.ArgumentParser:
     awareness_revision_read.add_argument("awareness_id")
     awareness_drill = awareness_commands.add_parser("drill")
     awareness_drill.add_argument("item_id")
+
+    mutation_parser = commands.add_parser("mutation")
+    mutation_commands = mutation_parser.add_subparsers(
+        dest="mutation_command",
+        required=True,
+    )
+    mutation_commands.add_parser("status")
+    preview_write = mutation_commands.add_parser("preview-write")
+    preview_write.add_argument("--path", required=True)
+    preview_write.add_argument("--content", required=True)
+    preview_write.add_argument("--overwrite", action="store_true")
+    approve = mutation_commands.add_parser("approve")
+    approve.add_argument("preview_id")
+    approve.add_argument("--journal-entry")
+    apply = mutation_commands.add_parser("apply")
+    apply.add_argument("approval_id")
+    apply.add_argument("--preview")
+    history = mutation_commands.add_parser("history")
+    history.add_argument("--limit", type=int, default=50)
+    links = mutation_commands.add_parser("links")
+    links.add_argument("source_id")
     return parser
 
 
@@ -307,6 +328,35 @@ def main(instance_root: str | Path, argv: list[str] | None = None) -> int:
                     }
             else:
                 response = {"ok": True, "drill": awareness.drill(context, arguments.item_id)}
+        elif arguments.command == "mutation":
+            if arguments.mutation_command == "status":
+                response = mutation.status(context)
+            elif arguments.mutation_command == "preview-write":
+                response = mutation.preview_write(
+                    context,
+                    path=arguments.path,
+                    content=arguments.content,
+                    overwrite=arguments.overwrite,
+                )
+            elif arguments.mutation_command == "approve":
+                response = mutation.approve(
+                    context,
+                    arguments.preview_id,
+                    journal_entry_id=arguments.journal_entry,
+                )
+            elif arguments.mutation_command == "apply":
+                response = mutation.apply(
+                    context,
+                    arguments.approval_id,
+                    preview_id=arguments.preview,
+                )
+            elif arguments.mutation_command == "history":
+                response = {
+                    "ok": True,
+                    "mutations": mutation.list_history(context, arguments.limit),
+                }
+            else:
+                response = {"ok": True, "links": mutation.links(context, arguments.source_id)}
         else:
             response = {"ok": False, "error": {"code": "unknown_command"}}
     except (
@@ -317,6 +367,7 @@ def main(instance_root: str | Path, argv: list[str] | None = None) -> int:
         app_journal.JournalError,
         substrate.SubstrateError,
         awareness.AwarenessError,
+        mutation.MutationError,
     ) as exc:
         _emit(
             {

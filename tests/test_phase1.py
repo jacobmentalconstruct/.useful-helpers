@@ -11,6 +11,8 @@ import unittest
 import uuid
 from pathlib import Path
 
+from product.core.constants import DATABASE_SCHEMA_VERSION
+
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -121,7 +123,7 @@ class PhaseOneAcceptanceTests(InstalledFixture):
         finally:
             connection.close()
         self.assertEqual(row, (manifest["instance_uuid"], ".."))
-        self.assertEqual(schema, 4)
+        self.assertEqual(schema, DATABASE_SCHEMA_VERSION)
 
         _, catalog = self.sidecar(target, "tools")
         self.assertEqual(

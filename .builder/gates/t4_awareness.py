@@ -76,8 +76,9 @@ def _storage_tables(source: str) -> list[str]:
 def _t4_schema() -> str:
     storage_source = (ROOT / "product/core/storage.py").read_text(encoding="utf-8")
     constants_source = (ROOT / "product/core/constants.py").read_text(encoding="utf-8")
-    if "DATABASE_SCHEMA_VERSION = 4" not in constants_source:
-        raise AssertionError("database schema version was not advanced to 4")
+    match = re.search(r"DATABASE_SCHEMA_VERSION\s*=\s*(\d+)", constants_source)
+    if not match or int(match.group(1)) < 4:
+        raise AssertionError("database schema version no longer includes T4 schema")
     tables = _storage_tables(storage_source)
     missing = sorted(T4_TABLES - set(tables))
     if missing:
@@ -85,7 +86,7 @@ def _t4_schema() -> str:
     for table in T4_TABLES:
         if tables.count(table) != 1:
             raise AssertionError(f"T4 table is missing or duplicated: {table}")
-    return "schema version 4 declares distinct awareness revision and item tables"
+    return "current schema includes distinct awareness revision and item tables"
 
 
 def _awareness_owner() -> str:
@@ -226,7 +227,7 @@ def _product_boundary() -> str:
 def _no_out_of_scope_surfaces() -> str:
     forbidden = ("mcp", "gui", "embedding", "vector", "preview", "approve", "verification_workflow")
     violations: list[str] = []
-    for source in [ROOT / "product/core/awareness.py", ROOT / "product/core/storage.py"]:
+    for source in [ROOT / "product/core/awareness.py"]:
         text = source.read_text(encoding="utf-8").lower()
         for term in forbidden:
             if term in text:

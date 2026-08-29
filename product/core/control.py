@@ -264,15 +264,8 @@ class ControlPlane:
             "args": resolved_arguments,
             "context": self._mechanical_context(manifest),
         }
-        environment = dict(os.environ)
-        existing_python_path = environment.get("PYTHONPATH", "")
-        environment["PYTHONPATH"] = str(self.context.instance_root) + (
-            os.pathsep + existing_python_path if existing_python_path else ""
-        )
+        environment = _child_environment(self.context)
         environment["PYTHONUTF8"] = "1"
-        for name in tuple(environment):
-            if name.startswith("SIDECAR_IDENTITY_"):
-                environment.pop(name, None)
 
         timeout = max(1, min(int(timeout_seconds), 300))
         try:
@@ -444,3 +437,28 @@ class ControlPlane:
             manifest_digest=manifest.digest,
             process={"stdout": process.stdout, "stderr": process.stderr},
         )
+
+
+def _child_environment(context: InstanceContext) -> dict[str, str]:
+    allow = {
+        "COMSPEC",
+        "HOME",
+        "LANG",
+        "PATH",
+        "PATHEXT",
+        "SYSTEMDRIVE",
+        "SYSTEMROOT",
+        "TEMP",
+        "TMP",
+        "TMPDIR",
+        "USERPROFILE",
+        "WINDIR",
+    }
+    environment = {
+        name: value
+        for name, value in os.environ.items()
+        if name.upper() in allow and not name.startswith("SIDECAR_IDENTITY_")
+    }
+    environment["PYTHONPATH"] = str(context.instance_root)
+    environment["PYTHONDONTWRITEBYTECODE"] = "1"
+    return environment
