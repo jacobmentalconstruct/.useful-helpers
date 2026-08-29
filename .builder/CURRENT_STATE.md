@@ -3,11 +3,11 @@
 This file is a resumability projection, not authority.
 
 - Current tranche: **T5 Governed Mutation Loop**
-- Current state: **DECLARED - AWAITING OPERATOR REVIEW**
-- Operator direction: T5 declaration is submitted for review; do not begin T5 implementation until explicit operator approval
+- Current state: **IMPLEMENTING**
+- Operator direction: T5 declaration is approved; implement only entry `0036` scope and stop at AWAITING_APPROVAL
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0036-t5-governed-mutation-loop-declaration.md`
+- Latest journal position: `0037-t5-execution-start.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness
 - Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5-P8 UNSCORED
@@ -212,18 +212,19 @@ incomplete because P5-P8 are UNSCORED.
 
 ## Next entering-builder action
 
-Await operator review of the T5 Governed Mutation Loop declaration in entry `0036`. If
-approved, enter IMPLEMENTING under the declared scope. If returned, amend the T5
-declaration by later journal entry only. Do not begin T5 implementation, credit P5, or
-begin T6 until explicitly instructed.
+Implement T5 under the approved declaration in entry `0036` and execution-start entry
+`0037`. Stop at AWAITING_APPROVAL after focused/canonical verification, T5 gate,
+cumulative T4/T3/T2/T1/T0 gates, review synchronization, and a new awaiting-approval
+journal entry. Do not park T5, credit P5, or begin T6.
 
-## T5 declaration position
+## T5 implementation position
 
 Entry `0036` declares T5 for operator review. It applies the operator's clarified
 prototype intent: Sidecar Workbench is a directory-bound general-purpose workbench for
 arbitrary filesystem-backed targets; all runtime entrances should converge on one shared
 host/state/world; and construction tranche, role, gate, PARKED, or Product-credit
 concepts must not leak into runtime behavior without an independent product requirement.
+Entry `0037` records operator approval to enter IMPLEMENTING under that declaration.
 
 The declared T5 outcome is the minimal governed mutation loop: current awareness ->
 reviewed preview -> approval bound to that preview and basis -> stale-state refusal ->
@@ -232,4 +233,4 @@ measurement -> honest verification -> substrate refresh -> awareness refresh -> 
 durable records. The first named implementation precondition is the
 migration-version-stamp repair in `storage.py`; child-process environment containment is
 scoped only to preserving explicit-context/authority boundaries during governed
-mutation. T5 is not implementing yet.
+mutation.

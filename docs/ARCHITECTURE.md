@@ -1,6 +1,6 @@
 # Architecture
 
-Status: **T4 PARKED; T5 DECLARED - AWAITING OPERATOR REVIEW**
+Status: **T4 PARKED; T5 IMPLEMENTING**
 
 ## Charter relationship
 
@@ -9,8 +9,8 @@ invariants, topology and dependency direction, runtime state classes, P1-P8, the
 acceptance walk, Product STOP, and product non-goals. This document does not redefine
 those facts. It maps the implementation currently present in the repository to the
 Charter responsibilities it is intended to realize. T1, T2, T3, and T4 are parked by
-operator approval. T5 Governed Mutation Loop is declared for operator review and is not
-implemented, parked, or credited.
+operator approval. T5 Governed Mutation Loop is implementing by operator approval and is
+not parked or credited.
 
 ## Current installed-instance realization
 
