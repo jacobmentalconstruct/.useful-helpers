@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import argparse
 import json
-import sqlite3
 import sys
 from pathlib import Path
 
-from . import app_journal, awareness, mutation, registry, runtime_records, storage, substrate
+from . import app_journal, awareness, host, mutation, registry, runtime_records, storage, substrate
 from .control import ControlPlane
 from .instance import InstanceError, load
 
@@ -16,6 +15,7 @@ def _parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("status")
     commands.add_parser("tools")
+    commands.add_parser("mcp")
 
     call = commands.add_parser("call")
     call.add_argument("tool_id")
@@ -149,38 +149,18 @@ def _emit(document: dict) -> None:
     print(json.dumps(document, indent=2, sort_keys=True))
 
 
-def _status(context) -> dict:
-    db_path = storage.bootstrap(context)
-    connection = sqlite3.connect(db_path)
-    try:
-        database_uuid = connection.execute("SELECT instance_uuid FROM instances").fetchone()[0]
-        database_schema = connection.execute("PRAGMA user_version").fetchone()[0]
-    finally:
-        connection.close()
-    tool_count = len(registry.discover(context))
-    return {
-        "ok": True,
-        "bound": True,
-        "instance_uuid": context.instance_uuid,
-        "instance_schema": context.schema_version,
-        "database_schema": database_schema,
-        "database_identity_matches": database_uuid == context.instance_uuid,
-        "product_version": context.product_version,
-        "target_relation": context.target_relation,
-        "target_root": str(context.target_root),
-        "state_database": "state/workbench.sqlite3",
-        "tool_count": tool_count,
-    }
-
-
 def main(instance_root: str | Path, argv: list[str] | None = None) -> int:
     try:
         arguments = _parser().parse_args(argv)
         context = load(instance_root)
         if arguments.command == "status":
-            response = _status(context)
+            response = host.status(context)
         elif arguments.command == "tools":
             response = {"ok": True, "tools": ControlPlane(context).tools()}
+        elif arguments.command == "mcp":
+            from . import mcp
+
+            return mcp.serve(context)
         elif arguments.command == "call":
             try:
                 tool_arguments = json.loads(arguments.args)
