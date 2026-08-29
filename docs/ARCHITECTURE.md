@@ -379,6 +379,7 @@ Authoritative T5 review evidence is recorded by journal entry `0038`: run
 `20260829T095546Z-e30c36d7` passed 13/13 from clean commit
 `62e321e2abbe68da8693ca3562bbacafcf3ea5a1` with SHA-256
 `2F1B92BA6337AC84C43FDC6FD1F4F0653BC2C4BEDBDD61A6D917F98DB03D7437`.
-Cumulative T4/T3/T2/T1/T0 gates also passed after the final T5 receipt was preserved.
+Cumulative T4/T3/T2/T1/T0 gates also passed after the authoritative T5 receipt was
+preserved.
 T5 is awaiting operator approval; it is not parked, P5 is not credited, and T6 has not
 begun.

@@ -243,10 +243,10 @@ T3 substrate then T4 awareness after successful apply; and links preview, approv
 receipt, artifact, verification, journal, and awareness records without collapsing their
 ownership.
 
-Final T5 gate run `20260829T095546Z-e30c36d7` passed 13/13 from clean working tree at
+Authoritative T5 gate run `20260829T095546Z-e30c36d7` passed 13/13 from clean working tree at
 commit `62e321e2abbe68da8693ca3562bbacafcf3ea5a1` with SHA-256
 `2F1B92BA6337AC84C43FDC6FD1F4F0653BC2C4BEDBDD61A6D917F98DB03D7437`.
-Cumulative parked-tranche gates passed after the final T5 receipt was preserved:
+Cumulative parked-tranche gates passed after the authoritative T5 receipt was preserved:
 T4 `20260829T095908Z-0024328c`, T3 `20260829T100018Z-8db946ba`,
 T2 `20260829T100131Z-0431a9bf`, T1 `20260829T100153Z-73086b49`, and
 T0 `20260829T100254Z-e375b5eb`.

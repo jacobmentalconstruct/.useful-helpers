@@ -259,7 +259,7 @@ without an independent product requirement. It identifies no concrete contradict
 parked T0-T4 work. It names the migration-version-stamp repair as the first T5
 precondition and includes minimal child-process environment containment in scope for the
 governed mutation authority boundary. Entry `0037` records operator approval to begin
-implementation. Entry `0038` submits the implemented T5 candidate with final T5 gate
+implementation. Entry `0038` submits the implemented T5 candidate with authoritative T5 gate
 run `20260829T095546Z-e30c36d7` and cumulative T4/T3/T2/T1/T0 runs
 `20260829T095908Z-0024328c`, `20260829T100018Z-8db946ba`,
 `20260829T100131Z-0431a9bf`, `20260829T100153Z-73086b49`, and
