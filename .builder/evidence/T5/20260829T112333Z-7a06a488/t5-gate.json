@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "gate": "T5-governed-mutation",
+  "status": "PASS",
+  "recorded_at": "2026-08-29T11:23:33.712868+00:00",
+  "run_id": "20260829T112333Z-7a06a488",
+  "head_commit": "3c3e394792b2a1abd68a4922aa1336e851455840",
+  "working_tree": "M .builder/gates/t3_epistemic_substrate.py\n M .builder/gates/t5_governed_mutation.py\n?? .builder/evidence/T2/20260829T111830Z-79c36164/\n?? .builder/evidence/T3/20260829T111826Z-f4eb3992/\n?? .builder/evidence/T3/20260829T112048Z-208f5608/\n?? .builder/evidence/T4/20260829T111844Z-36d82940/\n?? .builder/evidence/T4/20260829T112106Z-a129f691/\n?? .builder/evidence/T5/20260829T111831Z-ae995008/\n?? .builder/evidence/T5/20260829T112052Z-d80e77d3/\n?? .builder/evidence/T6/20260829T111534Z-e4d15b8d/\n?? .builder/evidence/T6/20260829T111658Z-ff4459a8/\n?? .builder/evidence/T6/20260829T112046Z-e2b846bb/\n?? .builder/evidence/T6/20260829T112223Z-d213f103/",
+  "source_digest": "477dfa7a46857d225e3141c896aa0e04a07e7ba1cd88e1aa6b4a7a0897a7eaeb",
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "t5_schema",
+      "status": "PASS",
+      "detail": "schema version 5 adds distinct governed mutation tables with staged migration"
+    },
+    {
+      "name": "mutation_owner",
+      "status": "PASS",
+      "detail": "mutation owner orchestrates preview, approval, apply, measurement, verification, and refresh"
+    },
+    {
+      "name": "cli_entrance",
+      "status": "PASS",
+      "detail": "CLI exposes mutation status, preview, approve, apply, history, and links"
+    },
+    {
+      "name": "lower_layers_do_not_import_mutation",
+      "status": "PASS",
+      "detail": "lower product layers do not depend upward on mutation governance"
+    },
+    {
+      "name": "environment_containment",
+      "status": "PASS",
+      "detail": "child process environment is allowlisted around explicit installed runtime context"
+    },
+    {
+      "name": "focused_t5_product_evidence",
+      "status": "PASS",
+      "detail": "........                                                                 [100%]"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": "......................................................                   [100%]"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "31 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "no_out_of_scope_surfaces",
+      "status": "PASS",
+      "detail": "T5 introduces no MCP, GUI, AI/vector, cartridge, rollback, planner, or workflow-engine surface"
+    },
+    {
+      "name": "journal_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0041-t6-execution-start.md"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 50 Python sources parsed"
+    },
+    {
+      "name": "discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: missing T5 table; migration branch stamps future version; mutation owner writes T3 table; preview applies during preview witness absent; weak approval/stale binding witness; tool self-report used as measurement; verification unavailable converted to pass; broad child process environment"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "PASS",
+      "detail": "no generated cache, bytecode, build, release, or fixture debris remains"
+    }
+  ]
+}

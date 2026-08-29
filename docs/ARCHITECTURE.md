@@ -1,6 +1,6 @@
 # Architecture
 
-Status: **T5 PARKED IMPLEMENTATION MAP**
+Status: **T6 AWAITING_APPROVAL IMPLEMENTATION MAP**
 
 ## Charter relationship
 
@@ -10,7 +10,8 @@ acceptance walk, Product STOP, and product non-goals. This document does not red
 those facts. It maps the implementation currently present in the repository to the
 Charter responsibilities it is intended to realize. T1, T2, T3, and T4 are parked by
 operator approval. T5 Governed Mutation Loop is parked by operator approval and P5 is
-credited. Product STOP remains incomplete because P6-P8 are unscored.
+credited. T6 Removable MCP Entrance is implemented and awaiting operator approval; P6 is
+not credited. Product STOP remains incomplete because P6-P8 are unscored.
 
 ## Current installed-instance realization
 
@@ -385,4 +386,30 @@ External Reviewer evidence at
 `.builder/evidence/reviews/T5/20260829T104344Z-external-review.md` recommends APPROVE
 CANDIDATE, PARKED status, and P5 credit. Entry `0039` records operator approval and
 parks T5. P5 is credited; Product STOP remains incomplete because P6-P8 are unscored,
-and T6 has not begun.
+and T6 is now awaiting operator approval.
+
+## T6 review evidence
+
+T6 introduces `product/core/mcp.py` as a removable stdio JSON-RPC entrance and
+`product/core/host.py` as the shared host-status owner consumed by CLI and MCP. MCP
+tool discovery is projected from the existing registry and owner APIs. MCP calls to
+manifest tools route through the existing `ControlPlane`; MCP read/list calls for status,
+receipts, App Journal, substrate, awareness, and mutation state call the owning product
+modules rather than direct tables or private backends.
+
+The CLI imports MCP lazily only when the `mcp` subcommand is invoked. Focused fixtures
+prove fresh attach works before MCP is used, MCP initialization and tool discovery
+derive from the same host catalog, an MCP `read_file` call records a governed receipt
+with client `mcp`, MCP and CLI observe the same durable state across re-entry, malformed
+requests fail truthfully, and removing the MCP adapter leaves status, tool discovery, and
+governed CLI tool calls usable.
+
+The cumulative T3 and T5 gates were narrowed to preserve their original tranche
+boundaries after T6: T3 still forbids substrate/storage MCP ownership, and T5 still
+forbids mutation/control surfaces from growing MCP behavior, while allowing the later
+T6 adapter and CLI entrance to exist. Authoritative T6 review evidence is recorded by
+journal entry `0042`: T6 gate run `20260829T112223Z-d213f103` passed 11/11. Cumulative
+T5/T4/T3/T2/T1/T0 gates passed with receipts `20260829T112333Z-7a06a488`,
+`20260829T112500Z-731d6bb1`, `20260829T112612Z-c40cb33e`,
+`20260829T112721Z-c9a3a230`, `20260829T112842Z-bf459e22`, and
+`20260829T112820Z-1afe077d`. T6 is awaiting approval; P6 remains uncredited.

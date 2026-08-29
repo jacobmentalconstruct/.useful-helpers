@@ -3,13 +3,13 @@
 This file is a resumability projection, not authority.
 
 - Current tranche: **T6 Removable MCP Entrance**
-- Current state: **IMPLEMENTING**
-- Operator direction: Implement only T6 declaration entry `0040`; stop at AWAITING_APPROVAL without parking T6, crediting P6, or beginning T7
+- Current state: **AWAITING_APPROVAL**
+- Operator direction: Review T6 submission; do not park T6, credit P6, or begin T7 without explicit operator approval
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0041-t6-execution-start.md`
+- Latest journal position: `0042-t6-awaiting-approval.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
-- Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness
+- Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness; T5 Governed Mutation Loop
 - Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5 credited by parked T5; P6-P8 UNSCORED
 - Project closure: not eligible
 
@@ -212,10 +212,10 @@ parked by entry `0039`; Product STOP remains incomplete because P6-P8 are UNSCOR
 
 ## Next entering-builder action
 
-Implement only the T6 declaration in entry `0040`. Stop at AWAITING_APPROVAL after
-focused/canonical verification, T6 gate, cumulative T5/T4/T3/T2/T1/T0 gates, review
-synchronization, and a new awaiting-approval journal entry. Do not park T6, credit P6, or
-begin T7.
+Review the T6 candidate submitted by entry `0042`. T6 is not parked, P6 is not credited,
+and T7 has not begun. If the operator returns T6, repair only the bounded review finding
+under the active T6 lifecycle. If approved, record a park entry, credit P6, and stop
+before T7 declaration.
 
 ## T6 declaration position
 
@@ -229,6 +229,11 @@ shows one is required.
 
 Entry `0041` records operator approval to enter IMPLEMENTING under that declaration after
 the builder found no declaration contradiction or blocker.
+
+Entry `0042` submits the implemented T6 candidate at AWAITING_APPROVAL. It records the
+minimal MCP stdio adapter, the shared host status owner, focused T6 fixtures, the T6 gate,
+the cumulative gate receipts, and the fact that P6 remains uncredited pending operator
+approval.
 
 ## T5 parked position
 

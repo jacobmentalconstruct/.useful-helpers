@@ -227,6 +227,8 @@ def _product_boundary() -> str:
 
 
 def _no_out_of_scope_surfaces() -> str:
+    plan = (ROOT / ".builder/TRANCHE_PLAN.md").read_text(encoding="utf-8")
+    t6_has_started = "T6 Removable MCP Entrance | PROVISIONAL" not in plan
     forbidden = (
         "mcp",
         "gui",
@@ -241,6 +243,11 @@ def _no_out_of_scope_surfaces() -> str:
     for source in sorted((ROOT / "product").rglob("*.py")):
         text = source.read_text(encoding="utf-8").lower()
         for term in forbidden:
+            if t6_has_started and term == "mcp" and source.relative_to(ROOT).as_posix() in {
+                "product/core/cli.py",
+                "product/core/mcp.py",
+            }:
+                continue
             if term in text:
                 violations.append(f"{source.relative_to(ROOT).as_posix()} mentions {term}")
     if violations:

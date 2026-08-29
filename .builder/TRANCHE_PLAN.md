@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **T6 IMPLEMENTING**
+Status: **T6 AWAITING_APPROVAL**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -16,7 +16,7 @@ Charter and are referenced here without redefinition.
 | T3 Epistemic Substrate | PARKED | Resources, versions, observations, evidence, claims, and provenance persist without becoming receipts or journal entries. | T2 PARKED; declaration approved | P3 |
 | T4 Awareness | PARKED | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 PARKED; amended declaration approved | P4 |
 | T5 Governed Mutation Loop | PARKED | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 PARKED; declaration approved | P5 |
-| T6 Removable MCP Entrance | IMPLEMENTING | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 PARKED; declaration approved | P6 |
+| T6 Removable MCP Entrance | AWAITING_APPROVAL | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 PARKED; declaration approved | P6 |
 | T7 Domain Truth | PROVISIONAL | Software, mixed records/documents, and empty targets degrade truthfully. | T6 | P7 |
 | T8 Release and STOP | PROVISIONAL | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 | P1-P8 |
 
@@ -272,13 +272,14 @@ P5 credit. P6-P8 remain UNSCORED and Product STOP remains incomplete.
 
 ## T6 synopsis
 
-T6 Removable MCP Entrance is IMPLEMENTING by operator direction. The sequence outcome
-above remains the Plan-owned tranche property; entry `0040` owns its measured scope,
-non-goals, completion evidence, risks, and ordered implementation plan. Entry `0041`
-owns the operator-approved transition into implementation. T6 must prove that a minimal
-MCP stdio entrance exposes the same host catalog and durable world as CLI without owning
-capabilities, duplicating product logic, or making CLI/tools depend on MCP. T6 may not
-park, grant P6 credit, or begin T7 without operator approval.
+T6 Removable MCP Entrance is AWAITING_APPROVAL. The sequence outcome above remains the
+Plan-owned tranche property; entry `0040` owns its measured scope, non-goals, completion
+evidence, risks, and ordered implementation plan. Entry `0041` owns the
+operator-approved transition into implementation. Entry `0042` submits the implemented
+candidate for review. T6 must prove that a minimal MCP stdio entrance exposes the same
+host catalog and durable world as CLI without owning capabilities, duplicating product
+logic, or making CLI/tools depend on MCP. T6 may not park, grant P6 credit, or begin T7
+without operator approval.
 
 ## T6 declaration record
 
@@ -286,11 +287,18 @@ park, grant P6 credit, or begin T7 without operator approval.
   `journal/0040-t6-removable-mcp-entrance-declaration.md`
 - Execution start:
   `journal/0041-t6-execution-start.md`
+- Review submission:
+  `journal/0042-t6-awaiting-approval.md`
 
 Entry `0040` declares the MCP entrance boundary and records the operator's same-message
 approval to begin implementation if no contradiction is found. Entry `0041` records that
-no declaration contradiction or blocker was found and starts implementation. Neither
-entry parks T6, grants P6 credit, or begins T7.
+no declaration contradiction or blocker was found and starts implementation. Entry
+`0042` records the implemented review candidate, including the T6 gate receipt
+`20260829T112223Z-d213f103` and cumulative T5/T4/T3/T2/T1/T0 gate receipts
+`20260829T112333Z-7a06a488`, `20260829T112500Z-731d6bb1`,
+`20260829T112612Z-c40cb33e`, `20260829T112721Z-c9a3a230`,
+`20260829T112842Z-bf459e22`, and `20260829T112820Z-1afe077d`. No T6 entry parks T6,
+grants P6 credit, or begins T7.
 
 ## Project closure
 

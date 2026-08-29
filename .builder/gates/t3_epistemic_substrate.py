@@ -210,6 +210,7 @@ def _product_boundary() -> str:
 def _no_t4_or_out_of_scope_surfaces() -> str:
     plan = (ROOT / ".builder/TRANCHE_PLAN.md").read_text(encoding="utf-8")
     t4_has_started = "T4 Awareness | PROVISIONAL" not in plan
+    t6_has_started = "T6 Removable MCP Entrance | PROVISIONAL" not in plan
     source_paths = [
         ROOT / "product/core/storage.py",
         ROOT / "product/core/substrate.py",
@@ -220,6 +221,8 @@ def _no_t4_or_out_of_scope_surfaces() -> str:
         text = source.read_text(encoding="utf-8").lower()
         for term in FORBIDDEN_T3_TERMS:
             if t4_has_started and term == "awareness_revisions":
+                continue
+            if t6_has_started and term == "mcp" and source.name == "cli.py":
                 continue
             if term in text:
                 violations.append(f"{source.relative_to(ROOT).as_posix()} mentions {term}")
