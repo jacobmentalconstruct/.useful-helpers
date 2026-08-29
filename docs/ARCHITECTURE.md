@@ -1,6 +1,6 @@
 # Architecture
 
-Status: **T4 PARKED; T5 IMPLEMENTING**
+Status: **T4 PARKED; T5 AWAITING_APPROVAL**
 
 ## Charter relationship
 
@@ -9,8 +9,8 @@ invariants, topology and dependency direction, runtime state classes, P1-P8, the
 acceptance walk, Product STOP, and product non-goals. This document does not redefine
 those facts. It maps the implementation currently present in the repository to the
 Charter responsibilities it is intended to realize. T1, T2, T3, and T4 are parked by
-operator approval. T5 Governed Mutation Loop is implementing by operator approval and is
-not parked or credited.
+operator approval. T5 Governed Mutation Loop is implemented and awaiting operator
+approval; it is not parked or credited.
 
 ## Current installed-instance realization
 
@@ -60,6 +60,9 @@ inconsistent instance. No fallback identity-discovery path is present.
 - `product/core/awareness.py` owns T4 compact immutable awareness revisions, awareness
   items, freshness status, limitation/unknown projection, and drill mapping over T3
   substrate handles.
+- `product/core/mutation.py` owns the T5 governed mutation loop records and policy:
+  preview, approval binding, stale refusal, apply coordination, changed-path
+  measurement, verification status, refresh links, and mutation history.
 - `product/core/tool_runtime.py` owns the product-neutral mechanical subprocess protocol,
   strict transported context, target-relative handles, excluded-root behavior, and
   deterministic error serialization.
@@ -119,9 +122,11 @@ reports `receipt_persistence_failed` with `durably_governed = false`. Artifact i
 and receipt completion occur in one SQLite transaction, so completion failure must not
 leave an orphan artifact whose envelope claims durable governance.
 
-Preview/apply governance, stale approval binding, governed mutation measurement,
-target-native verification workflow, refresh, cancellation, and invalidation are not
-present and receive no architectural or Product STOP credit in T2.
+T5 mutation governance sits above this invocation path and uses it for approved apply.
+T2 did not credit preview/apply governance, stale approval binding, mutation
+measurement, target-native verification workflow, refresh, cancellation, or invalidation;
+T5 now submits the bounded preview/apply portion for operator review without parking or
+credit.
 
 ## Current substrate implementation
 
@@ -173,9 +178,9 @@ deterministic claims: observed empty target, or observed text-like files. Those 
 derived claims, not awareness findings and not deterministic facts beyond their stated
 support.
 
-The database still does not implement semantic/vector indexes, domain cartridges,
-preview/apply mutation governance, or a graph database. The objects directory is created
-but has no accepted object-store contract.
+The database still does not implement semantic/vector indexes, domain cartridges, or a
+graph database. The objects directory is created but has no accepted object-store
+contract.
 
 ## Current awareness implementation
 
@@ -201,14 +206,47 @@ a T3 substrate refresh records compact findings from only the latest coherent T3
 so non-empty to empty, deletion, replacement, and similar transitions do not leak
 historical substrate records into current orientation. Prior awareness revisions remain
 inspectable after later refreshes. `awareness current` recomputes freshness against the
-current target signature and can report `stale` after a target change without
-implementing the T5 mutation loop.
+current target signature and can report `stale` after a target change independently of
+the T5 mutation loop.
 
 The CLI exposes `awareness status`, `awareness refresh`, `awareness current`,
 `awareness revisions list/read`, and `awareness drill`. Drill resolves awareness items
 back through T3 substrate APIs such as claim trace and resource lookup. Awareness does
 not create App Journal entries, operational artifacts, or operation receipts for its
 projection records.
+
+## Current mutation implementation
+
+Schema version 5 adds T5 mutation tables for previews, approvals, mutation records,
+verifications, and typed mutation links. `product/core/mutation.py` is the semantic owner
+of those records; T2 receipts/artifacts, T2 App Journal entries, T3 substrate records,
+and T4 awareness records remain owned by their original modules.
+
+The initial mutation surface is intentionally narrow: a reviewed `write_file` path. The
+CLI exposes `mutation status`, `mutation preview-write`, `mutation approve`,
+`mutation apply`, `mutation history`, and `mutation links`. Preview records the proposed
+write, expected path set, payload digest, current awareness revision, T3 basis signature,
+and target signature without changing the target or creating a control-plane receipt.
+Approval binds to that exact preview digest and basis, and may optionally link to an
+existing deliberate App Journal entry without creating one automatically.
+
+Apply refuses before child launch when approval is missing, the caller-provided preview
+does not match the approval, the target signature has changed since preview, or the
+awareness/basis is stale. Successful apply routes the bounded write through the existing
+control plane, then independently snapshots target files before and after to measure
+changed paths rather than trusting the tool's self-report. Verification is recorded as
+`unavailable` with the explicit statement that no target-native verification mechanism is
+available; T5 does not invent PASS. A successful apply refreshes T3 substrate first and
+then T4 awareness, preserving prior revisions and linking preview, approval, receipt,
+artifact, verification, pre/post awareness, and optional journal records.
+
+The child-process environment is allowlisted for explicit runtime needs and excludes
+ambient project identity or operator secrets. This containment is scoped to the governed
+host boundary; it does not turn mechanical tools into Sidecar-specific tools.
+
+T5 does not implement MCP, GUI, local AI, embeddings, domain cartridges, release/update
+or removal lifecycle, rollback, a workflow engine, autonomous planning, broad
+software-project assumptions, or construction-role runtime concepts.
 
 ## Current tool contract
 
@@ -237,7 +275,7 @@ child leaves no launch witness when identity, authority, input, or containment f
 Dependency mutation proves the T1 gate rejects `core.containment`, `core.contracts`, and
 `core.instance` when injected into both a mechanical tool and the shared runtime. Journal
 entry `0015` records operator approval and parks T1. This document maps the approved
-implementation state; Product STOP remains incomplete until P3-P8 are also proven.
+implementation state; Product STOP remains incomplete until P5-P8 are also proven.
 
 ## T2 review evidence
 
@@ -318,3 +356,29 @@ round-tripping, and the noncanonical `awareness-item:` handle form. Entry `0034`
 the repaired acceptance candidate: run `20260828T111925Z-d9548015` passed 14/14 with a
 handle/limitations witness. Entry `0035` records operator approval and parks T4. P4 is
 credited; Product STOP remains incomplete because P5-P8 are not yet credited.
+
+## T5 review evidence
+
+T5 product fixtures report that fresh attach starts with blank mutation state; previewing
+a write records the reviewed change without applying it or creating a receipt; approval
+binds to the exact preview digest and basis and can link to an existing App Journal
+entry; missing approval, preview mismatch, stale target state, and stale awareness basis
+refuse before child launch; successful apply routes through the existing governed host,
+records a completed receipt/artifact, independently measures changed paths, records
+honest unavailable verification, refreshes substrate then awareness, and links the
+resulting records without collapsing their owners.
+
+Additional fixtures prove the first T5 precondition: the storage migration branch stamps
+the intermediate target version accurately. A child-process fixture proves the governed
+host does not inherit ambient `SIDECAR_IDENTITY_*` or `OPERATOR_TOKEN` environment values
+while still providing the runtime import path needed by mechanical tools. A non-software
+target fixture proves the narrow mutation loop does not assume a software project and
+does not create automatic App Journal entries.
+
+Authoritative T5 review evidence is recorded by journal entry `0038`: run
+`20260829T095546Z-e30c36d7` passed 13/13 from clean commit
+`62e321e2abbe68da8693ca3562bbacafcf3ea5a1` with SHA-256
+`2F1B92BA6337AC84C43FDC6FD1F4F0653BC2C4BEDBDD61A6D917F98DB03D7437`.
+Cumulative T4/T3/T2/T1/T0 gates also passed after the final T5 receipt was preserved.
+T5 is awaiting operator approval; it is not parked, P5 is not credited, and T6 has not
+begun.

@@ -33,8 +33,10 @@ T3 epistemic-substrate outcomes.
 
 T4 Awareness is **PARKED by operator approval** in `.builder/journal/0035-t4-park.md`,
 supported by authoritative repaired T4 gate run `20260828T111925Z-d9548015`. P4 is
-credited. Product STOP remains incomplete because P5-P8 remain UNSCORED, and T5 has not
-begun.
+credited. T5 Governed Mutation Loop is implemented and awaiting operator approval in
+`.builder/journal/0038-t5-awaiting-approval.md`, supported by gate run
+`20260829T095546Z-e30c36d7`. Product STOP remains incomplete because P5-P8 remain
+UNSCORED.
 
 Read construction authority in this order:
 

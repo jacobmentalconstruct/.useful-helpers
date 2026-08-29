@@ -3,11 +3,11 @@
 This file is a resumability projection, not authority.
 
 - Current tranche: **T5 Governed Mutation Loop**
-- Current state: **IMPLEMENTING**
-- Operator direction: T5 declaration is approved; implement only entry `0036` scope and stop at AWAITING_APPROVAL
+- Current state: **AWAITING_APPROVAL**
+- Operator direction: Review the T5 implementation candidate; do not park T5, credit P5, or begin T6 without explicit operator approval
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0037-t5-execution-start.md`
+- Latest journal position: `0038-t5-awaiting-approval.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness
 - Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5-P8 UNSCORED
@@ -212,12 +212,11 @@ incomplete because P5-P8 are UNSCORED.
 
 ## Next entering-builder action
 
-Implement T5 under the approved declaration in entry `0036` and execution-start entry
-`0037`. Stop at AWAITING_APPROVAL after focused/canonical verification, T5 gate,
-cumulative T4/T3/T2/T1/T0 gates, review synchronization, and a new awaiting-approval
-journal entry. Do not park T5, credit P5, or begin T6.
+Remain stopped at T5 AWAITING_APPROVAL. The next builder action is review support only
+unless the operator returns T5 to implementation/verification or explicitly approves
+parking. Do not park T5, credit P5, or begin T6 without explicit operator approval.
 
-## T5 implementation position
+## T5 review position
 
 Entry `0036` declares T5 for operator review. It applies the operator's clarified
 prototype intent: Sidecar Workbench is a directory-bound general-purpose workbench for
@@ -234,3 +233,20 @@ durable records. The first named implementation precondition is the
 migration-version-stamp repair in `storage.py`; child-process environment containment is
 scoped only to preserving explicit-context/authority boundaries during governed
 mutation.
+
+Entry `0038` submits the implemented T5 review candidate. The implementation adds schema
+version 5 mutation tables and `mutation.py` as the T5 owner; exposes CLI mutation
+commands for status, preview-write, approve, apply, history, and links; routes approved
+apply through the existing control plane; performs independent changed-path measurement;
+records honest unavailable verification when no target-native mechanism exists; refreshes
+T3 substrate then T4 awareness after successful apply; and links preview, approval,
+receipt, artifact, verification, journal, and awareness records without collapsing their
+ownership.
+
+Final T5 gate run `20260829T095546Z-e30c36d7` passed 13/13 from clean working tree at
+commit `62e321e2abbe68da8693ca3562bbacafcf3ea5a1` with SHA-256
+`2F1B92BA6337AC84C43FDC6FD1F4F0653BC2C4BEDBDD61A6D917F98DB03D7437`.
+Cumulative parked-tranche gates passed after the final T5 receipt was preserved:
+T4 `20260829T095908Z-0024328c`, T3 `20260829T100018Z-8db946ba`,
+T2 `20260829T100131Z-0431a9bf`, T1 `20260829T100153Z-73086b49`, and
+T0 `20260829T100254Z-e375b5eb`.
