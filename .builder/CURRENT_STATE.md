@@ -2,12 +2,12 @@
 
 This file is a resumability projection, not authority.
 
-- Current tranche: **None active; next declaration is T6 Removable MCP Entrance**
-- Current state: **T5 PARKED**
-- Operator direction: T5 is approved for PARK/P5 credit; do not begin T6 implementation without its own declaration and explicit operator approval
+- Current tranche: **T6 Removable MCP Entrance**
+- Current state: **DECLARED**
+- Operator direction: Declare T6 and then begin; proceed to IMPLEMENTING only if declaration review finds no contradiction or blocker
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0039-t5-park.md`
+- Latest journal position: `0040-t6-removable-mcp-entrance-declaration.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness
 - Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5 credited by parked T5; P6-P8 UNSCORED
@@ -212,9 +212,21 @@ parked by entry `0039`; Product STOP remains incomplete because P6-P8 are UNSCOR
 
 ## Next entering-builder action
 
-Prepare the T6 Removable MCP Entrance declaration for operator review when instructed.
-Do not begin T6 implementation without declaration review and explicit operator
-approval.
+Record the operator-approved T6 execution start and implement only the T6 declaration in
+entry `0040` if no declaration contradiction or blocker is found. Stop at
+AWAITING_APPROVAL after focused/canonical verification, T6 gate, cumulative
+T5/T4/T3/T2/T1/T0 gates, review synchronization, and a new awaiting-approval journal
+entry. Do not park T6, credit P6, or begin T7.
+
+## T6 declaration position
+
+Entry `0040` declares T6 Removable MCP Entrance. The declared outcome is a removable MCP
+stdio adapter that exposes the same host catalog and durable world as the CLI through
+existing owners. MCP must not own capabilities, duplicate host/control-plane behavior,
+or make CLI, tools, mechanical runtime, receipts, App Journal, substrate, awareness, or
+mutation depend on MCP. The implementation surface is intentionally small and may use
+plain JSON-RPC-over-stdio mechanics without a third-party MCP framework unless evidence
+shows one is required.
 
 ## T5 parked position
 
