@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **T6 AWAITING_APPROVAL**
+Status: **T6 PARKED**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -16,7 +16,7 @@ Charter and are referenced here without redefinition.
 | T3 Epistemic Substrate | PARKED | Resources, versions, observations, evidence, claims, and provenance persist without becoming receipts or journal entries. | T2 PARKED; declaration approved | P3 |
 | T4 Awareness | PARKED | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 PARKED; amended declaration approved | P4 |
 | T5 Governed Mutation Loop | PARKED | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 PARKED; declaration approved | P5 |
-| T6 Removable MCP Entrance | AWAITING_APPROVAL | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 PARKED; declaration approved | P6 |
+| T6 Removable MCP Entrance | PARKED | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 PARKED; declaration approved | P6 |
 | T7 Domain Truth | PROVISIONAL | Software, mixed records/documents, and empty targets degrade truthfully. | T6 | P7 |
 | T8 Release and STOP | PROVISIONAL | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 | P1-P8 |
 
@@ -45,10 +45,9 @@ T0 grants no P1-P8 credit. T1 grants P1/P2 credit for the declared mechanical-ho
 boundary only. T2 grants partial P3 credit for runtime operational receipts/artifacts and
 blank-start App Journal work memory. T3 completes and parks the epistemic substrate
 portion of P3. T4 grants P4 credit for compact immutable awareness. T5 grants P5 credit
-for the governed mutation loop. P6-P8 remain UNSCORED, and Product STOP remains
-incomplete. Each later
-declaration must name the P-conditions it advances and the exact gate assertions that do
-so.
+for the governed mutation loop. T6 grants P6 credit for the removable MCP entrance.
+P7-P8 remain UNSCORED, and Product STOP remains incomplete. Each later declaration must
+name the P-conditions it advances and the exact gate assertions that do so.
 
 ## T1 synopsis
 
@@ -268,18 +267,19 @@ run `20260829T095546Z-e30c36d7` and cumulative T4/T3/T2/T1/T0 runs
 `20260829T100131Z-0431a9bf`, `20260829T100153Z-73086b49`, and
 `20260829T100254Z-e375b5eb`. It does not park T5, grant P5 credit, or begin T6.
 Entry `0039` records operator approval, grants the terminal PARKED disposition, and parks
-P5 credit. P6-P8 remain UNSCORED and Product STOP remains incomplete.
+P5 credit. T6 is now parked by entry `0043`; P6 is credited. P7-P8 remain UNSCORED and
+Product STOP remains incomplete.
 
 ## T6 synopsis
 
-T6 Removable MCP Entrance is AWAITING_APPROVAL. The sequence outcome above remains the
+T6 Removable MCP Entrance is PARKED by operator approval. The sequence outcome above remains the
 Plan-owned tranche property; entry `0040` owns its measured scope, non-goals, completion
 evidence, risks, and ordered implementation plan. Entry `0041` owns the
 operator-approved transition into implementation. Entry `0042` submits the implemented
-candidate for review. T6 must prove that a minimal MCP stdio entrance exposes the same
-host catalog and durable world as CLI without owning capabilities, duplicating product
-logic, or making CLI/tools depend on MCP. T6 may not park, grant P6 credit, or begin T7
-without operator approval.
+candidate for review. Entry `0043` owns the terminal approval and park disposition. T6
+proves that a minimal MCP stdio entrance exposes the same host catalog and durable world
+as CLI without owning capabilities, duplicating product logic, or making CLI/tools depend
+on MCP. T7 may not begin without its own declaration and operator approval.
 
 ## T6 declaration record
 
@@ -289,6 +289,8 @@ without operator approval.
   `journal/0041-t6-execution-start.md`
 - Review submission:
   `journal/0042-t6-awaiting-approval.md`
+- Operator approval and terminal park:
+  `journal/0043-t6-park.md`
 
 Entry `0040` declares the MCP entrance boundary and records the operator's same-message
 approval to begin implementation if no contradiction is found. Entry `0041` records that
@@ -299,6 +301,10 @@ gate receipts `20260830T101603Z-967e76c8`, `20260830T101728Z-3e23e4f5`,
 `20260830T101835Z-a4bbaa7a`, `20260830T101945Z-42392a2b`,
 `20260830T102005Z-8c3388b0`, and `20260830T102107Z-bdc96082`. No T6 entry parks T6,
 grants P6 credit, or begins T7.
+External Reviewer evidence at `evidence/reviews/T6/20260830T125528Z-external-review.md`
+recommends APPROVE CANDIDATE. Entry `0043` records operator approval, grants the terminal
+PARKED disposition, and parks P6 credit. P7-P8 remain UNSCORED and Product STOP remains
+incomplete.
 
 ## Project closure
 

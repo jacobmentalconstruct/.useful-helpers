@@ -37,12 +37,13 @@ credited. T5 Governed Mutation Loop is **PARKED by operator approval** in
 `.builder/journal/0039-t5-park.md`, supported by gate run
 `20260829T095546Z-e30c36d7` and external review
 `.builder/evidence/reviews/T5/20260829T104344Z-external-review.md`. P5 is credited.
-Product STOP remains incomplete because P6-P8 remain UNSCORED.
+Product STOP remains incomplete because P7-P8 remain UNSCORED.
 
-T6 Removable MCP Entrance is implemented and **AWAITING_APPROVAL** in
-`.builder/journal/0042-t6-awaiting-approval.md`, supported by T6 gate run
-`20260830T101453Z-956b023b` and cumulative T5/T4/T3/T2/T1/T0 receipts listed there.
-P6 is not credited until operator approval parks T6.
+T6 Removable MCP Entrance is **PARKED by operator approval** in
+`.builder/journal/0043-t6-park.md`, supported by T6 gate run
+`20260830T101453Z-956b023b`, cumulative receipts listed in
+`.builder/journal/0042-t6-awaiting-approval.md`, and External Reviewer evidence
+`.builder/evidence/reviews/T6/20260830T125528Z-external-review.md`. P6 is credited.
 
 Read construction authority in this order:
 

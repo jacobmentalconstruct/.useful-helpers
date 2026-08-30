@@ -1,6 +1,6 @@
 # Architecture
 
-Status: **T6 AWAITING_APPROVAL IMPLEMENTATION MAP**
+Status: **T6 PARKED IMPLEMENTATION MAP**
 
 ## Charter relationship
 
@@ -10,8 +10,8 @@ acceptance walk, Product STOP, and product non-goals. This document does not red
 those facts. It maps the implementation currently present in the repository to the
 Charter responsibilities it is intended to realize. T1, T2, T3, and T4 are parked by
 operator approval. T5 Governed Mutation Loop is parked by operator approval and P5 is
-credited. T6 Removable MCP Entrance is implemented and awaiting operator approval; P6 is
-not credited. Product STOP remains incomplete because P6-P8 are unscored.
+credited. T6 Removable MCP Entrance is parked by operator approval and P6 is credited.
+Product STOP remains incomplete because P7-P8 are unscored.
 
 ## Current installed-instance realization
 
@@ -275,7 +275,7 @@ child leaves no launch witness when identity, authority, input, or containment f
 Dependency mutation proves the T1 gate rejects `core.containment`, `core.contracts`, and
 `core.instance` when injected into both a mechanical tool and the shared runtime. Journal
 entry `0015` records operator approval and parks T1. This document maps the approved
-implementation state; Product STOP remains incomplete until P6-P8 are also proven.
+implementation state; Product STOP now remains incomplete until P7-P8 are also proven.
 
 ## T2 review evidence
 
@@ -356,7 +356,7 @@ round-tripping, and the noncanonical `awareness-item:` handle form. Entry `0034`
 the repaired acceptance candidate: run `20260828T111925Z-d9548015` passed 14/14 with a
 handle/limitations witness. Entry `0035` records operator approval and parks T4. P4 is
 credited. T5 is now parked by entry `0039`, and Product STOP remains incomplete because
-P6-P8 are not yet credited.
+P7-P8 are not yet credited.
 
 ## T5 review evidence
 
@@ -385,8 +385,7 @@ preserved.
 External Reviewer evidence at
 `.builder/evidence/reviews/T5/20260829T104344Z-external-review.md` recommends APPROVE
 CANDIDATE, PARKED status, and P5 credit. Entry `0039` records operator approval and
-parks T5. P5 is credited; Product STOP remains incomplete because P6-P8 are unscored,
-and T6 is now awaiting operator approval.
+parks T5. P5 is credited; T6 is now parked by entry `0043`.
 
 ## T6 review evidence
 
@@ -415,5 +414,7 @@ Authoritative T6 review evidence is recorded by journal entry `0042`: T6 gate ru
 `20260830T101453Z-956b023b` passed 11/11. Cumulative T5/T4/T3/T2/T1/T0 gates passed with
 receipts `20260830T101603Z-967e76c8`, `20260830T101728Z-3e23e4f5`,
 `20260830T101835Z-a4bbaa7a`, `20260830T101945Z-42392a2b`,
-`20260830T102005Z-8c3388b0`, and `20260830T102107Z-bdc96082`. T6 is awaiting approval;
-P6 remains uncredited.
+`20260830T102005Z-8c3388b0`, and `20260830T102107Z-bdc96082`. External Reviewer evidence
+at `.builder/evidence/reviews/T6/20260830T125528Z-external-review.md` recommends APPROVE
+CANDIDATE. Entry `0043` records operator approval and parks T6. P6 is credited; Product
+STOP remains incomplete because P7-P8 are unscored.

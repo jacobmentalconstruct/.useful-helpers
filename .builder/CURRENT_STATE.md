@@ -3,14 +3,14 @@
 This file is a resumability projection, not authority.
 
 - Current tranche: **T6 Removable MCP Entrance**
-- Current state: **AWAITING_APPROVAL**
-- Operator direction: Review T6 submission; do not park T6, credit P6, or begin T7 without explicit operator approval
+- Current state: **PARKED**
+- Operator direction: T6 is parked with P6 credit; next action is T7 declaration only unless separately approved
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0042-t6-awaiting-approval.md`
+- Latest journal position: `0043-t6-park.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
-- Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness; T5 Governed Mutation Loop
-- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5 credited by parked T5; P6-P8 UNSCORED
+- Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness; T5 Governed Mutation Loop; T6 Removable MCP Entrance
+- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5 credited by parked T5; P6 credited by parked T6; P7-P8 UNSCORED
 - Project closure: not eligible
 
 ## Measured implementation
@@ -208,14 +208,14 @@ awareness item identifiers use the canonical `awareness:item:<id>` namespace. Th
 passes 14/14 with a handle/limitations witness.
 
 Entry `0035` records operator approval and parks T4. P4 is credited. T5 is now also
-parked by entry `0039`; Product STOP remains incomplete because P6-P8 are UNSCORED.
+parked by entry `0039`. T6 is parked by entry `0043`; Product STOP remains incomplete
+because P7-P8 are UNSCORED.
 
 ## Next entering-builder action
 
-Review the T6 candidate submitted by entry `0042`. T6 is not parked, P6 is not credited,
-and T7 has not begun. If the operator returns T6, repair only the bounded review finding
-under the active T6 lifecycle. If approved, record a park entry, credit P6, and stop
-before T7 declaration.
+Prepare the T7 Domain Truth declaration for operator review when instructed. T7 should
+not begin implementation without its own approved declaration. Do not reopen T0-T6 absent
+new evidence of a failed premise.
 
 ## T6 declaration position
 
@@ -233,8 +233,12 @@ the builder found no declaration contradiction or blocker.
 Entry `0042` submits the implemented T6 candidate at AWAITING_APPROVAL. It records the
 minimal MCP stdio adapter, the shared host status owner, focused T6 fixtures, the
 external review return, the bounded MCP contract/notification/removability repair, the
-T6 gate, the cumulative gate receipts, and the fact that P6 remains uncredited pending
-operator approval.
+T6 gate, the cumulative gate receipts, and the then-pending P6 credit resolved by entry
+`0043`.
+
+Entry `0043` records operator approval after External Reviewer evidence
+`20260830T125528Z-external-review.md` recommended APPROVE CANDIDATE. T6 is PARKED and P6
+is credited. Product STOP remains incomplete because P7-P8 are UNSCORED.
 
 ## T5 parked position
 
@@ -274,4 +278,5 @@ T0 `20260829T100254Z-e375b5eb`.
 External Reviewer evidence at
 `.builder/evidence/reviews/T5/20260829T104344Z-external-review.md` recommends APPROVE
 CANDIDATE, PARKED status, and P5 credit. Entry `0039` records operator approval and parks
-T5. P5 is credited; P6-P8 remain UNSCORED and Product STOP remains incomplete.
+T5. P5 is credited. T6 is now parked and P6 is credited; P7-P8 remain UNSCORED and
+Product STOP remains incomplete.
