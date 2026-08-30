@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "gate": "T6-mcp-entrance",
+  "status": "PASS",
+  "recorded_at": "2026-08-30T10:06:14.851374+00:00",
+  "run_id": "20260830T100614Z-7c158ee3",
+  "head_commit": "3910503594de0b94da9d4703a0e90d278644d540",
+  "working_tree": "?? .builder/evidence/T6/20260830T100455Z-05c75176/",
+  "source_digest": "7752d2144112dc3e6aa5f48cf8e9b4d136cf115f76cb8a3edaf410646013819a",
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "t6_surfaces",
+      "status": "PASS",
+      "detail": "T6 adds a lazy MCP CLI entrance, MCP adapter, and shared host status owner"
+    },
+    {
+      "name": "mcp_adapter_owner",
+      "status": "PASS",
+      "detail": "MCP adapter routes through registry, control plane, and existing state owners"
+    },
+    {
+      "name": "lower_layers_do_not_import_mcp",
+      "status": "PASS",
+      "detail": "CLI is the only non-MCP product module allowed to mention the MCP adapter"
+    },
+    {
+      "name": "focused_t6_product_evidence",
+      "status": "PASS",
+      "detail": "........                                                                 [100%]"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": "........................................................                 [100%]"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "31 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "no_out_of_scope_surfaces",
+      "status": "PASS",
+      "detail": "T6 introduces no GUI, AI/vector, cartridge, rollback, planner, or workflow-engine surface"
+    },
+    {
+      "name": "journal_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0041-t6-execution-start.md"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 50 Python sources parsed"
+    },
+    {
+      "name": "discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: hard-coded MCP catalog; direct mechanical launch bypasses control plane; MCP-private SQL ownership; CLI imports MCP eagerly; missing removability witness; missing MCP apply authority witness; missing MCP notification witness; missing malformed request witness; missing no automatic memory witness"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "PASS",
+      "detail": "no generated cache, bytecode, build, release, or fixture debris remains"
+    }
+  ]
+}

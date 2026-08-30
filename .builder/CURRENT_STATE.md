@@ -231,9 +231,10 @@ Entry `0041` records operator approval to enter IMPLEMENTING under that declarat
 the builder found no declaration contradiction or blocker.
 
 Entry `0042` submits the implemented T6 candidate at AWAITING_APPROVAL. It records the
-minimal MCP stdio adapter, the shared host status owner, focused T6 fixtures, the T6 gate,
-the cumulative gate receipts, and the fact that P6 remains uncredited pending operator
-approval.
+minimal MCP stdio adapter, the shared host status owner, focused T6 fixtures, the
+external review return, the bounded MCP contract/notification/removability repair, the
+T6 gate, the cumulative gate receipts, and the fact that P6 remains uncredited pending
+operator approval.
 
 ## T5 parked position
 

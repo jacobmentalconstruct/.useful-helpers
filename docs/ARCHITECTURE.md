@@ -407,9 +407,13 @@ governed CLI tool calls usable.
 The cumulative T3 and T5 gates were narrowed to preserve their original tranche
 boundaries after T6: T3 still forbids substrate/storage MCP ownership, and T5 still
 forbids mutation/control surfaces from growing MCP behavior, while allowing the later
-T6 adapter and CLI entrance to exist. Authoritative T6 review evidence is recorded by
-journal entry `0042`: T6 gate run `20260829T112223Z-d213f103` passed 11/11. Cumulative
-T5/T4/T3/T2/T1/T0 gates passed with receipts `20260829T112333Z-7a06a488`,
-`20260829T112500Z-731d6bb1`, `20260829T112612Z-c40cb33e`,
-`20260829T112721Z-c9a3a230`, `20260829T112842Z-bf459e22`, and
-`20260829T112820Z-1afe077d`. T6 is awaiting approval; P6 remains uncredited.
+T6 adapter and CLI entrance to exist. The external T6 review then returned the candidate
+for bounded T6 repairs: the missing `0042` submission record, MCP authority/timeout
+contract mismatch, removed-adapter CLI error, and notification lifecycle handling.
+
+Authoritative T6 review evidence is recorded by journal entry `0042`: T6 gate run
+`20260830T101453Z-956b023b` passed 11/11. Cumulative T5/T4/T3/T2/T1/T0 gates passed with
+receipts `20260830T101603Z-967e76c8`, `20260830T101728Z-3e23e4f5`,
+`20260830T101835Z-a4bbaa7a`, `20260830T101945Z-42392a2b`,
+`20260830T102005Z-8c3388b0`, and `20260830T102107Z-bdc96082`. T6 is awaiting approval;
+P6 remains uncredited.

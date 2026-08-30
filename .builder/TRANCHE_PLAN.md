@@ -293,11 +293,11 @@ without operator approval.
 Entry `0040` declares the MCP entrance boundary and records the operator's same-message
 approval to begin implementation if no contradiction is found. Entry `0041` records that
 no declaration contradiction or blocker was found and starts implementation. Entry
-`0042` records the implemented review candidate, including the T6 gate receipt
-`20260829T112223Z-d213f103` and cumulative T5/T4/T3/T2/T1/T0 gate receipts
-`20260829T112333Z-7a06a488`, `20260829T112500Z-731d6bb1`,
-`20260829T112612Z-c40cb33e`, `20260829T112721Z-c9a3a230`,
-`20260829T112842Z-bf459e22`, and `20260829T112820Z-1afe077d`. No T6 entry parks T6,
+`0042` records the implemented review candidate and subsequent verification repair,
+including the T6 gate receipt `20260830T101453Z-956b023b` and cumulative T5/T4/T3/T2/T1/T0
+gate receipts `20260830T101603Z-967e76c8`, `20260830T101728Z-3e23e4f5`,
+`20260830T101835Z-a4bbaa7a`, `20260830T101945Z-42392a2b`,
+`20260830T102005Z-8c3388b0`, and `20260830T102107Z-bdc96082`. No T6 entry parks T6,
 grants P6 credit, or begins T7.
 
 ## Project closure
