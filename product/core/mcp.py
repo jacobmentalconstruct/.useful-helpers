@@ -32,23 +32,32 @@ def serve(
         if not line:
             return 0
         response = _handle_line(context, line)
+        if response is None:
+            continue
         _write(writer, response)
         if response.get("result", {}).get("shutdown") is True:
             return 0
 
 
-def _handle_line(context: InstanceContext, line: str) -> dict:
+def _handle_line(context: InstanceContext, line: str) -> dict | None:
     try:
         request = json.loads(line)
     except json.JSONDecodeError as exc:
         return _error(None, -32700, f"parse error: {exc}")
     request_id = request.get("id") if isinstance(request, dict) else None
+    is_notification = isinstance(request, dict) and "id" not in request
     try:
         result = _dispatch(context, request)
     except McpError as exc:
+        if is_notification:
+            return None
         return _error(request_id, exc.code, exc.message)
     except Exception as exc:
+        if is_notification:
+            return None
         return _error(request_id, -32000, f"{type(exc).__name__}: {exc}")
+    if is_notification:
+        return None
     return {"jsonrpc": "2.0", "id": request_id, "result": result}
 
 
@@ -65,6 +74,8 @@ def _dispatch(context: InstanceContext, request: Any) -> dict:
         raise McpError(-32602, "params must be an object")
     if method == "initialize":
         return _initialize()
+    if method == "notifications/initialized":
+        return {}
     if method == "tools/list":
         return {"tools": _tool_descriptors(context)}
     if method == "tools/call":
@@ -133,7 +144,7 @@ def _tools_call(context: InstanceContext, params: dict) -> dict:
     if not isinstance(arguments, dict):
         raise McpError(-32602, "tool arguments must be an object")
     if name.startswith("tool."):
-        structured = _call_manifest_tool(context, name.removeprefix("tool."), arguments)
+        structured = _call_manifest_tool(context, name.removeprefix("tool."), arguments, params)
     else:
         structured = _call_projection(context, name, arguments)
     return {
@@ -143,16 +154,19 @@ def _tools_call(context: InstanceContext, params: dict) -> dict:
     }
 
 
-def _call_manifest_tool(context: InstanceContext, tool_id: str, arguments: dict) -> dict:
-    tool_arguments = dict(arguments)
-    authority = str(tool_arguments.pop("_authority", "observe"))
-    timeout = int(tool_arguments.pop("_timeout", 30))
+def _call_manifest_tool(context: InstanceContext, tool_id: str, arguments: dict, envelope: dict) -> dict:
+    authority = envelope.get("authority", "observe")
+    if authority not in {"observe", "sandbox", "apply"}:
+        raise McpError(-32602, "authority must be observe, sandbox, or apply")
+    timeout_raw = envelope.get("timeout", 30)
+    if not isinstance(timeout_raw, int) or isinstance(timeout_raw, bool):
+        raise McpError(-32602, "timeout must be an integer")
     return ControlPlane(context).invoke(
         tool_id,
-        tool_arguments,
+        dict(arguments),
         client="mcp",
         authority=authority,
-        timeout_seconds=timeout,
+        timeout_seconds=timeout_raw,
     )
 
 

@@ -38,6 +38,17 @@ class McpSession:
             raise AssertionError(f"MCP server produced no response; stderr={stderr!r}")
         return json.loads(line)
 
+    def notification(self, method: str, params: dict | None = None) -> None:
+        assert self.process.stdin is not None
+        self.process.stdin.write(
+            json.dumps(
+                {"jsonrpc": "2.0", "method": method, "params": params or {}},
+                separators=(",", ":"),
+            )
+            + "\n"
+        )
+        self.process.stdin.flush()
+
     def raw(self, payload: str) -> dict:
         assert self.process.stdin is not None
         assert self.process.stdout is not None
@@ -81,6 +92,9 @@ class T6McpEntranceTests(InstalledFixture):
         tools = {tool["name"]: tool for tool in listed["result"]["tools"]}
         self.assertIn("tool.read_file", tools)
         self.assertEqual(tools["tool.read_file"]["description"], manifest["description"])
+        self.assertTrue(tools["tool.write_file"]["inputSchema"]["additionalProperties"] is False)
+        self.assertNotIn("_authority", tools["tool.write_file"]["inputSchema"]["properties"])
+        self.assertNotIn("authority", tools["tool.write_file"]["inputSchema"]["properties"])
         self.assertIn("sidecar.status", tools)
         self.assertIn("receipts.list", tools)
         self.assertIn("journal.read", tools)
@@ -119,6 +133,50 @@ class T6McpEntranceTests(InstalledFixture):
         cli_ids = {receipt["receipt_id"] for receipt in cli_receipts["receipts"]}
         self.assertIn(structured["receipt_id"], cli_ids)
         self.assertIn(structured["receipt_id"], {r["receipt_id"] for r in mcp_receipts["result"]["structuredContent"]["receipts"]})
+
+    def test_mcp_apply_authority_uses_call_envelope_and_records_receipt(self) -> None:
+        target = self.target()
+        self.attach(target)
+
+        session = self.open_mcp(target)
+        try:
+            refused = session.request(
+                "tools/call",
+                {
+                    "name": "tool.write_file",
+                    "arguments": {"path": "created.txt", "content": "no\n", "confirm": True},
+                },
+                31,
+            )
+            refused_structured = refused["result"]["structuredContent"]
+            self.assertFalse(refused_structured["ok"])
+            self.assertEqual(refused_structured["error"]["code"], "authority_denied")
+            self.assertFalse((target / "created.txt").exists())
+            applied = session.request(
+                "tools/call",
+                {
+                    "name": "tool.write_file",
+                    "arguments": {"path": "created.txt", "content": "yes\n", "confirm": True},
+                    "authority": "apply",
+                },
+                32,
+            )
+        finally:
+            session.close()
+
+        applied_structured = applied["result"]["structuredContent"]
+        self.assertTrue(applied_structured["ok"], applied_structured)
+        self.assertEqual(applied_structured["client"], "mcp")
+        self.assertEqual(applied_structured["authority"], "apply")
+        self.assertEqual(applied_structured["result"]["handle"], "path:created.txt")
+        self.assertEqual((target / "created.txt").read_text(encoding="utf-8"), "yes\n")
+
+        _, receipt = self.sidecar(target, "receipts", "read", applied_structured["receipt_id"])
+        self.assertEqual(receipt["receipt"]["client"], "mcp")
+        self.assertEqual(receipt["receipt"]["authority"], "apply")
+        self.assertEqual(receipt["receipt"]["status"], "success")
+        self.assertEqual(receipt["receipt"]["tool_id"], "write_file")
+        self.assertEqual(receipt["receipt"]["artifact_id"], applied_structured["artifact_id"])
 
     def test_mcp_reads_existing_world_through_owner_surfaces(self) -> None:
         target = self.target()
@@ -181,6 +239,9 @@ class T6McpEntranceTests(InstalledFixture):
         process, receipts = self.sidecar(target, "receipts", "list")
         self.assertEqual(process.returncode, 0, receipts)
         self.assertTrue(receipts["ok"])
+        process, unavailable = self.sidecar(target, "mcp")
+        self.assertEqual(process.returncode, 1, unavailable)
+        self.assertEqual(unavailable["error"]["code"], "mcp_unavailable")
 
     def test_mcp_malformed_and_unknown_requests_fail_truthfully(self) -> None:
         target = self.target()
@@ -196,6 +257,21 @@ class T6McpEntranceTests(InstalledFixture):
         self.assertIn("parse", malformed["error"]["message"].lower())
         self.assertEqual(unknown["id"], 10)
         self.assertEqual(unknown["error"]["code"], -32601)
+
+    def test_mcp_initialization_notification_is_silent_and_allows_listing(self) -> None:
+        target = self.target()
+        self.attach(target)
+        session = self.open_mcp(target)
+        try:
+            initialized = session.request("initialize", request_id=21)
+            session.notification("notifications/initialized")
+            listed = session.request("tools/list", request_id=22)
+        finally:
+            session.close()
+
+        self.assertEqual(initialized["id"], 21)
+        self.assertEqual(listed["id"], 22)
+        self.assertIn("tools", listed["result"])
 
     def test_no_mcp_state_or_automatic_memory_is_created_by_listing(self) -> None:
         target = self.target()

@@ -132,9 +132,17 @@ def _mcp_import_violations(extra: dict[str, str] | None = None) -> list[str]:
             text = source.read_text(encoding="utf-8")
         imports = _imports(text, relative)
         if relative == "product/core/cli.py":
-            top = text.split("def _parser", 1)[0]
-            if "mcp" in top:
-                violations.append("product/core/cli.py imports MCP eagerly")
+            tree = ast.parse(text, filename=relative)
+            for node in tree.body:
+                if isinstance(node, ast.Import):
+                    for alias in node.names:
+                        if alias.name in {"mcp", "core.mcp", "product.core.mcp"} or alias.name.endswith(".mcp"):
+                            violations.append("product/core/cli.py imports MCP eagerly")
+                elif isinstance(node, ast.ImportFrom):
+                    imported = node.module or ""
+                    names = {alias.name for alias in node.names}
+                    if imported in {"mcp", "core.mcp", "product.core.mcp"} or imported.endswith(".mcp") or "mcp" in names:
+                        violations.append("product/core/cli.py imports MCP eagerly")
             continue
         for imported in imports:
             if imported in {"mcp", "core.mcp", "product.core.mcp"} or imported.endswith(".mcp"):
@@ -253,6 +261,18 @@ def _discrimination_witness() -> str:
             ),
         ),
         (
+            "missing MCP apply authority witness",
+            lambda: _assert_apply_authority_witness(
+                test_source.replace('"authority": "apply"', '"authority": "observe"')
+            ),
+        ),
+        (
+            "missing MCP notification witness",
+            lambda: _assert_notification_witness(
+                test_source.replace('"notifications/initialized"', '"notifications/missing"')
+            ),
+        ),
+        (
             "missing malformed request witness",
             lambda: _assert_error_witness(test_source.replace("-32700", "-32000")),
         ),
@@ -300,6 +320,26 @@ def _assert_removability_witness(source: str) -> None:
     missing = [term for term in required if term not in source]
     if missing:
         raise AssertionError(f"removability witness missing: {missing}")
+
+
+def _assert_apply_authority_witness(source: str) -> None:
+    for term in (
+        "test_mcp_apply_authority_uses_call_envelope_and_records_receipt",
+        '"authority": "apply"',
+        'self.sidecar(target, "receipts", "read"',
+    ):
+        if term not in source:
+            raise AssertionError(f"MCP apply authority witness missing: {term}")
+
+
+def _assert_notification_witness(source: str) -> None:
+    for term in (
+        "test_mcp_initialization_notification_is_silent_and_allows_listing",
+        '"notifications/initialized"',
+        'listed["id"], 22',
+    ):
+        if term not in source:
+            raise AssertionError(f"MCP notification witness missing: {term}")
 
 
 def _assert_error_witness(source: str) -> None:
@@ -408,7 +448,7 @@ def main() -> int:
                 "status": evidence["status"],
                 "passed": sum(check.status == "PASS" for check in checks),
                 "total": len(checks),
-                "evidence": evidence_path.relative_to(ROOT).as_posix(),
+                "evidence": _display_path(evidence_path),
                 "source_digest": evidence["source_digest"],
                 "failures": [asdict(check) for check in checks if check.status == "FAIL"],
             },
@@ -416,6 +456,13 @@ def main() -> int:
         )
     )
     return 0 if passed else 1
+
+
+def _display_path(path: Path) -> str:
+    try:
+        return path.relative_to(ROOT).as_posix()
+    except ValueError:
+        return str(path)
 
 
 if __name__ == "__main__":

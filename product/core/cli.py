@@ -158,7 +158,19 @@ def main(instance_root: str | Path, argv: list[str] | None = None) -> int:
         elif arguments.command == "tools":
             response = {"ok": True, "tools": ControlPlane(context).tools()}
         elif arguments.command == "mcp":
-            from . import mcp
+            try:
+                from . import mcp
+            except ImportError as exc:
+                _emit(
+                    {
+                        "ok": False,
+                        "error": {
+                            "code": "mcp_unavailable",
+                            "message": f"MCP adapter is not installed or cannot be loaded: {exc}",
+                        },
+                    }
+                )
+                return 1
 
             return mcp.serve(context)
         elif arguments.command == "call":
