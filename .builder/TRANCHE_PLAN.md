@@ -299,8 +299,8 @@ no declaration contradiction or blocker was found and starts implementation. Ent
 including the T6 gate receipt `20260830T101453Z-956b023b` and cumulative T5/T4/T3/T2/T1/T0
 gate receipts `20260830T101603Z-967e76c8`, `20260830T101728Z-3e23e4f5`,
 `20260830T101835Z-a4bbaa7a`, `20260830T101945Z-42392a2b`,
-`20260830T102005Z-8c3388b0`, and `20260830T102107Z-bdc96082`. No T6 entry parks T6,
-grants P6 credit, or begins T7.
+`20260830T102005Z-8c3388b0`, and `20260830T102107Z-bdc96082`. Entry `0042` does not
+park T6, grant P6 credit, or begin T7.
 External Reviewer evidence at `evidence/reviews/T6/20260830T125528Z-external-review.md`
 recommends APPROVE CANDIDATE. Entry `0043` records operator approval, grants the terminal
 PARKED disposition, and parks P6 credit. P7-P8 remain UNSCORED and Product STOP remains
