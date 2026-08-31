@@ -9,6 +9,9 @@ dist/
 *.egg-info/
 /release/
 /_projectmapper/
+/_exports/
+/*.zip
+/*.7z
 tmp*/
 tests/.runtime/
 phase1-*/
