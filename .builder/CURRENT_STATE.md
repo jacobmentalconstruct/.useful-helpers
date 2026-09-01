@@ -3,14 +3,14 @@
 This file is a resumability projection, not authority.
 
 - Current tranche: **T7 Domain Truth**
-- Current state: **IMPLEMENTING**
-- Operator direction: implement T7 under the approved 0044+0045 declaration; stop at AWAITING_APPROVAL
+- Current state: **AWAITING_APPROVAL**
+- Operator direction: T7 is submitted for review; do not park T7, grant P7 credit, or begin T8 without explicit operator approval
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0046-t7-execution-start.md`
+- Latest journal position: `0047-t7-awaiting-approval.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness; T5 Governed Mutation Loop; T6 Removable MCP Entrance
-- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5 credited by parked T5; P6 credited by parked T6; P7-P8 UNSCORED
+- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5 credited by parked T5; P6 credited by parked T6; T7 submitted but P7-P8 UNSCORED
 - Project closure: not eligible
 
 ## Measured implementation
@@ -213,11 +213,10 @@ because P7-P8 are UNSCORED.
 
 ## Next entering-builder action
 
-Continue implementing T7 under entries `0044`, `0045`, and `0046`. Add gate-first
-evidence for truthful domain degradation across software, mixed records/documents,
-observed empty/nascent, unobserved, and weak-material targets. Stop at
-AWAITING_APPROVAL. Do not reopen T0-T6 absent new evidence of a failed premise, do not
-park T7 or grant P7 credit, and do not begin T8.
+Review the T7 AWAITING_APPROVAL candidate in entry `0047`. If the operator approves it,
+park T7 and grant P7 credit under the normal closeout mechanism. If review returns a
+bounded defect, repair within T7 and resubmit. Do not reopen T0-T6 absent new evidence
+of a failed premise, and do not begin T8.
 
 ## T7 declaration position
 
@@ -237,8 +236,15 @@ Reviewer evidence at `.builder/evidence/reviews/T7/20260901T124501Z-external-rev
 recommended APPROVE CANDIDATE for the amended declaration. P7 remains UNSCORED.
 
 Entry `0046` records operator approval to enter IMPLEMENTING under the effective T7
-declaration. T7 is now implementing. P7 remains UNSCORED until an implemented candidate
-is submitted, reviewed, operator-approved, and parked.
+declaration.
+
+Entry `0047` submits the implemented T7 candidate for review. The candidate records
+deterministic domain signals and derived profile/weak-material claims in the T3
+substrate, projects compact domain orientation and limitations through T4 awareness, and
+proves software, mixed records/documents, observed empty/nascent, unobserved, and
+weak-material fixtures. Authoritative T7 gate `20260901T134412Z-f6f03036` passed 11/11;
+cumulative T6/T5/T4/T3/T2/T1/T0 gates also passed. T7 is not parked and P7 remains
+UNSCORED pending operator approval.
 
 ## T6 declaration position
 

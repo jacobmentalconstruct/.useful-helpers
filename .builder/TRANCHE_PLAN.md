@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **T7 IMPLEMENTING**
+Status: **T7 AWAITING_APPROVAL**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -17,7 +17,7 @@ Charter and are referenced here without redefinition.
 | T4 Awareness | PARKED | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 PARKED; amended declaration approved | P4 |
 | T5 Governed Mutation Loop | PARKED | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 PARKED; declaration approved | P5 |
 | T6 Removable MCP Entrance | PARKED | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 PARKED; declaration approved | P6 |
-| T7 Domain Truth | IMPLEMENTING | Software, mixed records/documents, and empty targets degrade truthfully. | T6 PARKED; declaration approved | P7 |
+| T7 Domain Truth | AWAITING_APPROVAL | Software, mixed records/documents, and empty targets degrade truthfully. | T6 PARKED; declaration approved | P7 |
 | T8 Release and STOP | PROVISIONAL | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 | P1-P8 |
 
 Tranche detail is declared immediately before work. Future rows state dependency and
@@ -308,13 +308,14 @@ incomplete.
 
 ## T7 synopsis
 
-T7 Domain Truth is IMPLEMENTING. The sequence outcome above remains the
+T7 Domain Truth is AWAITING_APPROVAL. The sequence outcome above remains the
 Plan-owned tranche property; entry `0044` owns its historical measured scope, non-goals,
 ownership rules, completion evidence, risks, and ordered implementation plan. Entry
 `0045` amends the current declaration submission with an explicit weak-material
 degradation witness and discrimination requirement. Entry `0046` records operator
-approval to enter implementation. T7 may not be parked, grant P7 credit, or begin T8
-without operator approval of an implemented AWAITING_APPROVAL submission.
+approval to enter implementation. Entry `0047` submits the implemented candidate for
+review. T7 may not be parked, grant P7 credit, or begin T8 without operator approval of
+the implemented AWAITING_APPROVAL submission.
 
 ## T7 declaration record
 
@@ -324,6 +325,8 @@ without operator approval of an implemented AWAITING_APPROVAL submission.
   `journal/0045-t7-declaration-weak-material-amendment.md`
 - Execution start:
   `journal/0046-t7-execution-start.md`
+- Review submission:
+  `journal/0047-t7-awaiting-approval.md`
 
 Entry `0044` declares a bounded truthful-breadth outcome: deterministic T3-owned domain
 signals and T4 awareness projection should distinguish substantial software, mixed
@@ -338,6 +341,12 @@ It does not authorize implementation, create the T7 gate, change product source,
 P7 credit, or begin T8.
 Entry `0046` records operator approval to enter IMPLEMENTING under the effective `0044`
 and `0045` declaration. It does not park T7, grant P7 credit, or begin T8.
+Entry `0047` submits the implemented T7 candidate with authoritative T7 gate receipt
+`20260901T134412Z-f6f03036` and cumulative T6/T5/T4/T3/T2/T1/T0 gate receipts
+`20260901T133151Z-3ea2023f`, `20260901T133305Z-15d001d5`,
+`20260901T133433Z-e4671094`, `20260901T133544Z-68f688b1`,
+`20260901T133701Z-e7f38d23`, `20260901T133720Z-3fef0329`, and
+`20260901T134520Z-110935b3`. It does not park T7, grant P7 credit, or begin T8.
 
 ## Project closure
 

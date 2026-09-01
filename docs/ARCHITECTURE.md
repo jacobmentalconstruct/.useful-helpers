@@ -1,6 +1,6 @@
 # Architecture
 
-Status: **T6 PARKED IMPLEMENTATION MAP**
+Status: **T7 AWAITING_APPROVAL IMPLEMENTATION MAP**
 
 ## Charter relationship
 
@@ -11,7 +11,8 @@ those facts. It maps the implementation currently present in the repository to t
 Charter responsibilities it is intended to realize. T1, T2, T3, and T4 are parked by
 operator approval. T5 Governed Mutation Loop is parked by operator approval and P5 is
 credited. T6 Removable MCP Entrance is parked by operator approval and P6 is credited.
-Product STOP remains incomplete because P7-P8 are unscored.
+T7 Domain Truth is submitted for review and is not yet parked or credited. Product STOP
+remains incomplete because P7-P8 are unscored.
 
 ## Current installed-instance realization
 
@@ -173,10 +174,19 @@ excludes the `.sidecar` subtree, records path-based resource identity, and prese
 historical resource versions instead of overwriting them. It exposes a T3-owned current
 awareness basis view for projection consumers: the latest coherent refresh basis,
 resource handles current at that refresh, related claims, observations, evidence handles,
-provenance handles, and a stable basis signature. It currently generates only thin
-deterministic claims: observed empty target, or observed text-like files. Those are
+provenance handles, and a stable basis signature. It records thin deterministic claims:
+observed empty target, observed text-like files, software-profile signals,
+records/document-profile signals, and weak-material limited-basis signals. Those are
 derived claims, not awareness findings and not deterministic facts beyond their stated
 support.
+
+T7 extends substrate refresh with per-resource `domain_signal` observations and
+epistemic evidence. These signals are intentionally metadata/file-marker based. They can
+support bounded claims such as `target_profile_software`,
+`target_profile_records_documents`, and `target_has_weak_material`. Weak material covers
+large files, binary/media-like files, vendor/dependency-like paths, and unparsed document
+bodies. The weak-material claim explicitly records metadata-only or limited-basis
+limitations rather than claiming text, semantic, PDF, media, or dependency understanding.
 
 The database still does not implement semantic/vector indexes, domain cartridges, or a
 graph database. The objects directory is created but has no accepted object-store
@@ -201,13 +211,19 @@ revision `current`, `stale`, or `unknown`, but cannot create substrate facts or 
 findings.
 
 Awareness refresh on an unobserved target records an immutable revision with missing
-basis, no findings, explicit limitations, and explicit unknowns. Awareness refresh after
-a T3 substrate refresh records compact findings from only the latest coherent T3 basis,
-so non-empty to empty, deletion, replacement, and similar transitions do not leak
-historical substrate records into current orientation. Prior awareness revisions remain
-inspectable after later refreshes. `awareness current` recomputes freshness against the
-current target signature and can report `stale` after a target change independently of
-the T5 mutation loop.
+basis, no findings, explicit limitations, explicit unknowns, and `domain_profile =
+unknown`. Awareness refresh after a T3 substrate refresh records compact findings from
+only the latest coherent T3 basis, so non-empty to empty, deletion, replacement, and
+similar transitions do not leak historical substrate records into current orientation.
+Prior awareness revisions remain inspectable after later refreshes. `awareness current`
+recomputes freshness against the current target signature and can report `stale` after a
+target change independently of the T5 mutation loop.
+
+T7 awareness projection adds a compact `domain_profile` summary from the current T3
+claims: `empty_or_nascent`, `software`, `records_documents`, `mixed`,
+`generic_observed`, or `unknown`. Awareness limitations include deterministic-basis and
+weak-material limitations from T3 claim data. Awareness still does not scan the target
+for domain findings and does not directly query T3-owned tables.
 
 The CLI exposes `awareness status`, `awareness refresh`, `awareness current`,
 `awareness revisions list/read`, and `awareness drill`. Drill resolves awareness items
@@ -418,3 +434,31 @@ receipts `20260830T101603Z-967e76c8`, `20260830T101728Z-3e23e4f5`,
 at `.builder/evidence/reviews/T6/20260830T125528Z-external-review.md` recommends APPROVE
 CANDIDATE. Entry `0043` records operator approval and parks T6. P6 is credited; Product
 STOP remains incomplete because P7-P8 are unscored.
+
+## T7 review evidence
+
+T7 introduces deterministic domain truth at prototype breadth. `substrate.py` remains the
+T3 owner of resource observations, domain-signal evidence, derived profile claims, and
+provenance. `awareness.py` remains the T4 owner of compact orientation over the current
+T3 basis.
+
+Focused fixtures prove unobserved and observed-empty targets are not collapsed; a
+substantial software target produces a traceable `target_profile_software` claim; a mixed
+records/document target produces traceable records/document orientation and
+unparsed-document limitations; weak material containing vendor/dependency-like,
+binary/media-like, and large files is represented as metadata-only or limited-basis
+evidence without content-understanding claims; current awareness does not leak
+historical software shape after a later records/document refresh; observe/orient does
+not create receipts, App Journal entries, mutation records, or MCP-private state; and
+CLI and MCP read the same resulting substrate/awareness world through existing
+entrances.
+
+Authoritative T7 candidate evidence is recorded by journal entry `0047`: T7 gate run
+`20260901T134412Z-f6f03036` passed 11/11. Cumulative T6/T5/T4/T3/T2/T1/T0 gates also
+passed with receipts `20260901T133151Z-3ea2023f`, `20260901T133305Z-15d001d5`,
+`20260901T133433Z-e4671094`, `20260901T133544Z-68f688b1`,
+`20260901T133701Z-e7f38d23`, `20260901T133720Z-3fef0329`, and
+`20260901T134520Z-110935b3`.
+
+T7 is submitted at AWAITING_APPROVAL. It is not parked, P7 is not credited, and T8 has
+not begun.

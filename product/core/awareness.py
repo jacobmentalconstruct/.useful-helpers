@@ -93,6 +93,7 @@ def refresh(context: InstanceContext) -> dict:
         source_handles: list[str] = []
         summary = {
             "target_state": "unknown_unobserved",
+            "domain_profile": "unknown",
             "resource_count": None,
             "claim_count": 0,
         }
@@ -109,10 +110,11 @@ def refresh(context: InstanceContext) -> dict:
         target_state = "observed_empty" if empty_claim else "observed_non_empty"
         summary = {
             "target_state": target_state,
+            "domain_profile": _domain_profile(claims, empty=empty_claim is not None),
             "resource_count": len(resources),
             "claim_count": len(claims),
         }
-        limitations = _observed_limitations(resources)
+        limitations = _observed_limitations(resources, claims)
         unknowns = ["anything not represented in substrate observations remains unknown"]
         findings = _findings_from_substrate(resources, claims)
 
@@ -342,11 +344,37 @@ def _findings_from_substrate(resources: list[dict], claims: list[dict]) -> list[
     return findings
 
 
-def _observed_limitations(resources: list[dict]) -> list[str]:
+def _domain_profile(claims: list[dict], *, empty: bool) -> str:
+    if empty:
+        return "empty_or_nascent"
+    claim_types = {claim["claim_type"] for claim in claims}
+    has_software = "target_profile_software" in claim_types
+    has_records_documents = "target_profile_records_documents" in claim_types
+    if has_software and has_records_documents:
+        return "mixed"
+    if has_software:
+        return "software"
+    if has_records_documents:
+        return "records_documents"
+    return "generic_observed"
+
+
+def _observed_limitations(resources: list[dict], claims: list[dict]) -> list[str]:
     limitations = [
         "awareness is a compact projection over the latest substrate refresh, not a complete target scan",
-        "domain-specific contributors have not run; orientation is limited to generic substrate records",
     ]
+    if any(claim["claim_type"].startswith("target_profile_") for claim in claims):
+        limitations.append("domain profile is derived from deterministic substrate signals only")
+    else:
+        limitations.append(
+            "domain-specific contributors have not run; orientation is limited to generic substrate records"
+        )
+    for claim in claims:
+        if claim["claim_type"] == "target_has_weak_material":
+            limitations.append("weak material is represented with metadata-only or limited-basis evidence")
+        for limit in claim.get("data", {}).get("limitations", []):
+            if limit not in limitations:
+                limitations.append(limit)
     if not resources:
         limitations.append("substrate observed no target resources, so awareness is intentionally thin")
     return limitations

@@ -45,6 +45,26 @@ _TEXT_SUFFIXES = {
     ".yml",
 }
 
+_SOFTWARE_SUFFIXES = {".py", ".js", ".ts", ".tsx", ".jsx", ".html", ".css"}
+_SOFTWARE_FILES = {"pyproject.toml", "package.json", "requirements.txt", "setup.py"}
+_RECORD_SUFFIXES = {".csv", ".tsv", ".json", ".sqlite", ".db", ".xlsx"}
+_DOCUMENT_SUFFIXES = {".md", ".pdf", ".doc", ".docx", ".rtf", ".txt"}
+_BINARY_MEDIA_SUFFIXES = {
+    ".bin",
+    ".dat",
+    ".gif",
+    ".jpg",
+    ".jpeg",
+    ".mp3",
+    ".mp4",
+    ".png",
+    ".webp",
+    ".zip",
+}
+_UNPARSED_DOCUMENT_SUFFIXES = {".pdf", ".doc", ".docx", ".xlsx"}
+_VENDOR_PARTS = {"node_modules", "vendor", ".venv", "venv", "__pycache__"}
+_LARGE_FILE_BYTES = 1_000_000
+
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -96,6 +116,52 @@ def _is_text_like(path: str) -> bool:
     return Path(path).suffix.lower() in _TEXT_SUFFIXES
 
 
+def _domain_signal(record: dict) -> dict:
+    path = record["path"]
+    suffix = Path(path).suffix.lower()
+    name = Path(path).name.lower()
+    parts = {part.lower() for part in Path(path).parts}
+    vendor_like = bool(parts & _VENDOR_PARTS)
+    size = int(record.get("size_bytes") or 0)
+    categories: list[str] = []
+    signals: list[str] = []
+    limitations: list[str] = []
+    weak_material = False
+
+    if vendor_like:
+        categories.append("vendor_dependency")
+        signals.append("vendor/dependency-like path")
+        limitations.append("vendor/dependency-like material is represented as metadata only")
+        weak_material = True
+    if record["kind"] == "file" and not vendor_like:
+        if suffix in _SOFTWARE_SUFFIXES or name in _SOFTWARE_FILES:
+            categories.append("software")
+            signals.append("software file or project marker")
+        if suffix in _RECORD_SUFFIXES:
+            categories.append("records")
+            signals.append("records/data file marker")
+        if suffix in _DOCUMENT_SUFFIXES:
+            categories.append("documents")
+            signals.append("document file marker")
+    if record["kind"] == "file" and suffix in _UNPARSED_DOCUMENT_SUFFIXES:
+        limitations.append("unparsed document body; content understanding is unknown")
+        weak_material = True
+    if record["kind"] == "file" and suffix in _BINARY_MEDIA_SUFFIXES:
+        limitations.append("binary/media-like material is represented as metadata only")
+        weak_material = True
+    if record["kind"] == "file" and size >= _LARGE_FILE_BYTES:
+        limitations.append("large file is represented without content-heavy inspection")
+        weak_material = True
+
+    return {
+        "categories": sorted(set(categories)),
+        "signals": sorted(set(signals)),
+        "limitations": sorted(set(limitations)),
+        "weak_material": weak_material,
+        "content_basis": "metadata_only" if weak_material else "metadata_and_hash",
+    }
+
+
 def _insert_evidence(
     connection: sqlite3.Connection,
     *,
@@ -135,6 +201,156 @@ def _insert_relation(
         """,
         (created_at, subject_type, subject_id, predicate, object_type, object_id),
     )
+
+
+def _insert_claim(
+    connection: sqlite3.Connection,
+    *,
+    claim_type: str,
+    statement: str,
+    derivation_method: str,
+    confidence: float,
+    data: dict,
+    observation_ids: list[str],
+    evidence_ids: list[str],
+    created_at: str,
+) -> str:
+    claim_id = _uuid_handle("claim")
+    connection.execute(
+        """
+        INSERT INTO claims
+            (claim_id, created_at, claim_type, statement, derivation_method,
+             confidence, data_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            claim_id,
+            created_at,
+            claim_type,
+            statement,
+            derivation_method,
+            confidence,
+            json.dumps(data, sort_keys=True),
+        ),
+    )
+    for observation_id in observation_ids:
+        _insert_relation(
+            connection,
+            subject_type="claim",
+            subject_id=claim_id,
+            predicate="derived_from",
+            object_type="observation",
+            object_id=observation_id,
+            created_at=created_at,
+        )
+    for evidence_id in sorted(set(evidence_ids)):
+        _insert_relation(
+            connection,
+            subject_type="claim",
+            subject_id=claim_id,
+            predicate="supported_by",
+            object_type="evidence",
+            object_id=evidence_id,
+            created_at=created_at,
+        )
+    return claim_id
+
+
+def _insert_domain_claims(
+    connection: sqlite3.Connection,
+    *,
+    observations: list[dict],
+    created_at: str,
+) -> int:
+    if not observations:
+        return 0
+    by_category: dict[str, list[dict]] = {}
+    weak = []
+    for observation in observations:
+        for category in observation["categories"]:
+            by_category.setdefault(category, []).append(observation)
+        if observation["weak_material"]:
+            weak.append(observation)
+
+    count = 0
+    software = by_category.get("software", [])
+    documents = by_category.get("documents", [])
+    records = by_category.get("records", [])
+    if software:
+        _insert_claim(
+            connection,
+            claim_type="target_profile_software",
+            statement="target has deterministic software-project signals",
+            derivation_method="deterministic.domain_signals",
+            confidence=0.9 if len(software) >= 2 else 0.75,
+            data={
+                "domain_profile": "software",
+                "software_signal_count": len(software),
+                "supporting_handles": _handles(software),
+                "limitations": [
+                    "software profile is based on deterministic file and marker signals only",
+                    "language symbols and imports have not been analyzed by T7",
+                ],
+            },
+            observation_ids=_observation_ids(software),
+            evidence_ids=_evidence_ids(software),
+            created_at=created_at,
+        )
+        count += 1
+    if documents or records:
+        _insert_claim(
+            connection,
+            claim_type="target_profile_records_documents",
+            statement="target has deterministic records/document collection signals",
+            derivation_method="deterministic.domain_signals",
+            confidence=0.85 if documents and records else 0.75,
+            data={
+                "domain_profile": "records_documents",
+                "document_signal_count": len(documents),
+                "record_signal_count": len(records),
+                "supporting_handles": _handles([*documents, *records]),
+                "limitations": [
+                    "records/document profile is based on deterministic file signals only",
+                    "document bodies are not parsed unless a deterministic parser produced evidence",
+                ],
+            },
+            observation_ids=_observation_ids([*documents, *records]),
+            evidence_ids=_evidence_ids([*documents, *records]),
+            created_at=created_at,
+        )
+        count += 1
+    if weak:
+        limitations = sorted({limit for item in weak for limit in item["limitations"]})
+        _insert_claim(
+            connection,
+            claim_type="target_has_weak_material",
+            statement="target contains weakly observed material represented with limited basis",
+            derivation_method="deterministic.domain_signals",
+            confidence=1.0,
+            data={
+                "content_basis": "metadata_only",
+                "weak_material_count": len(weak),
+                "supporting_handles": _handles(weak),
+                "limitations": limitations,
+            },
+            observation_ids=_observation_ids(weak),
+            evidence_ids=_evidence_ids(weak),
+            created_at=created_at,
+        )
+        count += 1
+    return count
+
+
+def _handles(observations: list[dict]) -> list[str]:
+    return sorted({item["resource_handle"] for item in observations})
+
+
+def _observation_ids(observations: list[dict]) -> list[str]:
+    return [item["observation_id"] for item in observations]
+
+
+def _evidence_ids(observations: list[dict]) -> list[str]:
+    return [item["evidence_id"] for item in observations]
 
 
 def _resource_records(context: InstanceContext) -> list[dict]:
@@ -189,7 +405,7 @@ def _describe_resource(context: InstanceContext, path: Path, kind: str) -> dict:
     content_hash = None
     if kind == "file":
         content_hash = hashlib.sha256(path.read_bytes()).hexdigest()
-    return {
+    record = {
         "handle": _resource_handle(relative, kind),
         "path": relative,
         "kind": kind,
@@ -198,6 +414,8 @@ def _describe_resource(context: InstanceContext, path: Path, kind: str) -> dict:
         "content_hash": content_hash,
         "text_like": kind == "file" and _is_text_like(relative),
     }
+    record["domain"] = _domain_signal(record)
+    return record
 
 
 def status(context: InstanceContext) -> dict:
@@ -374,6 +592,7 @@ def refresh(context: InstanceContext) -> dict:
             )
 
             text_observations: list[str] = []
+            domain_observations: list[dict] = []
             last_digest = None
             for record in records:
                 evidence_id = _insert_evidence(
@@ -490,91 +709,117 @@ def refresh(context: InstanceContext) -> dict:
                 )
                 if record["text_like"]:
                     text_observations.append(observation_id)
+                if (
+                    record["domain"]["categories"]
+                    or record["domain"]["signals"]
+                    or record["domain"]["limitations"]
+                ):
+                    domain_evidence = _insert_evidence(
+                        connection,
+                        kind="domain_signal",
+                        body={
+                            "producer": "substrate.domain_signals",
+                            "observed_at": observed_at,
+                            "subject": record["handle"],
+                            "domain": record["domain"],
+                        },
+                        created_at=observed_at,
+                    )
+                    domain_observation_id = _uuid_handle("observation")
+                    connection.execute(
+                        """
+                        INSERT INTO observations
+                            (observation_id, producer, observed_at, subject_handle,
+                             observation_type, data_json, evidence_id)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            domain_observation_id,
+                            "substrate.resource_inventory",
+                            observed_at,
+                            record["handle"],
+                            "domain_signal",
+                            json.dumps(
+                                {
+                                    "path": record["path"],
+                                    "handle": record["handle"],
+                                    **record["domain"],
+                                },
+                                sort_keys=True,
+                            ),
+                            domain_evidence,
+                        ),
+                    )
+                    _insert_relation(
+                        connection,
+                        subject_type="observation",
+                        subject_id=domain_observation_id,
+                        predicate="concerns",
+                        object_type="resource",
+                        object_id=resource_id,
+                        created_at=observed_at,
+                    )
+                    _insert_relation(
+                        connection,
+                        subject_type="observation",
+                        subject_id=domain_observation_id,
+                        predicate="supported_by",
+                        object_type="evidence",
+                        object_id=domain_evidence,
+                        created_at=observed_at,
+                    )
+                    domain_observations.append(
+                        {
+                            "observation_id": domain_observation_id,
+                            "evidence_id": domain_evidence,
+                            "resource_handle": record["handle"],
+                            **record["domain"],
+                        }
+                    )
 
             claim_count = 0
             if not records:
-                claim_id = _uuid_handle("claim")
-                connection.execute(
-                    """
-                    INSERT INTO claims
-                        (claim_id, created_at, claim_type, statement, derivation_method,
-                         confidence, data_json)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                    """,
-                    (
-                        claim_id,
-                        observed_at,
-                        "target_empty",
-                        "target observed empty during explicit substrate refresh",
-                        "deterministic.resource_count",
-                        1.0,
-                        json.dumps({"resource_count": 0}, sort_keys=True),
-                    ),
-                )
-                _insert_relation(
+                _insert_claim(
                     connection,
-                    subject_type="claim",
-                    subject_id=claim_id,
-                    predicate="derived_from",
-                    object_type="observation",
-                    object_id=inventory_observation,
-                    created_at=observed_at,
-                )
-                _insert_relation(
-                    connection,
-                    subject_type="claim",
-                    subject_id=claim_id,
-                    predicate="supported_by",
-                    object_type="evidence",
-                    object_id=inventory_evidence,
+                    claim_type="target_empty",
+                    statement="target observed empty during explicit substrate refresh",
+                    derivation_method="deterministic.resource_count",
+                    confidence=1.0,
+                    data={
+                        "resource_count": 0,
+                        "domain_profile": "empty_or_nascent",
+                    },
+                    observation_ids=[inventory_observation],
+                    evidence_ids=[inventory_evidence],
                     created_at=observed_at,
                 )
                 claim_count = 1
-            elif text_observations:
-                claim_id = _uuid_handle("claim")
-                connection.execute(
-                    """
-                    INSERT INTO claims
-                        (claim_id, created_at, claim_type, statement, derivation_method,
-                         confidence, data_json)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                    """,
-                    (
-                        claim_id,
-                        observed_at,
-                        "target_has_text_files",
-                        "target contains text-like files observed by deterministic refresh",
-                        "deterministic.suffix_classification",
-                        0.8,
-                        json.dumps({"text_like_file_count": len(text_observations)}, sort_keys=True),
-                    ),
-                )
-                for observation_id in text_observations:
-                    _insert_relation(
+            else:
+                if text_observations:
+                    rows = [
+                        connection.execute(
+                            "SELECT evidence_id FROM observations WHERE observation_id = ?",
+                            (observation_id,),
+                        ).fetchone()
+                        for observation_id in text_observations
+                    ]
+                    _insert_claim(
                         connection,
-                        subject_type="claim",
-                        subject_id=claim_id,
-                        predicate="derived_from",
-                        object_type="observation",
-                        object_id=observation_id,
+                        claim_type="target_has_text_files",
+                        statement="target contains text-like files observed by deterministic refresh",
+                        derivation_method="deterministic.suffix_classification",
+                        confidence=0.8,
+                        data={"text_like_file_count": len(text_observations)},
+                        observation_ids=text_observations,
+                        evidence_ids=[row["evidence_id"] for row in rows if row is not None],
                         created_at=observed_at,
                     )
-                if text_observations:
-                    first_observation = connection.execute(
-                        "SELECT evidence_id, subject_handle FROM observations WHERE observation_id = ?",
-                        (text_observations[0],),
-                    ).fetchone()
-                    if first_observation is not None:
-                        _insert_relation(
-                            connection,
-                            subject_type="claim",
-                            subject_id=claim_id,
-                            predicate="supported_by",
-                            object_type="evidence",
-                            object_id=first_observation["evidence_id"],
-                            created_at=observed_at,
-                        )
-                claim_count = 1
+                    claim_count += 1
+                claim_count += _insert_domain_claims(
+                    connection,
+                    observations=domain_observations,
+                    created_at=observed_at,
+                )
     finally:
         connection.close()
     return {
