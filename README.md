@@ -45,8 +45,11 @@ T6 Removable MCP Entrance is **PARKED by operator approval** in
 `.builder/journal/0042-t6-awaiting-approval.md`, and External Reviewer evidence
 `.builder/evidence/reviews/T6/20260830T125528Z-external-review.md`. P6 is credited.
 T7 Domain Truth is **DECLARED for operator review** in
-`.builder/journal/0044-t7-domain-truth-declaration.md`. It has not begun implementation,
-is not parked, and P7 remains UNSCORED.
+`.builder/journal/0044-t7-domain-truth-declaration.md`, amended by
+`.builder/journal/0045-t7-declaration-weak-material-amendment.md` after Reviewer
+declaration evidence
+`.builder/evidence/reviews/T7/20260901T115016Z-external-review.md`. It has not begun
+implementation, is not parked, and P7 remains UNSCORED.
 
 Read construction authority in this order:
 

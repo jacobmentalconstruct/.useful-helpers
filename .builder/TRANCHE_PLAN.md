@@ -309,20 +309,30 @@ incomplete.
 ## T7 synopsis
 
 T7 Domain Truth is DECLARED for operator review. The sequence outcome above remains the
-Plan-owned tranche property; entry `0044` owns its measured scope, non-goals, ownership
-rules, completion evidence, risks, and ordered implementation plan. T7 may not begin
-implementation, be parked, grant P7 credit, or begin T8 without operator approval.
+Plan-owned tranche property; entry `0044` owns its historical measured scope, non-goals,
+ownership rules, completion evidence, risks, and ordered implementation plan. Entry
+`0045` amends the current declaration submission with an explicit weak-material
+degradation witness and discrimination requirement. T7 may not begin implementation, be
+parked, grant P7 credit, or begin T8 without operator approval.
 
 ## T7 declaration record
 
 - Declaration and scope-review submission:
   `journal/0044-t7-domain-truth-declaration.md`
+- Weak-material declaration amendment and current review submission:
+  `journal/0045-t7-declaration-weak-material-amendment.md`
 
 Entry `0044` declares a bounded truthful-breadth outcome: deterministic T3-owned domain
 signals and T4 awareness projection should distinguish substantial software, mixed
 records/documents, explicitly observed empty/nascent, and unobserved targets without
 inventing unsupported richness. It does not authorize implementation, create the T7 gate,
 change product source, grant P7 credit, or begin T8.
+Reviewer evidence at `evidence/reviews/T7/20260901T115016Z-external-review.md`
+returned the declaration for one bounded amendment. Entry `0045` supersedes `0044` only
+as the current declaration review submission by requiring an adversarial weak-material
+fixture covering large, binary, vendor/dependency-like, or unparsed material degradation.
+It does not authorize implementation, create the T7 gate, change product source, grant
+P7 credit, or begin T8.
 
 ## Project closure
 

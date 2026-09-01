@@ -4,10 +4,10 @@ This file is a resumability projection, not authority.
 
 - Current tranche: **T7 Domain Truth**
 - Current state: **DECLARED**
-- Operator direction: T7 is declared for operator review; do not implement until the declaration is approved
+- Operator direction: T7 declaration was amended for weak-material degradation review; do not implement until the amended declaration is approved
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0044-t7-domain-truth-declaration.md`
+- Latest journal position: `0045-t7-declaration-weak-material-amendment.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness; T5 Governed Mutation Loop; T6 Removable MCP Entrance
 - Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5 credited by parked T5; P6 credited by parked T6; P7-P8 UNSCORED
@@ -213,10 +213,11 @@ because P7-P8 are UNSCORED.
 
 ## Next entering-builder action
 
-Present the T7 Domain Truth declaration for operator review. If the operator approves
-entry `0044`, enter IMPLEMENTING under that declaration. If review finds a contradiction
-or scope problem, amend the declaration before implementation. Do not reopen T0-T6 absent
-new evidence of a failed premise, and do not begin T8.
+Present the amended T7 Domain Truth declaration for Reviewer/operator review. If the
+operator approves entries `0044` and `0045` as the effective T7 declaration, enter
+IMPLEMENTING under that amended declaration. If review finds a contradiction or scope
+problem, amend the declaration before implementation. Do not reopen T0-T6 absent new
+evidence of a failed premise, and do not begin T8.
 
 ## T7 declaration position
 
@@ -227,6 +228,12 @@ empty or nascent target, and an unobserved target. T7 must keep deterministic do
 facts owned by the T3 substrate, awareness owned by T4 projection, and CLI/MCP as
 entrances rather than capability owners. P7 remains UNSCORED until an implemented T7
 candidate is approved and parked by the operator.
+
+Reviewer evidence at `.builder/evidence/reviews/T7/20260901T115016Z-external-review.md`
+returned the declaration for one bounded amendment: T7 must explicitly require a
+large/binary/vendor-or-weak-material degradation witness. Entry `0045` records that
+amendment and is now the current declaration review position. T7 remains DECLARED, has
+not begun implementation, and P7 remains UNSCORED.
 
 ## T6 declaration position
 
