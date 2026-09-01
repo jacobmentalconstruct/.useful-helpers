@@ -2,12 +2,12 @@
 
 This file is a resumability projection, not authority.
 
-- Current tranche: **T6 Removable MCP Entrance**
-- Current state: **PARKED**
-- Operator direction: T6 is parked with P6 credit; next action is T7 declaration only unless separately approved
+- Current tranche: **T7 Domain Truth**
+- Current state: **DECLARED**
+- Operator direction: T7 is declared for operator review; do not implement until the declaration is approved
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0043-t6-park.md`
+- Latest journal position: `0044-t7-domain-truth-declaration.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness; T5 Governed Mutation Loop; T6 Removable MCP Entrance
 - Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5 credited by parked T5; P6 credited by parked T6; P7-P8 UNSCORED
@@ -213,9 +213,20 @@ because P7-P8 are UNSCORED.
 
 ## Next entering-builder action
 
-Prepare the T7 Domain Truth declaration for operator review when instructed. T7 should
-not begin implementation without its own approved declaration. Do not reopen T0-T6 absent
-new evidence of a failed premise.
+Present the T7 Domain Truth declaration for operator review. If the operator approves
+entry `0044`, enter IMPLEMENTING under that declaration. If review finds a contradiction
+or scope problem, amend the declaration before implementation. Do not reopen T0-T6 absent
+new evidence of a failed premise, and do not begin T8.
+
+## T7 declaration position
+
+Entry `0044` declares T7 Domain Truth. The declared outcome is bounded truthful breadth:
+explicit observation and awareness should degrade usefully and honestly across a
+substantial software target, a mixed records/document target, an explicitly observed
+empty or nascent target, and an unobserved target. T7 must keep deterministic domain
+facts owned by the T3 substrate, awareness owned by T4 projection, and CLI/MCP as
+entrances rather than capability owners. P7 remains UNSCORED until an implemented T7
+candidate is approved and parked by the operator.
 
 ## T6 declaration position
 

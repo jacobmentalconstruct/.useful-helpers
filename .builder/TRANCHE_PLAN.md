@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **T6 PARKED**
+Status: **T7 DECLARED**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -17,7 +17,7 @@ Charter and are referenced here without redefinition.
 | T4 Awareness | PARKED | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 PARKED; amended declaration approved | P4 |
 | T5 Governed Mutation Loop | PARKED | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 PARKED; declaration approved | P5 |
 | T6 Removable MCP Entrance | PARKED | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 PARKED; declaration approved | P6 |
-| T7 Domain Truth | PROVISIONAL | Software, mixed records/documents, and empty targets degrade truthfully. | T6 | P7 |
+| T7 Domain Truth | DECLARED | Software, mixed records/documents, and empty targets degrade truthfully. | T6 PARKED; declaration awaiting review | P7 |
 | T8 Release and STOP | PROVISIONAL | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 | P1-P8 |
 
 Tranche detail is declared immediately before work. Future rows state dependency and
@@ -305,6 +305,24 @@ External Reviewer evidence at `evidence/reviews/T6/20260830T125528Z-external-rev
 recommends APPROVE CANDIDATE. Entry `0043` records operator approval, grants the terminal
 PARKED disposition, and parks P6 credit. P7-P8 remain UNSCORED and Product STOP remains
 incomplete.
+
+## T7 synopsis
+
+T7 Domain Truth is DECLARED for operator review. The sequence outcome above remains the
+Plan-owned tranche property; entry `0044` owns its measured scope, non-goals, ownership
+rules, completion evidence, risks, and ordered implementation plan. T7 may not begin
+implementation, be parked, grant P7 credit, or begin T8 without operator approval.
+
+## T7 declaration record
+
+- Declaration and scope-review submission:
+  `journal/0044-t7-domain-truth-declaration.md`
+
+Entry `0044` declares a bounded truthful-breadth outcome: deterministic T3-owned domain
+signals and T4 awareness projection should distinguish substantial software, mixed
+records/documents, explicitly observed empty/nascent, and unobserved targets without
+inventing unsupported richness. It does not authorize implementation, create the T7 gate,
+change product source, grant P7 credit, or begin T8.
 
 ## Project closure
 
