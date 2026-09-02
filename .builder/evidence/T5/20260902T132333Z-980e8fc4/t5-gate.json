@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "gate": "T5-governed-mutation",
+  "status": "PASS",
+  "recorded_at": "2026-09-02T13:23:33.826382+00:00",
+  "run_id": "20260902T132333Z-980e8fc4",
+  "head_commit": "0fafd1893ea9707d279a2a9c95d30def2a1e011b",
+  "working_tree": "",
+  "source_digest": "5d6464d4e69e48365264a098512d4164ba1be748ff347156a7f02123dd4c247a",
+  "python": "3.13.15 (main, Sep  1 2026, 14:18:08) [Clang 22.1.3 ]",
+  "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.35",
+  "checks": [
+    {
+      "name": "t5_schema",
+      "status": "PASS",
+      "detail": "schema version 5 adds distinct governed mutation tables with staged migration"
+    },
+    {
+      "name": "mutation_owner",
+      "status": "PASS",
+      "detail": "mutation owner orchestrates preview, approval, apply, measurement, verification, and refresh"
+    },
+    {
+      "name": "cli_entrance",
+      "status": "PASS",
+      "detail": "CLI exposes mutation status, preview, approve, apply, history, and links"
+    },
+    {
+      "name": "lower_layers_do_not_import_mutation",
+      "status": "PASS",
+      "detail": "lower product layers do not depend upward on mutation governance"
+    },
+    {
+      "name": "environment_containment",
+      "status": "PASS",
+      "detail": "child process environment is allowlisted around explicit installed runtime context"
+    },
+    {
+      "name": "focused_t5_product_evidence",
+      "status": "PASS",
+      "detail": "........                                                                 [100%]"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": ".....................................................................    [100%]"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "31 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "no_out_of_scope_surfaces",
+      "status": "PASS",
+      "detail": "T5 introduces no MCP, GUI, AI/vector, cartridge, rollback, planner, or workflow-engine surface"
+    },
+    {
+      "name": "journal_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0048-t7-weak-material-repair-awaiting-approval.md"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 52 Python sources parsed"
+    },
+    {
+      "name": "discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: missing T5 table; migration branch stamps future version; mutation owner writes T3 table; preview applies during preview witness absent; weak approval/stale binding witness; tool self-report used as measurement; verification unavailable converted to pass; broad child process environment"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "PASS",
+      "detail": "no generated cache, bytecode, build, release, or fixture debris remains"
+    }
+  ]
+}
