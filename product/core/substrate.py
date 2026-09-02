@@ -46,9 +46,30 @@ _TEXT_SUFFIXES = {
 }
 
 _SOFTWARE_SUFFIXES = {".py", ".js", ".ts", ".tsx", ".jsx", ".html", ".css"}
-_SOFTWARE_FILES = {"pyproject.toml", "package.json", "requirements.txt", "setup.py"}
-_RECORD_SUFFIXES = {".csv", ".tsv", ".json", ".sqlite", ".db", ".xlsx"}
-_DOCUMENT_SUFFIXES = {".md", ".pdf", ".doc", ".docx", ".rtf", ".txt"}
+_SOFTWARE_FILES = {
+    "pyproject.toml",
+    "package.json",
+    "requirements.txt",
+    "setup.py",
+    "setup.cfg",
+    "cargo.toml",
+    "go.mod",
+    "makefile",
+}
+_RECORD_SUFFIXES = {".csv", ".tsv", ".sqlite", ".db", ".xlsx"}
+_DOCUMENT_SUFFIXES = {".md", ".rst", ".pdf", ".doc", ".docx", ".rtf", ".txt"}
+_CONFIG_DATA_SUFFIXES = {".json", ".yaml", ".yml", ".toml", ".xml", ".ini", ".cfg"}
+_ANCILLARY_DOCUMENT_SUFFIXES = {".md", ".rst", ".txt"}
+_ANCILLARY_DOCUMENT_STEMS = (
+    "readme",
+    "license",
+    "licence",
+    "changelog",
+    "contributing",
+    "notice",
+    "authors",
+    "copying",
+)
 _BINARY_MEDIA_SUFFIXES = {
     ".bin",
     ".dat",
@@ -62,8 +83,29 @@ _BINARY_MEDIA_SUFFIXES = {
     ".zip",
 }
 _UNPARSED_DOCUMENT_SUFFIXES = {".pdf", ".doc", ".docx", ".xlsx"}
-_VENDOR_PARTS = {"node_modules", "vendor", ".venv", "venv", "__pycache__"}
+_VENDOR_PARTS = {"node_modules", "vendor", ".venv", "venv"}
+_GENERATED_PARTS = {
+    ".git",
+    ".hg",
+    ".svn",
+    ".tox",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".idea",
+    ".vscode",
+    "__pycache__",
+    "build",
+    "dist",
+}
 _LARGE_FILE_BYTES = 1_000_000
+_METADATA_ONLY_FRESHNESS = (
+    "content changes to this material are detected only through size and modification time"
+)
+_UNTRAVERSED_SUBTREE = (
+    "its contents were not traversed and remain unobserved; changes inside it are detected"
+    " only through the directory's own modification time"
+)
 
 
 def _now() -> str:
@@ -116,48 +158,87 @@ def _is_text_like(path: str) -> bool:
     return Path(path).suffix.lower() in _TEXT_SUFFIXES
 
 
+def _untraversed_subtree_kind(name: str) -> str | None:
+    lowered = name.lower()
+    if lowered in _VENDOR_PARTS:
+        return "vendor_dependency"
+    if lowered in _GENERATED_PARTS:
+        return "generated"
+    return None
+
+
+def _is_ancillary_document(name: str, suffix: str) -> bool:
+    stem = Path(name).stem.lower()
+    if suffix in _ANCILLARY_DOCUMENT_SUFFIXES:
+        return True
+    return suffix == "" and stem.startswith(_ANCILLARY_DOCUMENT_STEMS)
+
+
 def _domain_signal(record: dict) -> dict:
     path = record["path"]
     suffix = Path(path).suffix.lower()
     name = Path(path).name.lower()
-    parts = {part.lower() for part in Path(path).parts}
-    vendor_like = bool(parts & _VENDOR_PARTS)
     size = int(record.get("size_bytes") or 0)
+    subtree_kind = _untraversed_subtree_kind(name) if record["kind"] == "directory" else None
     categories: list[str] = []
     signals: list[str] = []
     limitations: list[str] = []
     weak_material = False
+    ancillary = False
 
-    if vendor_like:
+    if subtree_kind == "vendor_dependency":
         categories.append("vendor_dependency")
         signals.append("vendor/dependency-like path")
-        limitations.append("vendor/dependency-like material is represented as metadata only")
+        limitations.append(
+            "vendor/dependency-like material is represented as metadata only; "
+            + _UNTRAVERSED_SUBTREE
+        )
         weak_material = True
-    if record["kind"] == "file" and not vendor_like:
+    elif subtree_kind == "generated":
+        categories.append("generated")
+        signals.append("version-control, build, or cache subtree")
+        limitations.append(
+            "generated/version-control material is represented as metadata only; "
+            + _UNTRAVERSED_SUBTREE
+        )
+        weak_material = True
+    if record["kind"] == "file":
         if suffix in _SOFTWARE_SUFFIXES or name in _SOFTWARE_FILES:
             categories.append("software")
             signals.append("software file or project marker")
+        elif suffix in _CONFIG_DATA_SUFFIXES:
+            categories.append("config_data")
+            signals.append("configuration or structured-data file")
+            ancillary = True
         if suffix in _RECORD_SUFFIXES:
             categories.append("records")
             signals.append("records/data file marker")
-        if suffix in _DOCUMENT_SUFFIXES:
+        if suffix in _DOCUMENT_SUFFIXES or _is_ancillary_document(name, suffix):
             categories.append("documents")
             signals.append("document file marker")
-    if record["kind"] == "file" and suffix in _UNPARSED_DOCUMENT_SUFFIXES:
-        limitations.append("unparsed document body; content understanding is unknown")
-        weak_material = True
-    if record["kind"] == "file" and suffix in _BINARY_MEDIA_SUFFIXES:
-        limitations.append("binary/media-like material is represented as metadata only")
-        weak_material = True
-    if record["kind"] == "file" and size >= _LARGE_FILE_BYTES:
-        limitations.append("large file is represented without content-heavy inspection")
-        weak_material = True
+            ancillary = _is_ancillary_document(name, suffix)
+        if suffix in _UNPARSED_DOCUMENT_SUFFIXES:
+            limitations.append("unparsed document body; content understanding is unknown")
+            weak_material = True
+        if suffix in _BINARY_MEDIA_SUFFIXES:
+            limitations.append(
+                "binary/media-like material is represented as metadata only; "
+                + _METADATA_ONLY_FRESHNESS
+            )
+            weak_material = True
+        if size >= _LARGE_FILE_BYTES:
+            limitations.append(
+                "large file is represented without content-heavy inspection; "
+                + _METADATA_ONLY_FRESHNESS
+            )
+            weak_material = True
 
     return {
         "categories": sorted(set(categories)),
         "signals": sorted(set(signals)),
         "limitations": sorted(set(limitations)),
         "weak_material": weak_material,
+        "ancillary": ancillary,
         "content_basis": "metadata_only" if weak_material else "metadata_and_hash",
     }
 
@@ -284,7 +365,23 @@ def _insert_domain_claims(
     software = by_category.get("software", [])
     documents = by_category.get("documents", [])
     records = by_category.get("records", [])
+    config_data = by_category.get("config_data", [])
+    profile = _profile_decision(
+        software=software,
+        documents=documents,
+        records=records,
+        config_data=config_data,
+    )
     if software:
+        limitations = [
+            "software profile is based on deterministic file and marker signals only",
+            "language symbols and imports have not been analyzed by T7",
+        ]
+        if profile["subordinate_count"]:
+            limitations.append(
+                "records/document material beside the software signals is subordinate by count"
+                " and is not treated as a second domain profile"
+            )
         _insert_claim(
             connection,
             claim_type="target_profile_software",
@@ -294,18 +391,19 @@ def _insert_domain_claims(
             data={
                 "domain_profile": "software",
                 "software_signal_count": len(software),
+                "ancillary_document_count": profile["ancillary_document_count"],
+                "ancillary_config_count": len(config_data),
+                "subordinate_records_document_count": profile["subordinate_count"],
                 "supporting_handles": _handles(software),
-                "limitations": [
-                    "software profile is based on deterministic file and marker signals only",
-                    "language symbols and imports have not been analyzed by T7",
-                ],
+                "limitations": limitations,
             },
             observation_ids=_observation_ids(software),
             evidence_ids=_evidence_ids(software),
             created_at=created_at,
         )
         count += 1
-    if documents or records:
+    if profile["records_documents"]:
+        supporting = profile["records_documents"]
         _insert_claim(
             connection,
             claim_type="target_profile_records_documents",
@@ -316,14 +414,16 @@ def _insert_domain_claims(
                 "domain_profile": "records_documents",
                 "document_signal_count": len(documents),
                 "record_signal_count": len(records),
-                "supporting_handles": _handles([*documents, *records]),
+                "config_data_signal_count": len(config_data) if not software else 0,
+                "decision": profile["decision"],
+                "supporting_handles": _handles(supporting),
                 "limitations": [
                     "records/document profile is based on deterministic file signals only",
                     "document bodies are not parsed unless a deterministic parser produced evidence",
                 ],
             },
-            observation_ids=_observation_ids([*documents, *records]),
-            evidence_ids=_evidence_ids([*documents, *records]),
+            observation_ids=_observation_ids(supporting),
+            evidence_ids=_evidence_ids(supporting),
             created_at=created_at,
         )
         count += 1
@@ -349,6 +449,44 @@ def _insert_domain_claims(
     return count
 
 
+def _profile_decision(
+    *,
+    software: list[dict],
+    documents: list[dict],
+    records: list[dict],
+    config_data: list[dict],
+) -> dict:
+    """Decide which profile claims the deterministic signals support.
+
+    Without software signals, any records, documents, or configuration/data files support
+    a records/documents profile. Beside software signals, plain-text documentation and
+    configuration files are software ancillary, and the remaining records/documents only
+    support a second profile when they are substantive by count (at least two and at
+    least one fifth of the software signals).
+    """
+    ancillary_documents = [item for item in documents if item.get("ancillary")]
+    strong = [
+        *records,
+        *[item for item in documents if not item.get("ancillary")],
+    ]
+    if not software:
+        candidates = [*records, *documents, *config_data]
+        decision = "records_documents_without_software" if candidates else "no_signals"
+        return {
+            "records_documents": candidates,
+            "decision": decision,
+            "ancillary_document_count": 0,
+            "subordinate_count": 0,
+        }
+    substantive = len(strong) >= 2 and len(strong) * 5 >= len(software)
+    return {
+        "records_documents": strong if substantive else [],
+        "decision": "mixed_by_count" if substantive else "software_with_ancillary_material",
+        "ancillary_document_count": len(ancillary_documents),
+        "subordinate_count": 0 if substantive else len(strong),
+    }
+
+
 def _handles(observations: list[dict]) -> list[str]:
     return sorted({item["resource_handle"] for item in observations})
 
@@ -371,10 +509,15 @@ def _resource_records(context: InstanceContext) -> list[dict]:
             for name in sorted(directory_names)
             if not _inside_or_equal((here / name).resolve(strict=False), excluded)
         ]
+        traversed: list[str] = []
         for name in directory_names:
             path = here / name
             kind = "symlink" if path.is_symlink() else "directory"
             records.append(_describe_resource(context, path, kind))
+            if kind == "directory" and _untraversed_subtree_kind(name):
+                continue
+            traversed.append(name)
+        directory_names[:] = traversed
         for name in sorted(file_names):
             path = here / name
             if _inside_or_equal(path.resolve(strict=False), excluded):
@@ -382,6 +525,24 @@ def _resource_records(context: InstanceContext) -> list[dict]:
             kind = "symlink" if path.is_symlink() else "file"
             records.append(_describe_resource(context, path, kind))
     return records
+
+
+def _untraversed_subtrees(records: list[dict]) -> list[str]:
+    return [
+        record["handle"]
+        for record in records
+        if record["kind"] == "directory" and record["domain"]["weak_material"]
+    ]
+
+
+def _inventory_limitations(records: list[dict]) -> list[str]:
+    untraversed = _untraversed_subtrees(records)
+    if not untraversed:
+        return []
+    return [
+        f"{len(untraversed)} vendor, generated, or version-control subtree(s) were recorded as"
+        " metadata only and not traversed: " + ", ".join(untraversed)
+    ]
 
 
 def _resource_signature(records: list[dict]) -> str:
@@ -548,6 +709,7 @@ def current_awareness_basis(context: InstanceContext) -> dict:
 def refresh(context: InstanceContext) -> dict:
     observed_at = _now()
     records = _resource_records(context)
+    inventory_limitations = _inventory_limitations(records)
     connection = storage.connect(context)
     try:
         with connection:
@@ -559,7 +721,7 @@ def refresh(context: InstanceContext) -> dict:
                     "target": "path:.",
                     "resource_count": len(records),
                     "handles": [record["handle"] for record in records],
-                    "limitations": [],
+                    "limitations": inventory_limitations,
                 },
                 created_at=observed_at,
             )
@@ -580,7 +742,7 @@ def refresh(context: InstanceContext) -> dict:
                     json.dumps(
                         {
                             "resource_count": len(records),
-                            "limitations": [],
+                            "limitations": inventory_limitations,
                             "unknown": "anything not observed by this refresh remains unknown",
                         },
                         sort_keys=True,
@@ -602,12 +764,14 @@ def refresh(context: InstanceContext) -> dict:
             domain_observations: list[dict] = []
             last_digest = None
             for record in records:
+                # Evidence is addressed by content, not by observation time: an unchanged
+                # resource yields the same digest, the same evidence row, and the same
+                # version on every refresh.
                 evidence_id = _insert_evidence(
                     connection,
                     kind="resource_version",
                     body={
                         "producer": "substrate.resource_inventory",
-                        "observed_at": observed_at,
                         "resource": record,
                     },
                     created_at=observed_at,
@@ -641,7 +805,7 @@ def refresh(context: InstanceContext) -> dict:
                         version_id,
                     ),
                 )
-                connection.execute(
+                inserted_version = connection.execute(
                     """
                     INSERT OR IGNORE INTO resource_versions
                         (version_id, resource_id, observed_at, kind, content_hash,
@@ -658,25 +822,26 @@ def refresh(context: InstanceContext) -> dict:
                         record.get("mtime_ns"),
                         evidence_id,
                     ),
-                )
-                _insert_relation(
-                    connection,
-                    subject_type="version",
-                    subject_id=version_id,
-                    predicate="version_of",
-                    object_type="resource",
-                    object_id=resource_id,
-                    created_at=observed_at,
-                )
-                _insert_relation(
-                    connection,
-                    subject_type="version",
-                    subject_id=version_id,
-                    predicate="supported_by",
-                    object_type="evidence",
-                    object_id=evidence_id,
-                    created_at=observed_at,
-                )
+                ).rowcount
+                if inserted_version:
+                    _insert_relation(
+                        connection,
+                        subject_type="version",
+                        subject_id=version_id,
+                        predicate="version_of",
+                        object_type="resource",
+                        object_id=resource_id,
+                        created_at=observed_at,
+                    )
+                    _insert_relation(
+                        connection,
+                        subject_type="version",
+                        subject_id=version_id,
+                        predicate="supported_by",
+                        object_type="evidence",
+                        object_id=evidence_id,
+                        created_at=observed_at,
+                    )
                 observation_id = _uuid_handle("observation")
                 observation_type = _observation_type(record)
                 connection.execute(
@@ -726,7 +891,6 @@ def refresh(context: InstanceContext) -> dict:
                         kind="domain_signal",
                         body={
                             "producer": "substrate.domain_signals",
-                            "observed_at": observed_at,
                             "subject": record["handle"],
                             "domain": record["domain"],
                         },
@@ -837,7 +1001,7 @@ def refresh(context: InstanceContext) -> dict:
             "claim_count": claim_count,
             "digest": last_digest,
             "target_signature": _resource_signature(records),
-            "limitations": [],
+            "limitations": inventory_limitations,
             "unknown": "anything not observed by this refresh remains unknown",
         },
     }

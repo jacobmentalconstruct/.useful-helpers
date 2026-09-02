@@ -7,16 +7,20 @@ import json
 import os
 import platform
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import uuid
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Callable
 
 ROOT = Path(__file__).resolve().parents[2]
 RUNTIME_FIXTURE_ROOT = (ROOT / "tests/.runtime").resolve()
+PRODUCT_ROOT = ROOT / "product"
 
 
 @dataclass(frozen=True)
@@ -73,10 +77,20 @@ def _t7_substrate_owner() -> str:
         "vendor/dependency-like",
         "large file",
         "domain_signal",
+        "_GENERATED_PARTS",
+        "def _profile_decision(",
+        "def _inventory_limitations(",
+        "detected only through size and modification time",
+        "not traversed",
     ]
     missing = [term for term in required if term not in source]
     if missing:
         raise AssertionError(f"T7 substrate domain owner terms missing: {missing}")
+    for kind in ("resource_version", "domain_signal"):
+        body_start = source.index(f'kind="{kind}",\n')
+        body_end = source.index("created_at=observed_at,", body_start)
+        if '"observed_at": observed_at' in source[body_start:body_end]:
+            raise AssertionError(f"{kind} evidence body embeds observed_at; evidence is not content-addressed")
     return "substrate owns deterministic domain signals, claims, evidence, and relations"
 
 
@@ -110,6 +124,9 @@ def _t7_awareness_projection() -> str:
         "weak material",
         "metadata-only",
         "substrate.current_awareness_basis(context)",
+        "def _truncation_limitations(",
+        "def _inventory_limitations(",
+        '"projection": projection',
     ]
     missing = [term for term in required if term not in source]
     if missing:
@@ -118,6 +135,172 @@ def _t7_awareness_projection() -> str:
         if re.search(rf"\b(?:FROM|JOIN|INTO|UPDATE|DELETE FROM)\s+{table}\b", source, re.I):
             raise AssertionError(f"awareness directly queries T3-owned table: {table}")
     return "awareness projects domain truth through substrate APIs and owns no T3 tables"
+
+
+def _import_substrate():
+    if str(PRODUCT_ROOT) not in sys.path:
+        sys.path.insert(0, str(PRODUCT_ROOT))
+    from core import substrate  # noqa: PLC0415  (gate imports the product owner it measures)
+
+    return substrate
+
+
+def _write_realistic_software_target(target: Path) -> None:
+    (target / "pyproject.toml").write_text("[project]\nname = 'gate-demo'\n", encoding="utf-8")
+    (target / "README.md").write_text("# gate demo\n", encoding="utf-8")
+    (target / "LICENSE").write_text("MIT\n", encoding="utf-8")
+    (target / "config.json").write_text('{"debug": false}\n', encoding="utf-8")
+    (target / "NOTES.txt").write_text("todo\n", encoding="utf-8")
+    (target / "data").mkdir()
+    (target / "data" / "sample.json").write_text('{"rows": []}\n', encoding="utf-8")
+    (target / "src").mkdir()
+    (target / "src" / "app.py").write_text("def main():\n    return 1\n", encoding="utf-8")
+    (target / "src" / "util.py").write_text("X = 1\n", encoding="utf-8")
+    (target / "tests").mkdir()
+    (target / "tests" / "test_app.py").write_text("def test():\n    assert True\n", encoding="utf-8")
+    objects = target / ".git" / "objects" / "ab"
+    objects.mkdir(parents=True)
+    (target / ".git" / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
+    (objects / "cdef").write_bytes(b"x\x9c" + bytes(range(32)))
+    vendor = target / "node_modules" / "pkg"
+    vendor.mkdir(parents=True)
+    (vendor / "index.js").write_text("module.exports = 1;\n", encoding="utf-8")
+
+
+def _write_true_mixed_target(target: Path) -> None:
+    (target / "tools").mkdir()
+    (target / "tools" / "export.py").write_text("print(1)\n", encoding="utf-8")
+    (target / "tools" / "clean.py").write_text("print(2)\n", encoding="utf-8")
+    (target / "README.md").write_text("# records\n", encoding="utf-8")
+    (target / "records").mkdir()
+    (target / "records" / "a.csv").write_text("id\n1\n", encoding="utf-8")
+    (target / "records" / "b.csv").write_text("id\n2\n", encoding="utf-8")
+    (target / "contracts").mkdir()
+    (target / "contracts" / "agreement.pdf").write_bytes(b"%PDF-1.4\n%%EOF\n")
+
+
+def _known_answer_profiles(substrate) -> dict[str, str]:
+    """Execute the substrate's own classification against known-answer targets."""
+    results: dict[str, str] = {}
+    with tempfile.TemporaryDirectory(prefix="t7-gate-") as scratch:
+        for name, writer, expected in (
+            ("realistic_software", _write_realistic_software_target, "software"),
+            ("true_mixed", _write_true_mixed_target, "mixed"),
+        ):
+            target = Path(scratch) / name
+            target.mkdir()
+            writer(target)
+            context = SimpleNamespace(target_root=target, instance_root=target / ".sidecar")
+            records = substrate._resource_records(context)
+            handles = {record["handle"] for record in records}
+            if name == "realistic_software":
+                if "path:.git/" not in handles or "path:node_modules/" not in handles:
+                    raise AssertionError("generated/vendor subtree roots are not recorded")
+                nested = sorted(
+                    handle
+                    for handle in handles
+                    if handle.startswith(("path:.git/", "path:node_modules/"))
+                    and handle not in {"path:.git/", "path:node_modules/"}
+                )
+                if nested:
+                    raise AssertionError(f"generated/vendor subtrees were traversed: {nested[:3]}")
+                if any(record.get("content_hash") for record in records if record["domain"]["weak_material"]):
+                    raise AssertionError("weak material carries a content hash")
+            observations = [
+                {
+                    "observation_id": f"observation:{index}",
+                    "evidence_id": f"evidence:{index}",
+                    "resource_handle": record["handle"],
+                    **record["domain"],
+                }
+                for index, record in enumerate(records)
+                if record["domain"]["categories"] or record["domain"]["limitations"]
+            ]
+            by_category: dict[str, list[dict]] = {}
+            for observation in observations:
+                for category in observation["categories"]:
+                    by_category.setdefault(category, []).append(observation)
+            decision = substrate._profile_decision(
+                software=by_category.get("software", []),
+                documents=by_category.get("documents", []),
+                records=by_category.get("records", []),
+                config_data=by_category.get("config_data", []),
+            )
+            has_software = bool(by_category.get("software"))
+            has_records_documents = bool(decision["records_documents"])
+            if has_software and has_records_documents:
+                profile = "mixed"
+            elif has_software:
+                profile = "software"
+            elif has_records_documents:
+                profile = "records_documents"
+            else:
+                profile = "generic_observed"
+            results[name] = profile
+            if profile != expected:
+                raise AssertionError(f"{name} target classified {profile!r}, expected {expected!r}")
+    return results
+
+
+def _known_answer_domain_profiles() -> str:
+    results = _known_answer_profiles(_import_substrate())
+    return "; ".join(f"{name} -> {profile}" for name, profile in sorted(results.items()))
+
+
+def _consumer_entrance_known_answer() -> str:
+    """Prove the same answers through the installed consumer entrance, not internal imports."""
+    with tempfile.TemporaryDirectory(prefix="t7-gate-entrance-") as scratch:
+        target = Path(scratch) / "software"
+        target.mkdir()
+        _write_realistic_software_target(target)
+        attach = _run([sys.executable, "-m", "factory", "attach", str(target)])
+        if attach.returncode:
+            raise AssertionError(attach.stderr.strip() or attach.stdout.strip())
+        front_door = target / ".sidecar" / "bin" / "sidecar.py"
+
+        def sidecar(*arguments: str) -> dict:
+            process = _run([sys.executable, str(front_door), *arguments])
+            if process.returncode:
+                raise AssertionError(process.stderr.strip() or process.stdout.strip())
+            return json.loads(process.stdout)
+
+        sidecar("substrate", "refresh")
+        first = sidecar("substrate", "status")["counts"]
+        sidecar("substrate", "refresh")
+        second = sidecar("substrate", "status")["counts"]
+        for table in ("resource_versions", "epistemic_evidence"):
+            if second[table] != first[table]:
+                raise AssertionError(f"unchanged refresh grew {table}: {first[table]} -> {second[table]}")
+        revision = sidecar("awareness", "refresh")["revision"]
+        profile = revision["summary"]["domain_profile"]
+        if profile != "software":
+            raise AssertionError(f"consumer entrance reports {profile!r} for realistic software target")
+        projection = revision["summary"].get("projection")
+        if not projection or "source_handles" not in projection:
+            raise AssertionError("awareness summary does not disclose projection shown/total counts")
+        if not any("not traversed" in item for item in revision["limitations"]):
+            raise AssertionError("awareness does not disclose untraversed generated/vendor subtrees")
+        resource = sidecar("substrate", "resources", "read", "path:.git/")["resource"]
+        if resource["latest"]["content_hash"] is not None:
+            raise AssertionError("generated subtree root carries a content hash")
+        shutil.rmtree(target, ignore_errors=True)
+    return (
+        f"installed sidecar reports software on a realistic target, stable evidence/versions across"
+        f" unchanged refresh ({first['epistemic_evidence']} evidence rows), and disclosed projection"
+    )
+
+
+def _working_tree_provenance() -> str:
+    """Authoritative receipts must name a head_commit that contains the measured source."""
+    status = _git("status", "--short")
+    offending = [
+        line
+        for line in status.splitlines()
+        if not (line.startswith("??") and line[3:].startswith(".builder/evidence/"))
+    ]
+    if offending:
+        raise AssertionError(f"working tree differs from head_commit: {offending[:5]}")
+    return "measured source is fully contained in head_commit (untracked evidence receipts only)"
 
 
 def _focused_t7_product_evidence() -> str:
@@ -253,6 +436,12 @@ def _assert_t7_tests(source: str) -> None:
         "test_current_domain_profile_does_not_leak_historical_software_shape",
         "test_domain_truth_does_not_create_runtime_memory_or_mutation_state",
         "test_cli_and_mcp_read_same_domain_world_without_owning_it",
+        "test_true_mixed_fixture_reports_mixed_for_substantive_records",
+        "test_subordinate_document_beside_software_does_not_produce_mixed",
+        "test_generated_and_vendor_subtrees_are_metadata_only_and_not_traversed",
+        "test_unchanged_refresh_does_not_grow_evidence_or_versions",
+        "test_awareness_discloses_truncated_projection",
+        "generated or vendor material was read",
         "node_modules",
         "large.dat",
         "file_metadata",
@@ -327,7 +516,55 @@ def _discrimination_witness() -> str:
             witnessed.append(label)
         else:
             raise AssertionError(f"discrimination accepted {label}")
+    witnessed.extend(_executed_mutations())
     return "rejected: " + "; ".join(witnessed)
+
+
+def _executed_mutations() -> list[str]:
+    """Run the known-answer classification against live wrong implementations."""
+    substrate = _import_substrate()
+    witnessed: list[str] = []
+    originals = {
+        "_GENERATED_PARTS": substrate._GENERATED_PARTS,
+        "_VENDOR_PARTS": substrate._VENDOR_PARTS,
+        "_RECORD_SUFFIXES": substrate._RECORD_SUFFIXES,
+        "_ANCILLARY_DOCUMENT_SUFFIXES": substrate._ANCILLARY_DOCUMENT_SUFFIXES,
+        "_profile_decision": substrate._profile_decision,
+    }
+
+    def detect_only(**kwargs):
+        candidates = [*kwargs["records"], *kwargs["documents"], *kwargs["config_data"]]
+        return {
+            "records_documents": candidates,
+            "decision": "detect_only",
+            "ancillary_document_count": 0,
+            "subordinate_count": 0,
+        }
+
+    mutations = (
+        ("generated subtrees traversed", {"_GENERATED_PARTS": set()}),
+        ("vendor subtrees traversed", {"_VENDOR_PARTS": set()}),
+        ("config JSON counted as records", {"_RECORD_SUFFIXES": originals["_RECORD_SUFFIXES"] | {".json"}}),
+        ("README/notes counted as records/documents evidence", {"_ANCILLARY_DOCUMENT_SUFFIXES": set()}),
+        ("profile detects instead of discriminates", {"_profile_decision": detect_only}),
+    )
+    try:
+        for label, patch in mutations:
+            for name, value in patch.items():
+                setattr(substrate, name, value)
+            try:
+                _known_answer_profiles(substrate)
+            except AssertionError:
+                witnessed.append(f"executed: {label}")
+            else:
+                raise AssertionError(f"executed discrimination accepted {label}")
+            finally:
+                for name in patch:
+                    setattr(substrate, name, originals[name])
+    finally:
+        for name, value in originals.items():
+            setattr(substrate, name, value)
+    return witnessed
 
 
 def _weak_material_metadata_only_boundary_source(source: str) -> None:
@@ -405,6 +642,9 @@ def main() -> int:
         _check("t7_substrate_owner", _t7_substrate_owner),
         _check("weak_material_metadata_only_boundary", _weak_material_metadata_only_boundary),
         _check("t7_awareness_projection", _t7_awareness_projection),
+        _check("known_answer_domain_profiles", _known_answer_domain_profiles),
+        _check("consumer_entrance_known_answer", _consumer_entrance_known_answer),
+        _check("working_tree_provenance", _working_tree_provenance),
         _check("focused_t7_product_evidence", _focused_t7_product_evidence),
         _check("canonical_product_regression", _canonical_product_regression),
         _check("dependency_direction", _dependency_direction),

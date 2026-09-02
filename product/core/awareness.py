@@ -16,6 +16,12 @@ class AwarenessError(RuntimeError):
 
 TABLES = ("awareness_revisions", "awareness_items")
 
+# Compact projection bounds. Whenever a bound truncates, the revision states shown/total
+# counts and a limitation line so the omitted remainder is explicit rather than silent.
+_SOURCE_HANDLE_LIMIT = 100
+_CLAIM_FINDING_LIMIT = 10
+_RESOURCE_HANDLE_LIMIT = 20
+
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -105,18 +111,36 @@ def refresh(context: InstanceContext) -> dict:
         basis = basis_view["basis_signature"]
         resources = basis_view["resources"]
         claims = basis_view["claims"]
-        source_handles = basis_view["source_handles"][:100]
+        all_source_handles = basis_view["source_handles"]
+        source_handles = all_source_handles[:_SOURCE_HANDLE_LIMIT]
         empty_claim = next((item for item in claims if item["claim_type"] == "target_empty"), None)
         target_state = "observed_empty" if empty_claim else "observed_non_empty"
+        findings = _findings_from_substrate(resources, claims)
+        projection = {
+            "source_handles": {"shown": len(source_handles), "total": len(all_source_handles)},
+            "claim_findings": {
+                "shown": min(len(claims), _CLAIM_FINDING_LIMIT),
+                "total": len(claims),
+            },
+            "resource_handles": {
+                "shown": min(len(resources), _RESOURCE_HANDLE_LIMIT),
+                "total": len(resources),
+            },
+        }
         summary = {
             "target_state": target_state,
             "domain_profile": _domain_profile(claims, empty=empty_claim is not None),
             "resource_count": len(resources),
             "claim_count": len(claims),
+            "projection": projection,
         }
-        limitations = _observed_limitations(resources, claims)
+        limitations = _observed_limitations(
+            resources,
+            claims,
+            inventory_limitations=_inventory_limitations(basis_view["observations"]),
+            projection=projection,
+        )
         unknowns = ["anything not represented in substrate observations remains unknown"]
-        findings = _findings_from_substrate(resources, claims)
 
     awareness_id = _awareness_id()
     revision = {
@@ -315,7 +339,7 @@ def _read_revision_row(
 
 def _findings_from_substrate(resources: list[dict], claims: list[dict]) -> list[dict]:
     findings: list[dict] = []
-    for claim in claims[:10]:
+    for claim in claims[:_CLAIM_FINDING_LIMIT]:
         source_handles = [claim["claim_id"]]
         findings.append(
             {
@@ -329,7 +353,7 @@ def _findings_from_substrate(resources: list[dict], claims: list[dict]) -> list[
             }
         )
     if resources:
-        handles = [item["handle"] for item in resources[:20]]
+        handles = [item["handle"] for item in resources[:_RESOURCE_HANDLE_LIMIT]]
         findings.append(
             {
                 "item_id": _item_id(),
@@ -359,10 +383,51 @@ def _domain_profile(claims: list[dict], *, empty: bool) -> str:
     return "generic_observed"
 
 
-def _observed_limitations(resources: list[dict], claims: list[dict]) -> list[str]:
+def _inventory_limitations(observations: list[dict]) -> list[str]:
+    limitations: list[str] = []
+    for observation in observations:
+        if observation.get("observation_type") != "resource_inventory":
+            continue
+        for limit in observation.get("data", {}).get("limitations", []):
+            if limit not in limitations:
+                limitations.append(limit)
+    return limitations
+
+
+def _truncation_limitations(projection: dict) -> list[str]:
+    limitations: list[str] = []
+    labels = {
+        "source_handles": "source handles",
+        "claim_findings": "claim findings",
+        "resource_handles": "resource handles in the orientation finding",
+    }
+    for key, label in labels.items():
+        counts = projection.get(key, {})
+        shown = counts.get("shown", 0)
+        total = counts.get("total", 0)
+        if total > shown:
+            limitations.append(
+                f"awareness lists {shown} of {total} {label}; the remaining {total - shown}"
+                " are omitted from this compact projection and stay reachable through the"
+                " substrate basis"
+            )
+    return limitations
+
+
+def _observed_limitations(
+    resources: list[dict],
+    claims: list[dict],
+    *,
+    inventory_limitations: list[str] | None = None,
+    projection: dict | None = None,
+) -> list[str]:
     limitations = [
         "awareness is a compact projection over the latest substrate refresh, not a complete target scan",
     ]
+    limitations.extend(_truncation_limitations(projection or {}))
+    for limit in inventory_limitations or []:
+        if limit not in limitations:
+            limitations.append(limit)
     if any(claim["claim_type"].startswith("target_profile_") for claim in claims):
         limitations.append("domain profile is derived from deterministic substrate signals only")
     else:
