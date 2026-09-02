@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "gate": "T2-runtime-receipts-work-memory",
+  "status": "PASS",
+  "recorded_at": "2026-09-02T14:12:18.102701+00:00",
+  "run_id": "20260902T141218Z-47ff381a",
+  "head_commit": "0ccb5f365ba3d525022eb5cfc1a39f1ef0084aeb",
+  "working_tree": "?? .builder/evidence/T3/20260902T141139Z-3165b501/\n?? .builder/evidence/T4/20260902T141059Z-7238a7f1/\n?? .builder/evidence/T5/20260902T141016Z-a5874aa7/\n?? .builder/evidence/T6/20260902T140938Z-675dd781/",
+  "source_digest": "e225b320c2689e003d394ed3a03fda529b789bb524bdf92cc246f35d651e3933",
+  "python": "3.13.15 (main, Sep  1 2026, 14:18:08) [Clang 22.1.3 ]",
+  "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.35",
+  "checks": [
+    {
+      "name": "runtime_schema_separation",
+      "status": "PASS",
+      "detail": "storage declares distinct T2 receipt, artifact, App Journal, and link tables only"
+    },
+    {
+      "name": "runtime_owner_separation",
+      "status": "PASS",
+      "detail": "receipts/artifacts and App Journal have separate runtime owners"
+    },
+    {
+      "name": "trusted_state_owner",
+      "status": "PASS",
+      "detail": "runtime storage entrances verify instance ownership before migration or access"
+    },
+    {
+      "name": "receipt_failure_guard",
+      "status": "PASS",
+      "detail": "state-changing calls cannot be reported durably governed without receipt creation"
+    },
+    {
+      "name": "receipt_completion_coherence",
+      "status": "PASS",
+      "detail": "receipt completion persists artifact and receipt update as one coherent transaction"
+    },
+    {
+      "name": "t1_dependency_boundary",
+      "status": "PASS",
+      "detail": "T1 mechanical dependency boundary remains intact"
+    },
+    {
+      "name": "focused_t2_product_evidence",
+      "status": "PASS",
+      "detail": "..........                                                               [100%]"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": "........................................................................ [100%]"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "31 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "journal_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0049-t7-classification-repair-awaiting-approval.md"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 52 Python sources parsed"
+    },
+    {
+      "name": "discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: journal/receipt table collapse; unverified runtime storage connection; migration before identity refusal; automatic receipt-to-journal projection; split artifact/receipt completion; missing receipt failure guard"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "PASS",
+      "detail": "no generated cache, bytecode, build, release, or fixture debris remains"
+    }
+  ]
+}

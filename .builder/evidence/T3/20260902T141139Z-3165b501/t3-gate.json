@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "gate": "T3-epistemic-substrate",
+  "status": "PASS",
+  "recorded_at": "2026-09-02T14:11:39.759589+00:00",
+  "run_id": "20260902T141139Z-3165b501",
+  "head_commit": "0ccb5f365ba3d525022eb5cfc1a39f1ef0084aeb",
+  "working_tree": "?? .builder/evidence/T4/20260902T141059Z-7238a7f1/\n?? .builder/evidence/T5/20260902T141016Z-a5874aa7/\n?? .builder/evidence/T6/20260902T140938Z-675dd781/",
+  "source_digest": "9e89fdfc97a4926e337097d2c269e2519b7c354c028fc33d81837d9f72191571",
+  "python": "3.13.15 (main, Sep  1 2026, 14:18:08) [Clang 22.1.3 ]",
+  "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.35",
+  "checks": [
+    {
+      "name": "t3_schema",
+      "status": "PASS",
+      "detail": "current schema includes distinct T3 resource, evidence, claim, and relation tables"
+    },
+    {
+      "name": "substrate_owner",
+      "status": "PASS",
+      "detail": "substrate owner exposes refresh, lookup, immutable evidence, claims, and trace"
+    },
+    {
+      "name": "cli_entrance",
+      "status": "PASS",
+      "detail": "CLI exposes minimal substrate refresh and inspection commands"
+    },
+    {
+      "name": "t1_dependency_boundary",
+      "status": "PASS",
+      "detail": "T1 mechanical dependency boundary remains intact"
+    },
+    {
+      "name": "focused_t3_product_evidence",
+      "status": "PASS",
+      "detail": "......                                                                   [100%]"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": "........................................................................ [100%]"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "31 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "no_t4_or_out_of_scope_surfaces",
+      "status": "PASS",
+      "detail": "T3 introduces no awareness, vector, MCP, GUI, or cartridge authority"
+    },
+    {
+      "name": "journal_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0049-t7-classification-repair-awaiting-approval.md"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 52 Python sources parsed"
+    },
+    {
+      "name": "discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: resource/version table collapse; epistemic evidence stored as operational artifact; claim without derived_from provenance; mutable resource versions; awareness table introduced in T3"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "PASS",
+      "detail": "no generated cache, bytecode, build, release, or fixture debris remains"
+    }
+  ]
+}

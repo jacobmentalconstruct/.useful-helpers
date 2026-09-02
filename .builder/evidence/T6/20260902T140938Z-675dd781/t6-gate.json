@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "gate": "T6-mcp-entrance",
+  "status": "PASS",
+  "recorded_at": "2026-09-02T14:09:38.416036+00:00",
+  "run_id": "20260902T140938Z-675dd781",
+  "head_commit": "0ccb5f365ba3d525022eb5cfc1a39f1ef0084aeb",
+  "working_tree": "",
+  "source_digest": "cd5f375bad12f419e058e15f8274258a2714ebd1b6738abbfd662a4fd0883546",
+  "python": "3.13.15 (main, Sep  1 2026, 14:18:08) [Clang 22.1.3 ]",
+  "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.35",
+  "checks": [
+    {
+      "name": "t6_surfaces",
+      "status": "PASS",
+      "detail": "T6 adds a lazy MCP CLI entrance, MCP adapter, and shared host status owner"
+    },
+    {
+      "name": "mcp_adapter_owner",
+      "status": "PASS",
+      "detail": "MCP adapter routes through registry, control plane, and existing state owners"
+    },
+    {
+      "name": "lower_layers_do_not_import_mcp",
+      "status": "PASS",
+      "detail": "CLI is the only non-MCP product module allowed to mention the MCP adapter"
+    },
+    {
+      "name": "focused_t6_product_evidence",
+      "status": "PASS",
+      "detail": "........                                                                 [100%]"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": "........................................................................ [100%]"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "31 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "no_out_of_scope_surfaces",
+      "status": "PASS",
+      "detail": "T6 introduces no GUI, AI/vector, cartridge, rollback, planner, or workflow-engine surface"
+    },
+    {
+      "name": "journal_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0049-t7-classification-repair-awaiting-approval.md"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 52 Python sources parsed"
+    },
+    {
+      "name": "discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: hard-coded MCP catalog; direct mechanical launch bypasses control plane; MCP-private SQL ownership; CLI imports MCP eagerly; missing removability witness; missing MCP apply authority witness; missing MCP notification witness; missing malformed request witness; missing no automatic memory witness"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "PASS",
+      "detail": "no generated cache, bytecode, build, release, or fixture debris remains"
+    }
+  ]
+}
