@@ -18,6 +18,10 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Callable
 
+# The gate imports the product owner in-process for executed known-answer checks; it must
+# not leave bytecode behind that its own hygiene check would then reject.
+sys.dont_write_bytecode = True
+
 ROOT = Path(__file__).resolve().parents[2]
 RUNTIME_FIXTURE_ROOT = (ROOT / "tests/.runtime").resolve()
 PRODUCT_ROOT = ROOT / "product"
@@ -78,7 +82,9 @@ def _t7_substrate_owner() -> str:
         "large file",
         "domain_signal",
         "_GENERATED_PARTS",
+        "_SOFTWARE_CONDITIONAL_PARTS",
         "def _profile_decision(",
+        "def _text_documents_dominate(",
         "def _inventory_limitations(",
         "detected only through size and modification time",
         "not traversed",
@@ -99,14 +105,14 @@ def _weak_material_metadata_only_boundary() -> str:
     required = [
         "def _observation_type(",
         "file_metadata",
-        "record[\"domain\"] = _domain_signal(record)",
+        "record[\"domain\"] = _domain_signal(",
         "record[\"domain\"][\"content_basis\"] != \"metadata_only\"",
         "record[\"content_hash\"] = hashlib.sha256(path.read_bytes()).hexdigest()",
     ]
     missing = [term for term in required if term not in source]
     if missing:
         raise AssertionError(f"metadata-only boundary terms missing: {missing}")
-    domain_index = source.index("record[\"domain\"] = _domain_signal(record)")
+    domain_index = source.index("record[\"domain\"] = _domain_signal(")
     hash_index = source.index("record[\"content_hash\"] = hashlib.sha256(path.read_bytes()).hexdigest()")
     if hash_index < domain_index:
         raise AssertionError("content hash is computed before weak-material basis is known")
@@ -179,6 +185,24 @@ def _write_true_mixed_target(target: Path) -> None:
     (target / "contracts" / "agreement.pdf").write_bytes(b"%PDF-1.4\n%%EOF\n")
 
 
+def _write_notes_heavy_target(target: Path) -> None:
+    (target / "notes").mkdir()
+    for index in range(24):
+        (target / "notes" / f"note{index}.md").write_text(f"# note {index}\n", encoding="utf-8")
+    (target / "scripts").mkdir()
+    (target / "scripts" / "export.py").write_text("print(1)\n", encoding="utf-8")
+    (target / "scripts" / "index.py").write_text("print(2)\n", encoding="utf-8")
+
+
+def _write_records_with_ordinary_folders_target(target: Path) -> None:
+    for folder in ("vendor", "build"):
+        (target / folder).mkdir()
+        for index in range(3):
+            (target / folder / f"doc{index}.pdf").write_bytes(b"%PDF-1.4\n%%EOF\n")
+    (target / "invoices").mkdir()
+    (target / "invoices" / "a.csv").write_text("id\n1\n", encoding="utf-8")
+
+
 def _known_answer_profiles(substrate) -> dict[str, str]:
     """Execute the substrate's own classification against known-answer targets."""
     results: dict[str, str] = {}
@@ -186,6 +210,8 @@ def _known_answer_profiles(substrate) -> dict[str, str]:
         for name, writer, expected in (
             ("realistic_software", _write_realistic_software_target, "software"),
             ("true_mixed", _write_true_mixed_target, "mixed"),
+            ("notes_heavy", _write_notes_heavy_target, "mixed"),
+            ("records_ordinary_folders", _write_records_with_ordinary_folders_target, "records_documents"),
         ):
             target = Path(scratch) / name
             target.mkdir()
@@ -206,6 +232,8 @@ def _known_answer_profiles(substrate) -> dict[str, str]:
                     raise AssertionError(f"generated/vendor subtrees were traversed: {nested[:3]}")
                 if any(record.get("content_hash") for record in records if record["domain"]["weak_material"]):
                     raise AssertionError("weak material carries a content hash")
+            if name == "records_ordinary_folders" and "path:vendor/doc0.pdf" not in handles:
+                raise AssertionError("ordinary vendor/build folders on a records target were not traversed")
             observations = [
                 {
                     "observation_id": f"observation:{index}",
@@ -441,6 +469,10 @@ def _assert_t7_tests(source: str) -> None:
         "test_generated_and_vendor_subtrees_are_metadata_only_and_not_traversed",
         "test_unchanged_refresh_does_not_grow_evidence_or_versions",
         "test_awareness_discloses_truncated_projection",
+        "test_notes_collection_with_helper_scripts_is_not_software",
+        "test_documentation_that_does_not_dominate_stays_software_ancillary",
+        "test_ordinary_vendor_and_build_folders_on_records_target_are_traversed",
+        "mixed_text_documents_dominate",
         "generated or vendor material was read",
         "node_modules",
         "large.dat",
@@ -478,9 +510,9 @@ def _discrimination_witness() -> str:
             "hash computed before weak-material basis",
             lambda: _weak_material_metadata_only_boundary_source(
                 substrate_source.replace(
-                    "record[\"domain\"] = _domain_signal(record)",
+                    "record[\"domain\"] = _domain_signal(",
                     "record[\"content_hash\"] = hashlib.sha256(path.read_bytes()).hexdigest()\n"
-                    "    record[\"domain\"] = _domain_signal(record)",
+                    "    record[\"domain\"] = _domain_signal(",
                 )
             ),
         ),
@@ -530,6 +562,8 @@ def _executed_mutations() -> list[str]:
         "_RECORD_SUFFIXES": substrate._RECORD_SUFFIXES,
         "_ANCILLARY_DOCUMENT_SUFFIXES": substrate._ANCILLARY_DOCUMENT_SUFFIXES,
         "_profile_decision": substrate._profile_decision,
+        "_text_documents_dominate": substrate._text_documents_dominate,
+        "_SOFTWARE_CONDITIONAL_PARTS": substrate._SOFTWARE_CONDITIONAL_PARTS,
     }
 
     def detect_only(**kwargs):
@@ -546,6 +580,8 @@ def _executed_mutations() -> list[str]:
         ("vendor subtrees traversed", {"_VENDOR_PARTS": set()}),
         ("config JSON counted as records", {"_RECORD_SUFFIXES": originals["_RECORD_SUFFIXES"] | {".json"}}),
         ("README/notes counted as records/documents evidence", {"_ANCILLARY_DOCUMENT_SUFFIXES": set()}),
+        ("text documents always ancillary", {"_text_documents_dominate": lambda text, software: False}),
+        ("vendor/build/dist untraversed on every target", {"_SOFTWARE_CONDITIONAL_PARTS": set()}),
         ("profile detects instead of discriminates", {"_profile_decision": detect_only}),
     )
     try:
@@ -571,14 +607,14 @@ def _weak_material_metadata_only_boundary_source(source: str) -> None:
     required = [
         "def _observation_type(",
         "file_metadata",
-        "record[\"domain\"] = _domain_signal(record)",
+        "record[\"domain\"] = _domain_signal(",
         "record[\"domain\"][\"content_basis\"] != \"metadata_only\"",
         "record[\"content_hash\"] = hashlib.sha256(path.read_bytes()).hexdigest()",
     ]
     missing = [term for term in required if term not in source]
     if missing:
         raise AssertionError(f"metadata-only boundary terms missing: {missing}")
-    domain_index = source.index("record[\"domain\"] = _domain_signal(record)")
+    domain_index = source.index("record[\"domain\"] = _domain_signal(")
     hash_index = source.index("record[\"content_hash\"] = hashlib.sha256(path.read_bytes()).hexdigest()")
     if hash_index < domain_index:
         raise AssertionError("content hash is computed before weak-material basis is known")

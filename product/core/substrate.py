@@ -98,6 +98,9 @@ _GENERATED_PARTS = {
     "build",
     "dist",
 }
+# Ordinary folder names that only mean vendor/generated material on a software target:
+# they are treated as untraversed only when a software marker exists at or above them.
+_SOFTWARE_CONDITIONAL_PARTS = {"vendor", "build", "dist"}
 _LARGE_FILE_BYTES = 1_000_000
 _METADATA_ONLY_FRESHNESS = (
     "content changes to this material are detected only through size and modification time"
@@ -158,8 +161,10 @@ def _is_text_like(path: str) -> bool:
     return Path(path).suffix.lower() in _TEXT_SUFFIXES
 
 
-def _untraversed_subtree_kind(name: str) -> str | None:
+def _untraversed_subtree_kind(name: str, *, software_context: bool = True) -> str | None:
     lowered = name.lower()
+    if lowered in _SOFTWARE_CONDITIONAL_PARTS and not software_context:
+        return None
     if lowered in _VENDOR_PARTS:
         return "vendor_dependency"
     if lowered in _GENERATED_PARTS:
@@ -167,11 +172,29 @@ def _untraversed_subtree_kind(name: str) -> str | None:
     return None
 
 
+def _is_software_file(name: str) -> bool:
+    lowered = name.lower()
+    return Path(lowered).suffix in _SOFTWARE_SUFFIXES or lowered in _SOFTWARE_FILES
+
+
+_TEXT_DOMINANCE_RATIO = 2
+
+
+def _text_documents_dominate(text_documents: list[dict], software: list[dict]) -> bool:
+    """Text documents stop being software ancillary once they outnumber software signals
+    by more than the dominance ratio; a project's documentation may exceed its source
+    count, but a notes collection with a few helper scripts exceeds it many times over."""
+    return len(text_documents) > _TEXT_DOMINANCE_RATIO * len(software)
+
+
+def _is_named_ancillary_document(name: str) -> bool:
+    return Path(name).stem.lower().startswith(_ANCILLARY_DOCUMENT_STEMS)
+
+
 def _is_ancillary_document(name: str, suffix: str) -> bool:
-    stem = Path(name).stem.lower()
     if suffix in _ANCILLARY_DOCUMENT_SUFFIXES:
         return True
-    return suffix == "" and stem.startswith(_ANCILLARY_DOCUMENT_STEMS)
+    return suffix == "" and _is_named_ancillary_document(name)
 
 
 def _domain_signal(record: dict) -> dict:
@@ -179,12 +202,17 @@ def _domain_signal(record: dict) -> dict:
     suffix = Path(path).suffix.lower()
     name = Path(path).name.lower()
     size = int(record.get("size_bytes") or 0)
-    subtree_kind = _untraversed_subtree_kind(name) if record["kind"] == "directory" else None
+    subtree_kind = (
+        _untraversed_subtree_kind(name, software_context=record.get("software_context", True))
+        if record["kind"] == "directory"
+        else None
+    )
     categories: list[str] = []
     signals: list[str] = []
     limitations: list[str] = []
     weak_material = False
     ancillary = False
+    text_document = False
 
     if subtree_kind == "vendor_dependency":
         categories.append("vendor_dependency")
@@ -217,6 +245,7 @@ def _domain_signal(record: dict) -> dict:
             categories.append("documents")
             signals.append("document file marker")
             ancillary = _is_ancillary_document(name, suffix)
+            text_document = ancillary and not _is_named_ancillary_document(name)
         if suffix in _UNPARSED_DOCUMENT_SUFFIXES:
             limitations.append("unparsed document body; content understanding is unknown")
             weak_material = True
@@ -239,6 +268,7 @@ def _domain_signal(record: dict) -> dict:
         "limitations": sorted(set(limitations)),
         "weak_material": weak_material,
         "ancillary": ancillary,
+        "text_document": text_document,
         "content_basis": "metadata_only" if weak_material else "metadata_and_hash",
     }
 
@@ -459,15 +489,24 @@ def _profile_decision(
     """Decide which profile claims the deterministic signals support.
 
     Without software signals, any records, documents, or configuration/data files support
-    a records/documents profile. Beside software signals, plain-text documentation and
-    configuration files are software ancillary, and the remaining records/documents only
-    support a second profile when they are substantive by count (at least two and at
-    least one fifth of the software signals).
+    a records/documents profile. Beside software signals, README-style named files and
+    configuration files are software ancillary; plain-text documents (`.md`, `.rst`,
+    `.txt`) are ancillary only while they do not outnumber the software signals by more
+    than the dominance ratio (2:1). The
+    remaining records/documents support a second profile when they are substantive by
+    count (at least two and at least one fifth of the software signals).
     """
-    ancillary_documents = [item for item in documents if item.get("ancillary")]
+    text_documents = [item for item in documents if item.get("text_document")]
+    text_dominates = _text_documents_dominate(text_documents, software)
+    ancillary_documents = [
+        item
+        for item in documents
+        if item.get("ancillary") and not (text_dominates and item.get("text_document"))
+    ]
     strong = [
         *records,
         *[item for item in documents if not item.get("ancillary")],
+        *(text_documents if text_dominates else []),
     ]
     if not software:
         candidates = [*records, *documents, *config_data]
@@ -479,9 +518,13 @@ def _profile_decision(
             "subordinate_count": 0,
         }
     substantive = len(strong) >= 2 and len(strong) * 5 >= len(software)
+    if substantive:
+        decision = "mixed_text_documents_dominate" if text_dominates else "mixed_by_count"
+    else:
+        decision = "software_with_ancillary_material"
     return {
         "records_documents": strong if substantive else [],
-        "decision": "mixed_by_count" if substantive else "software_with_ancillary_material",
+        "decision": decision,
         "ancillary_document_count": len(ancillary_documents),
         "subordinate_count": 0 if substantive else len(strong),
     }
@@ -502,8 +545,13 @@ def _evidence_ids(observations: list[dict]) -> list[str]:
 def _resource_records(context: InstanceContext) -> list[dict]:
     records: list[dict] = []
     excluded = context.instance_root.resolve()
+    software_context: dict[Path, bool] = {}
     for current, directory_names, file_names in os.walk(context.target_root):
         here = Path(current)
+        in_software = software_context.get(here.parent, False) or any(
+            _is_software_file(name) for name in file_names
+        )
+        software_context[here] = in_software
         directory_names[:] = [
             name
             for name in sorted(directory_names)
@@ -513,8 +561,8 @@ def _resource_records(context: InstanceContext) -> list[dict]:
         for name in directory_names:
             path = here / name
             kind = "symlink" if path.is_symlink() else "directory"
-            records.append(_describe_resource(context, path, kind))
-            if kind == "directory" and _untraversed_subtree_kind(name):
+            records.append(_describe_resource(context, path, kind, software_context=in_software))
+            if kind == "directory" and _untraversed_subtree_kind(name, software_context=in_software):
                 continue
             traversed.append(name)
         directory_names[:] = traversed
@@ -568,7 +616,13 @@ def _inside_or_equal(candidate: Path, root: Path) -> bool:
         return False
 
 
-def _describe_resource(context: InstanceContext, path: Path, kind: str) -> dict:
+def _describe_resource(
+    context: InstanceContext,
+    path: Path,
+    kind: str,
+    *,
+    software_context: bool = True,
+) -> dict:
     relative = path.relative_to(context.target_root).as_posix()
     stat = path.lstat()
     record = {
@@ -580,7 +634,7 @@ def _describe_resource(context: InstanceContext, path: Path, kind: str) -> dict:
         "content_hash": None,
         "text_like": kind == "file" and _is_text_like(relative),
     }
-    record["domain"] = _domain_signal(record)
+    record["domain"] = _domain_signal({**record, "software_context": software_context})
     if kind == "file" and record["domain"]["content_basis"] != "metadata_only":
         record["content_hash"] = hashlib.sha256(path.read_bytes()).hexdigest()
     return record

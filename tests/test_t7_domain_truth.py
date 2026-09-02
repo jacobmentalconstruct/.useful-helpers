@@ -166,6 +166,84 @@ class T7DomainTruthTests(InstalledFixture):
         revision = self.awareness(target, "refresh")["revision"]
         self.assertEqual(revision["summary"]["domain_profile"], "software")
 
+    def test_notes_collection_with_helper_scripts_is_not_software(self) -> None:
+        target = self.target()
+        (target / "notes").mkdir()
+        for index in range(30):
+            (target / "notes" / f"note{index}.md").write_text(f"# note {index}\n", encoding="utf-8")
+        (target / "letters").mkdir()
+        for index in range(10):
+            (target / "letters" / f"letter{index}.txt").write_text("Dear\n", encoding="utf-8")
+        (target / "scripts").mkdir()
+        (target / "scripts" / "export.py").write_text("print('export')\n", encoding="utf-8")
+        (target / "scripts" / "index.py").write_text("print('index')\n", encoding="utf-8")
+        self.attach(target)
+
+        self.substrate(target, "refresh")
+        profile = self.claim(target, "target_profile_records_documents")
+        self.assertEqual(profile["data"]["decision"], "mixed_text_documents_dominate")
+        self.assertIn("path:notes/note0.md", profile["data"]["supporting_handles"])
+        software = self.claim(target, "target_profile_software")
+        self.assertEqual(software["data"]["ancillary_document_count"], 0)
+        revision = self.awareness(target, "refresh")["revision"]
+        self.assertEqual(revision["summary"]["domain_profile"], "mixed")
+
+    def test_documentation_that_does_not_dominate_stays_software_ancillary(self) -> None:
+        target = self.target()
+        (target / "src").mkdir()
+        for index in range(6):
+            (target / "src" / f"m{index}.py").write_text("x = 1\n", encoding="utf-8")
+        (target / "docs").mkdir()
+        for index in range(8):
+            (target / "docs" / f"page{index}.md").write_text("# page\n", encoding="utf-8")
+        self.attach(target)
+
+        self.substrate(target, "refresh")
+        software = self.claim(target, "target_profile_software")
+        self.assertEqual(software["data"]["ancillary_document_count"], 8)
+        claim_types = {claim["claim_type"] for claim in self.claims(target)}
+        self.assertNotIn("target_profile_records_documents", claim_types)
+        revision = self.awareness(target, "refresh")["revision"]
+        self.assertEqual(revision["summary"]["domain_profile"], "software")
+
+    def test_ordinary_vendor_and_build_folders_on_records_target_are_traversed(self) -> None:
+        target = self.target()
+        (target / "vendor").mkdir()
+        (target / "build").mkdir()
+        (target / "invoices").mkdir()
+        for index in range(3):
+            (target / "vendor" / f"contract{index}.pdf").write_bytes(b"%PDF-1.4\n%%EOF\n")
+            (target / "build" / f"plan{index}.pdf").write_bytes(b"%PDF-1.4\n%%EOF\n")
+            (target / "invoices" / f"invoice{index}.csv").write_text("id\n1\n", encoding="utf-8")
+        self.attach(target)
+
+        self.substrate(target, "refresh")
+        resources = self.substrate(target, "resources", "list", "--limit", "100")["resources"]
+        handles = {item["handle"] for item in resources}
+        self.assertIn("path:vendor/contract0.pdf", handles)
+        self.assertIn("path:build/plan0.pdf", handles)
+        profile = self.claim(target, "target_profile_records_documents")
+        self.assertIn("path:vendor/contract0.pdf", profile["data"]["supporting_handles"])
+        revision = self.awareness(target, "refresh")["revision"]
+        self.assertEqual(revision["summary"]["domain_profile"], "records_documents")
+        self.assertFalse(any("not traversed" in item for item in revision["limitations"]))
+
+        software_target = self.target("software")
+        (software_target / "pyproject.toml").write_text("[project]\nname = 'x'\n", encoding="utf-8")
+        (software_target / "app.py").write_text("x = 1\n", encoding="utf-8")
+        (software_target / "vendor" / "lib").mkdir(parents=True)
+        (software_target / "vendor" / "lib" / "dep.py").write_text("y = 1\n", encoding="utf-8")
+        (software_target / "build").mkdir()
+        (software_target / "build" / "out.js").write_text("1;\n", encoding="utf-8")
+        records = substrate._resource_records(
+            SimpleNamespace(target_root=software_target, instance_root=software_target / ".sidecar")
+        )
+        software_handles = {record["handle"] for record in records}
+        self.assertEqual(
+            {handle for handle in software_handles if handle.startswith(("path:vendor", "path:build"))},
+            {"path:vendor/", "path:build/"},
+        )
+
     def test_generated_and_vendor_subtrees_are_metadata_only_and_not_traversed(self) -> None:
         target = self.target()
         self.write_realistic_software_project(target)
