@@ -316,9 +316,11 @@ degradation witness and discrimination requirement. Entry `0046` records operato
 approval to enter implementation. Entry `0047` submits the initial implemented
 candidate for review. Entry `0048` submits the bounded weak-material repair after
 Reviewer return. Entry `0049` submits the bounded classification and generated-subtree
-repair, with the operator's D1-D3 rulings, after a second Reviewer return. T7 may not
-be parked, grant P7 credit, or begin T8 without operator approval of the current
-implemented AWAITING_APPROVAL submission.
+repair, with the operator's D1-D3 rulings, after a second Reviewer return. Entry `0050`
+submits the bounded text-document ratio, ordinary-folder, and gate self-consistency
+repair after a third, narrow Reviewer return. T7 may not be parked, grant P7 credit,
+or begin T8 without operator approval of the current implemented AWAITING_APPROVAL
+submission.
 
 ## T7 declaration record
 
@@ -332,8 +334,10 @@ implemented AWAITING_APPROVAL submission.
   `journal/0047-t7-awaiting-approval.md`
 - Weak-material repair and review submission:
   `journal/0048-t7-weak-material-repair-awaiting-approval.md`
-- Classification repair, D1-D3 rulings, and current review submission:
+- Classification repair, D1-D3 rulings, and review submission:
   `journal/0049-t7-classification-repair-awaiting-approval.md`
+- Text-document ratio repair and current review submission:
+  `journal/0050-t7-text-document-ratio-repair-awaiting-approval.md`
 
 Entry `0044` declares a bounded truthful-breadth outcome: deterministic T3-owned domain
 signals and T4 awareness projection should distinguish substantial software, mixed
@@ -376,6 +380,16 @@ authoritative T7 gate receipt `20260902T131756Z-95787587` (15/15, `head_commit`
 `20260902T132704Z-26259de4`, all produced on Linux from committed trees. It preserves
 `0047` and `0048` as historical evidence and does not park T7, grant P7 credit, or
 begin T8.
+Reviewer evidence at `evidence/reviews/T7/20260902T134914Z-external-review.md`
+returned `0049` narrowly: text documents were ancillary regardless of proportion, and
+the T7 gate wrote bytecode through its own in-process import. Entry `0050` submits the
+repaired candidate with authoritative T7 gate receipt `20260902T140854Z-09771121`
+(15/15, `head_commit` `59c4ab5`, clean tree) and cumulative T6/T5/T4/T3/T2/T1/T0 gate
+receipts `20260902T140938Z-675dd781`, `20260902T141016Z-a5874aa7`,
+`20260902T141059Z-7238a7f1`, `20260902T141139Z-3165b501`,
+`20260902T141218Z-47ff381a`, `20260902T141224Z-51e6043d`, and
+`20260902T141258Z-5bb1cbcb`. It preserves `0047`-`0049` as historical evidence and
+does not park T7, grant P7 credit, or begin T8.
 
 ## Project closure
 

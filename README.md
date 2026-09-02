@@ -54,8 +54,10 @@ submitted in `.builder/journal/0047-t7-awaiting-approval.md`, bounded weak-mater
 repair resubmitted in
 `.builder/journal/0048-t7-weak-material-repair-awaiting-approval.md`, and the bounded
 classification/generated-subtree repair with operator rulings D1-D3 resubmitted in
-`.builder/journal/0049-t7-classification-repair-awaiting-approval.md`. It is not parked,
-and P7 remains UNSCORED pending operator approval.
+`.builder/journal/0049-t7-classification-repair-awaiting-approval.md`, and the bounded
+text-document ratio and gate self-consistency repair resubmitted in
+`.builder/journal/0050-t7-text-document-ratio-repair-awaiting-approval.md`. It is not
+parked, and P7 remains UNSCORED pending operator approval.
 
 Read construction authority in this order:
 

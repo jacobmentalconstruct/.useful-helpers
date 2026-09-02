@@ -4,12 +4,12 @@ This file is a resumability projection, not authority.
 
 - Current tranche: **T7 Domain Truth**
 - Current state: **AWAITING_APPROVAL**
-- Operator direction: T7 is resubmitted for review after the bounded classification and
-  generated-subtree repair with D1-D3 applied; do not park T7, grant P7 credit, or begin
-  T8 without explicit operator approval
+- Operator direction: T7 is resubmitted for review after the bounded text-document
+  ratio, ordinary-folder, and gate self-consistency repair; do not park T7, grant P7
+  credit, or begin T8 without explicit operator approval
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0049-t7-classification-repair-awaiting-approval.md`
+- Latest journal position: `0050-t7-text-document-ratio-repair-awaiting-approval.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness; T5 Governed Mutation Loop; T6 Removable MCP Entrance
 - Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5 credited by parked T5; P6 credited by parked T6; T7 submitted but P7-P8 UNSCORED
@@ -215,12 +215,13 @@ because P7-P8 are UNSCORED.
 
 ## Next entering-builder action
 
-Review the T7 AWAITING_APPROVAL candidate in entry `0049`. If the operator approves it,
+Review the T7 AWAITING_APPROVAL candidate in entry `0050`. If the operator approves it,
 park T7 and grant P7 credit under the normal closeout mechanism. If review returns a
 bounded defect, repair within T7 and resubmit. Do not reopen T0-T6 absent new evidence
 of a failed premise, and do not begin T8. Before T8 is declared the operator still owes
-rulings on the carried T6 findings C1-C5 and H1-H3 (see the
-`20260902T120434Z` review); they are not T7 surfaces.
+rulings on the carried T6 findings C1-C5 and H2-H3 and the `.gitattributes`
+line-ending pin with one Windows T7 receipt (H1), which the `20260902T134914Z` review
+marks as blocking Windows evidence in practice; they are not T7 surfaces.
 
 ## T7 declaration position
 
@@ -274,8 +275,19 @@ subtree limitations; weak-material wording states size/mtime-only change detecti
 (D3). The T7 gate `20260902T131756Z-95787587` passed 15/15 from a clean committed tree
 at `cf4de91` with executed known-answer, consumer-entrance, provenance, and executed
 mutation checks; cumulative gates passed at `0fafd18`. All receipts were produced on
-Linux/CPython 3.13.15. T7 is not parked and P7 remains UNSCORED pending operator
-approval.
+Linux/CPython 3.13.15.
+
+Reviewer evidence at `.builder/evidence/reviews/T7/20260902T134914Z-external-review.md`
+confirmed the `0049` repairs on real targets and returned narrowly: plain-text
+documents were software ancillary regardless of proportion (a notes collection with
+helper scripts read `software`), and the T7 gate wrote bytecode through its own
+in-process import. Entry `0050` submits the repaired candidate: text documents beside
+software are ancillary only while they do not outnumber software signals by more than
+2:1; `vendor`/`build`/`dist` are untraversed only under a software marker; the gate
+sets `sys.dont_write_bytecode` and adds notes-heavy and ordinary-folder known-answer
+targets with executed mutations. T7 gate `20260902T140854Z-09771121` passed 15/15 at
+`59c4ab5` from a clean tree launched as plain `python`; cumulative gates passed at
+`0ccb5f3`. T7 is not parked and P7 remains UNSCORED pending operator approval.
 
 ## T6 declaration position
 

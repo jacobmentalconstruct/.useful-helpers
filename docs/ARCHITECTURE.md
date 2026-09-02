@@ -184,17 +184,19 @@ T7 extends substrate refresh with per-resource `domain_signal` observations and
 epistemic evidence. These signals are intentionally metadata/file-marker based. They can
 support bounded claims such as `target_profile_software`,
 `target_profile_records_documents`, and `target_has_weak_material`. The profile
-decision discriminates rather than detects: beside software signals, plain-text
-documentation (`README`, `LICENSE`, `.md`, `.rst`, `.txt`) and configuration or
-structured-data files (`.json`, `.yaml`, `.toml`, `.xml`, `.ini`, `.cfg`) are software
-ancillary, and records/documents form a second profile only when substantive by count
-(at least two files and at least one fifth of the software signals); subordinate
-material is counted on the software claim with a limitation. Weak material covers
-large files, binary/media-like files, unparsed document bodies, and vendor
-(`node_modules`, `vendor`, `.venv`) or generated (`.git`, `.hg`, `.svn`, caches,
-`build`, `dist`, `__pycache__`) subtrees. Vendor and generated subtrees are recorded as
-one metadata-only directory resource each and are not traversed; the inventory
-observation lists them as limitations. The substrate derives the weak basis from
+decision discriminates rather than detects: beside software signals, README-style
+named files and configuration or structured-data files (`.json`, `.yaml`, `.toml`,
+`.xml`, `.ini`, `.cfg`) are software ancillary; plain-text documents (`.md`, `.rst`,
+`.txt`) are ancillary only while they do not outnumber the software signals by more
+than 2:1; and records/documents (including dominant text documents) form a second
+profile only when substantive by count (at least two files and at least one fifth of
+the software signals). Subordinate material is counted on the software claim with a
+limitation. Weak material covers large files, binary/media-like files, unparsed
+document bodies, and vendor (`node_modules`, `.venv`, `venv`) or generated (`.git`,
+`.hg`, `.svn`, caches, `__pycache__`) subtrees unconditionally, plus the ordinary folder
+names `vendor`, `build`, and `dist` only when a software marker exists at or above
+them. Untraversed subtrees are recorded as one metadata-only directory resource each;
+the inventory observation lists them as limitations. The substrate derives the weak basis from
 metadata and path signals before optional content hashing. A weak metadata-only file
 keeps `content_hash = null` and is recorded as `file_metadata`, not `file_hash`, and its
 limitation states that content changes are detected only through size and modification
@@ -470,7 +472,10 @@ realistic software target (project markers, README/LICENSE/CHANGELOG, config JSO
 YAML, notes, `src/`, `tests/`, a `.git` directory, and a `node_modules` tree) produces a
 traceable `target_profile_software` claim and no records/documents claim; a true mixed
 target produces `mixed` by count while a single subordinate PDF beside software does
-not; a mixed records/document target produces traceable records/document orientation
+not; a notes collection with helper scripts produces `mixed` because its text documents
+dominate, while documentation that does not dominate stays software ancillary;
+ordinary `vendor/` and `build/` folders on a records target are traversed while the
+same names under a software marker are not; a mixed records/document target produces traceable records/document orientation
 and unparsed-document limitations; weak material containing vendor/dependency-like,
 binary/media-like, and large files is represented as metadata-only or limited-basis
 evidence without content-understanding claims; large metadata-only material is not fully
@@ -501,7 +506,15 @@ untreated generated subtrees, and recorded the operator's D1-D3 rulings. Journal
 gates passed with receipts `20260902T132410Z-6fb3b4e7`, `20260902T132333Z-980e8fc4`,
 `20260902T132456Z-8fea98cd`, `20260902T132541Z-99ab07c0`,
 `20260902T132621Z-b7e9e68f`, `20260902T132632Z-d6d89b28`, and
-`20260902T132704Z-26259de4`, all produced on Linux/CPython 3.13.15.
+`20260902T132704Z-26259de4`, all produced on Linux/CPython 3.13.15. Reviewer evidence
+at `.builder/evidence/reviews/T7/20260902T134914Z-external-review.md` returned that
+candidate narrowly for the text-document ratio and the gate's own bytecode. Journal
+entry `0050` records the repaired candidate: T7 gate run `20260902T140854Z-09771121`
+passed 15/15 at `head_commit` `59c4ab5` from a clean tree, and cumulative
+T6/T5/T4/T3/T2/T1/T0 gates passed with receipts `20260902T140938Z-675dd781`,
+`20260902T141016Z-a5874aa7`, `20260902T141059Z-7238a7f1`,
+`20260902T141139Z-3165b501`, `20260902T141218Z-47ff381a`,
+`20260902T141224Z-51e6043d`, and `20260902T141258Z-5bb1cbcb`.
 
 T7 is submitted at AWAITING_APPROVAL. It is not parked, P7 is not credited, and T8 has
 not begun.
