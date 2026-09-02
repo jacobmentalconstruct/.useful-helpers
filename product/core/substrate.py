@@ -162,6 +162,14 @@ def _domain_signal(record: dict) -> dict:
     }
 
 
+def _observation_type(record: dict) -> str:
+    if record["kind"] != "file":
+        return "resource_seen"
+    if record["domain"]["content_basis"] == "metadata_only":
+        return "file_metadata"
+    return "file_hash"
+
+
 def _insert_evidence(
     connection: sqlite3.Connection,
     *,
@@ -402,19 +410,18 @@ def _inside_or_equal(candidate: Path, root: Path) -> bool:
 def _describe_resource(context: InstanceContext, path: Path, kind: str) -> dict:
     relative = path.relative_to(context.target_root).as_posix()
     stat = path.lstat()
-    content_hash = None
-    if kind == "file":
-        content_hash = hashlib.sha256(path.read_bytes()).hexdigest()
     record = {
         "handle": _resource_handle(relative, kind),
         "path": relative,
         "kind": kind,
         "size_bytes": stat.st_size if kind == "file" else None,
         "mtime_ns": stat.st_mtime_ns,
-        "content_hash": content_hash,
+        "content_hash": None,
         "text_like": kind == "file" and _is_text_like(relative),
     }
     record["domain"] = _domain_signal(record)
+    if kind == "file" and record["domain"]["content_basis"] != "metadata_only":
+        record["content_hash"] = hashlib.sha256(path.read_bytes()).hexdigest()
     return record
 
 
@@ -487,7 +494,7 @@ def current_awareness_basis(context: InstanceContext) -> dict:
         resource_records = [
             item["data"]
             for item in current_observations
-            if item["observation_type"] in {"file_hash", "resource_seen"}
+            if item["observation_type"] in {"file_hash", "file_metadata", "resource_seen"}
         ]
         observed_target_signature = _resource_signature(resource_records)
         evidence_handles = sorted(
@@ -671,7 +678,7 @@ def refresh(context: InstanceContext) -> dict:
                     created_at=observed_at,
                 )
                 observation_id = _uuid_handle("observation")
-                observation_type = "file_hash" if record["kind"] == "file" else "resource_seen"
+                observation_type = _observation_type(record)
                 connection.execute(
                     """
                     INSERT INTO observations

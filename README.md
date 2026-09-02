@@ -49,9 +49,11 @@ T7 Domain Truth is **AWAITING_APPROVAL** under
 `.builder/journal/0045-t7-declaration-weak-material-amendment.md` after Reviewer
 declaration evidence
 `.builder/evidence/reviews/T7/20260901T115016Z-external-review.md`, with execution start
-recorded in `.builder/journal/0046-t7-execution-start.md` and implementation review
-submitted in `.builder/journal/0047-t7-awaiting-approval.md`. It is not parked, and P7
-remains UNSCORED pending operator approval.
+recorded in `.builder/journal/0046-t7-execution-start.md`, initial implementation review
+submitted in `.builder/journal/0047-t7-awaiting-approval.md`, and bounded weak-material
+repair resubmitted in
+`.builder/journal/0048-t7-weak-material-repair-awaiting-approval.md`. It is not parked,
+and P7 remains UNSCORED pending operator approval.
 
 Read construction authority in this order:
 

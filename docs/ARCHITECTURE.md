@@ -185,8 +185,11 @@ epistemic evidence. These signals are intentionally metadata/file-marker based. 
 support bounded claims such as `target_profile_software`,
 `target_profile_records_documents`, and `target_has_weak_material`. Weak material covers
 large files, binary/media-like files, vendor/dependency-like paths, and unparsed document
-bodies. The weak-material claim explicitly records metadata-only or limited-basis
-limitations rather than claiming text, semantic, PDF, media, or dependency understanding.
+bodies. The substrate derives this basis from metadata and path signals before optional
+content hashing. A weak metadata-only file keeps `content_hash = null` and is recorded
+as `file_metadata`, not `file_hash`. The weak-material claim explicitly records
+metadata-only or limited-basis limitations rather than claiming text, semantic, PDF,
+media, or dependency understanding.
 
 The database still does not implement semantic/vector indexes, domain cartridges, or a
 graph database. The objects directory is created but has no accepted object-store
@@ -447,18 +450,22 @@ substantial software target produces a traceable `target_profile_software` claim
 records/document target produces traceable records/document orientation and
 unparsed-document limitations; weak material containing vendor/dependency-like,
 binary/media-like, and large files is represented as metadata-only or limited-basis
-evidence without content-understanding claims; current awareness does not leak
+evidence without content-understanding claims; large metadata-only material is not fully
+read or hashed before classification; current awareness does not leak
 historical software shape after a later records/document refresh; observe/orient does
 not create receipts, App Journal entries, mutation records, or MCP-private state; and
 CLI and MCP read the same resulting substrate/awareness world through existing
 entrances.
 
-Authoritative T7 candidate evidence is recorded by journal entry `0047`: T7 gate run
-`20260901T134412Z-f6f03036` passed 11/11. Cumulative T6/T5/T4/T3/T2/T1/T0 gates also
-passed with receipts `20260901T133151Z-3ea2023f`, `20260901T133305Z-15d001d5`,
-`20260901T133433Z-e4671094`, `20260901T133544Z-68f688b1`,
-`20260901T133701Z-e7f38d23`, `20260901T133720Z-3fef0329`, and
-`20260901T134520Z-110935b3`.
+Journal entry `0047` records the initial T7 candidate. Reviewer evidence at
+`.builder/evidence/reviews/T7/20260901T135332Z-external-review.md` returned it to
+VERIFYING for a bounded weak-material repair. Authoritative repaired T7 candidate
+evidence is recorded by journal entry `0048`: T7 gate run
+`20260902T112455Z-7fce770c` passed 12/12. Cumulative T6/T5/T4/T3/T2/T1/T0 gates also
+passed with receipts `20260902T112836Z-96df00b1`, `20260902T112941Z-0a944a21`,
+`20260902T113058Z-7562ba83`, `20260902T113200Z-dd3b8979`,
+`20260902T113316Z-36406ca5`, `20260902T113440Z-966fd63b`, and
+`20260902T113414Z-e73f3c86`.
 
 T7 is submitted at AWAITING_APPROVAL. It is not parked, P7 is not credited, and T8 has
 not begun.

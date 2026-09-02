@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "gate": "T4-awareness",
+  "status": "PASS",
+  "recorded_at": "2026-09-02T11:30:58.168414+00:00",
+  "run_id": "20260902T113058Z-7562ba83",
+  "head_commit": "8e4f28a8c303e8e573a84fdc2ebdcc5b2f91f1b8",
+  "working_tree": "M .builder/gates/t7_domain_truth.py\n M product/core/substrate.py\n M tests/test_t7_domain_truth.py\n?? .builder/evidence/T3/20260902T112706Z-6a13e091/\n?? .builder/evidence/T4/20260902T112722Z-f05adc2e/\n?? .builder/evidence/T5/20260902T112709Z-d1ef2305/\n?? .builder/evidence/T5/20260902T112941Z-0a944a21/\n?? .builder/evidence/T6/20260902T112836Z-96df00b1/\n?? .builder/evidence/T7/20260902T112338Z-8b212d12/\n?? .builder/evidence/T7/20260902T112455Z-7fce770c/\n?? .builder/evidence/reviews/T7/20260901T135332Z-external-review.md",
+  "source_digest": "90f80aba8e72c9caeed1950fb55105ac097ccdece9dc2b59dc42d0539e981018",
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "t4_schema",
+      "status": "PASS",
+      "detail": "current schema includes distinct awareness revision and item tables"
+    },
+    {
+      "name": "awareness_owner",
+      "status": "PASS",
+      "detail": "awareness owner projects through substrate APIs and owns only awareness records"
+    },
+    {
+      "name": "cli_entrance",
+      "status": "PASS",
+      "detail": "CLI exposes minimal awareness status, refresh, current, revisions, and drill commands"
+    },
+    {
+      "name": "lower_layers_do_not_import_awareness",
+      "status": "PASS",
+      "detail": "lower product layers do not depend upward on awareness"
+    },
+    {
+      "name": "basis_freshness_behavior",
+      "status": "PASS",
+      "detail": "behavioral basis/freshness witnesses passed for mismatch and latest-empty refresh"
+    },
+    {
+      "name": "handle_round_trip_behavior",
+      "status": "PASS",
+      "detail": "observed limitations, canonical awareness handles, and T3 handle round trips passed"
+    },
+    {
+      "name": "focused_t4_product_evidence",
+      "status": "PASS",
+      "detail": ".........                                                                [100%]"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": "................................................................         [100%]"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "31 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "no_out_of_scope_surfaces",
+      "status": "PASS",
+      "detail": "T4 introduces no MCP, GUI, vector, local-AI, cartridge, or mutation-governance surface"
+    },
+    {
+      "name": "journal_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0047-t7-awaiting-approval.md"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 52 Python sources parsed"
+    },
+    {
+      "name": "discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: mutable awareness revision; direct T3 table query; generic revision handle; second awareness handle prefix; missing unknown-basis guard; missing observed limitations; missing stale freshness"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "PASS",
+      "detail": "no generated cache, bytecode, build, release, or fixture debris remains"
+    }
+  ]
+}

@@ -313,9 +313,10 @@ Plan-owned tranche property; entry `0044` owns its historical measured scope, no
 ownership rules, completion evidence, risks, and ordered implementation plan. Entry
 `0045` amends the current declaration submission with an explicit weak-material
 degradation witness and discrimination requirement. Entry `0046` records operator
-approval to enter implementation. Entry `0047` submits the implemented candidate for
-review. T7 may not be parked, grant P7 credit, or begin T8 without operator approval of
-the implemented AWAITING_APPROVAL submission.
+approval to enter implementation. Entry `0047` submits the initial implemented
+candidate for review. Entry `0048` submits the bounded weak-material repair after
+Reviewer return. T7 may not be parked, grant P7 credit, or begin T8 without operator
+approval of the current implemented AWAITING_APPROVAL submission.
 
 ## T7 declaration record
 
@@ -327,6 +328,8 @@ the implemented AWAITING_APPROVAL submission.
   `journal/0046-t7-execution-start.md`
 - Review submission:
   `journal/0047-t7-awaiting-approval.md`
+- Weak-material repair and current review submission:
+  `journal/0048-t7-weak-material-repair-awaiting-approval.md`
 
 Entry `0044` declares a bounded truthful-breadth outcome: deterministic T3-owned domain
 signals and T4 awareness projection should distinguish substantial software, mixed
@@ -347,6 +350,16 @@ Entry `0047` submits the implemented T7 candidate with authoritative T7 gate rec
 `20260901T133433Z-e4671094`, `20260901T133544Z-68f688b1`,
 `20260901T133701Z-e7f38d23`, `20260901T133720Z-3fef0329`, and
 `20260901T134520Z-110935b3`. It does not park T7, grant P7 credit, or begin T8.
+Reviewer evidence at `evidence/reviews/T7/20260901T135332Z-external-review.md`
+returned T7 to VERIFYING for a bounded weak-material repair because large metadata-only
+material was still fully read and hashed before domain classification. Entry `0048`
+submits the repaired candidate with authoritative T7 gate receipt
+`20260902T112455Z-7fce770c` and cumulative T6/T5/T4/T3/T2/T1/T0 gate receipts
+`20260902T112836Z-96df00b1`, `20260902T112941Z-0a944a21`,
+`20260902T113058Z-7562ba83`, `20260902T113200Z-dd3b8979`,
+`20260902T113316Z-36406ca5`, `20260902T113440Z-966fd63b`, and
+`20260902T113414Z-e73f3c86`. It preserves `0047` as historical evidence and does not
+park T7, grant P7 credit, or begin T8.
 
 ## Project closure
 

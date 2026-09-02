@@ -80,6 +80,25 @@ def _t7_substrate_owner() -> str:
     return "substrate owns deterministic domain signals, claims, evidence, and relations"
 
 
+def _weak_material_metadata_only_boundary() -> str:
+    source = (ROOT / "product/core/substrate.py").read_text(encoding="utf-8")
+    required = [
+        "def _observation_type(",
+        "file_metadata",
+        "record[\"domain\"] = _domain_signal(record)",
+        "record[\"domain\"][\"content_basis\"] != \"metadata_only\"",
+        "record[\"content_hash\"] = hashlib.sha256(path.read_bytes()).hexdigest()",
+    ]
+    missing = [term for term in required if term not in source]
+    if missing:
+        raise AssertionError(f"metadata-only boundary terms missing: {missing}")
+    domain_index = source.index("record[\"domain\"] = _domain_signal(record)")
+    hash_index = source.index("record[\"content_hash\"] = hashlib.sha256(path.read_bytes()).hexdigest()")
+    if hash_index < domain_index:
+        raise AssertionError("content hash is computed before weak-material basis is known")
+    return "weak metadata-only material is classified before optional content hashing"
+
+
 def _t7_awareness_projection() -> str:
     source = (ROOT / "product/core/awareness.py").read_text(encoding="utf-8")
     required = [
@@ -236,6 +255,8 @@ def _assert_t7_tests(source: str) -> None:
         "test_cli_and_mcp_read_same_domain_world_without_owning_it",
         "node_modules",
         "large.dat",
+        "file_metadata",
+        "large weak material was fully read",
         "metadata_only",
         "semantic_summary",
     ]
@@ -263,6 +284,16 @@ def _discrimination_witness() -> str:
         (
             "missing weak-material claim",
             lambda: _assert_substrate_owner(substrate_source.replace("target_has_weak_material", "")),
+        ),
+        (
+            "hash computed before weak-material basis",
+            lambda: _weak_material_metadata_only_boundary_source(
+                substrate_source.replace(
+                    "record[\"domain\"] = _domain_signal(record)",
+                    "record[\"content_hash\"] = hashlib.sha256(path.read_bytes()).hexdigest()\n"
+                    "    record[\"domain\"] = _domain_signal(record)",
+                )
+            ),
         ),
         (
             "awareness direct T3 table query",
@@ -297,6 +328,23 @@ def _discrimination_witness() -> str:
         else:
             raise AssertionError(f"discrimination accepted {label}")
     return "rejected: " + "; ".join(witnessed)
+
+
+def _weak_material_metadata_only_boundary_source(source: str) -> None:
+    required = [
+        "def _observation_type(",
+        "file_metadata",
+        "record[\"domain\"] = _domain_signal(record)",
+        "record[\"domain\"][\"content_basis\"] != \"metadata_only\"",
+        "record[\"content_hash\"] = hashlib.sha256(path.read_bytes()).hexdigest()",
+    ]
+    missing = [term for term in required if term not in source]
+    if missing:
+        raise AssertionError(f"metadata-only boundary terms missing: {missing}")
+    domain_index = source.index("record[\"domain\"] = _domain_signal(record)")
+    hash_index = source.index("record[\"content_hash\"] = hashlib.sha256(path.read_bytes()).hexdigest()")
+    if hash_index < domain_index:
+        raise AssertionError("content hash is computed before weak-material basis is known")
 
 
 def _repository_hygiene() -> str:
@@ -355,6 +403,7 @@ def main() -> int:
     arguments = _arguments()
     checks = [
         _check("t7_substrate_owner", _t7_substrate_owner),
+        _check("weak_material_metadata_only_boundary", _weak_material_metadata_only_boundary),
         _check("t7_awareness_projection", _t7_awareness_projection),
         _check("focused_t7_product_evidence", _focused_t7_product_evidence),
         _check("canonical_product_regression", _canonical_product_regression),

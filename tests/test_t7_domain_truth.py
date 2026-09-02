@@ -5,8 +5,11 @@ import sqlite3
 import subprocess
 import sys
 import unittest
+from types import SimpleNamespace
+from unittest import mock
 from pathlib import Path
 
+from product.core import substrate
 from tests.test_phase1 import InstalledFixture
 from tests.test_t6_mcp_entrance import McpSession
 
@@ -140,6 +143,34 @@ class T7DomainTruthTests(InstalledFixture):
         self.assertLessEqual(len(revision["findings"]), 5)
         self.assertTrue(any("weak material" in item for item in revision["limitations"]))
         self.assertFalse(any("parsed" in item["statement"].lower() for item in revision["findings"]))
+
+    def test_large_weak_material_is_not_fully_read_or_hashed(self) -> None:
+        target = self.target()
+        large = target / "large.dat"
+        large.write_bytes(b"x" * 1_100_000)
+
+        def reject_full_read(path: Path) -> bytes:
+            if path == large:
+                raise AssertionError("large weak material was fully read")
+            return b"unexpected"
+
+        context = SimpleNamespace(target_root=target)
+        with mock.patch.object(Path, "read_bytes", reject_full_read):
+            record = substrate._describe_resource(context, large, "file")
+
+        self.assertIsNone(record["content_hash"])
+        self.assertEqual(record["domain"]["content_basis"], "metadata_only")
+        self.assertTrue(record["domain"]["weak_material"])
+
+        self.attach(target)
+        self.substrate(target, "refresh")
+        resource = self.substrate(target, "resources", "read", "path:large.dat")["resource"]
+        self.assertIsNone(resource["latest"]["content_hash"])
+
+        observations = self.substrate(target, "observations", "list", "--limit", "50")["observations"]
+        large_observations = [item for item in observations if item["subject_handle"] == "path:large.dat"]
+        self.assertTrue(any(item["observation_type"] == "file_metadata" for item in large_observations))
+        self.assertFalse(any(item["observation_type"] == "file_hash" for item in large_observations))
 
     def test_current_domain_profile_does_not_leak_historical_software_shape(self) -> None:
         target = self.target()
