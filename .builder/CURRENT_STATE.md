@@ -4,11 +4,12 @@ This file is a resumability projection, not authority.
 
 - Current tranche: **T7 Domain Truth**
 - Current state: **AWAITING_APPROVAL**
-- Operator direction: T7 is resubmitted for review after bounded weak-material repair;
-  do not park T7, grant P7 credit, or begin T8 without explicit operator approval
+- Operator direction: T7 is resubmitted for review after the bounded classification and
+  generated-subtree repair with D1-D3 applied; do not park T7, grant P7 credit, or begin
+  T8 without explicit operator approval
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0048-t7-weak-material-repair-awaiting-approval.md`
+- Latest journal position: `0049-t7-classification-repair-awaiting-approval.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness; T5 Governed Mutation Loop; T6 Removable MCP Entrance
 - Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5 credited by parked T5; P6 credited by parked T6; T7 submitted but P7-P8 UNSCORED
@@ -214,10 +215,12 @@ because P7-P8 are UNSCORED.
 
 ## Next entering-builder action
 
-Review the T7 AWAITING_APPROVAL candidate in entry `0048`. If the operator approves it,
+Review the T7 AWAITING_APPROVAL candidate in entry `0049`. If the operator approves it,
 park T7 and grant P7 credit under the normal closeout mechanism. If review returns a
 bounded defect, repair within T7 and resubmit. Do not reopen T0-T6 absent new evidence
-of a failed premise, and do not begin T8.
+of a failed premise, and do not begin T8. Before T8 is declared the operator still owes
+rulings on the carried T6 findings C1-C5 and H1-H3 (see the
+`20260902T120434Z` review); they are not T7 surfaces.
 
 ## T7 declaration position
 
@@ -251,7 +254,28 @@ large metadata-only resources, and records those files as `file_metadata` rather
 `file_hash` observations. The focused T7 suite now includes a witness that fails if a
 large weak resource is fully read. Authoritative repaired T7 gate
 `20260902T112455Z-7fce770c` passed 12/12; cumulative T6/T5/T4/T3/T2/T1/T0 gates also
-passed. T7 is not parked and P7 remains UNSCORED pending operator approval.
+passed.
+
+Reviewer evidence at `.builder/evidence/reviews/T7/20260902T120434Z-external-review.md`
+returned the `0048` candidate to VERIFYING: every realistic software target classified
+`mixed`, and `.git`/generated subtrees were fully hashed and made up 80% of the
+substrate on a real repository. Its addendum records the operator's rulings D1 (fix
+per-refresh evidence/version growth, with a T3-gate stop rule), D2 (fix silent awareness
+truncation), and D3 (accept size+mtime freshness for weak material; fix wording).
+
+Entry `0049` submits the repaired candidate. The substrate now discriminates profiles by
+count (documentation and config files beside software are ancillary; records/documents
+need at least two files and one fifth of the software signals to form a second profile),
+records vendor/generated/VCS subtrees as single metadata-only resources without
+traversal, and addresses evidence by content so unchanged refreshes create no new
+evidence or versions (D1 repair path; T3 gate untouched, 12/12). Awareness discloses
+shown/total projection counts and truncation limitations (D2) and surfaces untraversed
+subtree limitations; weak-material wording states size/mtime-only change detection
+(D3). The T7 gate `20260902T131756Z-95787587` passed 15/15 from a clean committed tree
+at `cf4de91` with executed known-answer, consumer-entrance, provenance, and executed
+mutation checks; cumulative gates passed at `0fafd18`. All receipts were produced on
+Linux/CPython 3.13.15. T7 is not parked and P7 remains UNSCORED pending operator
+approval.
 
 ## T6 declaration position
 

@@ -50,9 +50,11 @@ T7 Domain Truth is **AWAITING_APPROVAL** under
 declaration evidence
 `.builder/evidence/reviews/T7/20260901T115016Z-external-review.md`, with execution start
 recorded in `.builder/journal/0046-t7-execution-start.md`, initial implementation review
-submitted in `.builder/journal/0047-t7-awaiting-approval.md`, and bounded weak-material
+submitted in `.builder/journal/0047-t7-awaiting-approval.md`, bounded weak-material
 repair resubmitted in
-`.builder/journal/0048-t7-weak-material-repair-awaiting-approval.md`. It is not parked,
+`.builder/journal/0048-t7-weak-material-repair-awaiting-approval.md`, and the bounded
+classification/generated-subtree repair with operator rulings D1-D3 resubmitted in
+`.builder/journal/0049-t7-classification-repair-awaiting-approval.md`. It is not parked,
 and P7 remains UNSCORED pending operator approval.
 
 Read construction authority in this order:

@@ -183,13 +183,29 @@ support.
 T7 extends substrate refresh with per-resource `domain_signal` observations and
 epistemic evidence. These signals are intentionally metadata/file-marker based. They can
 support bounded claims such as `target_profile_software`,
-`target_profile_records_documents`, and `target_has_weak_material`. Weak material covers
-large files, binary/media-like files, vendor/dependency-like paths, and unparsed document
-bodies. The substrate derives this basis from metadata and path signals before optional
-content hashing. A weak metadata-only file keeps `content_hash = null` and is recorded
-as `file_metadata`, not `file_hash`. The weak-material claim explicitly records
-metadata-only or limited-basis limitations rather than claiming text, semantic, PDF,
-media, or dependency understanding.
+`target_profile_records_documents`, and `target_has_weak_material`. The profile
+decision discriminates rather than detects: beside software signals, plain-text
+documentation (`README`, `LICENSE`, `.md`, `.rst`, `.txt`) and configuration or
+structured-data files (`.json`, `.yaml`, `.toml`, `.xml`, `.ini`, `.cfg`) are software
+ancillary, and records/documents form a second profile only when substantive by count
+(at least two files and at least one fifth of the software signals); subordinate
+material is counted on the software claim with a limitation. Weak material covers
+large files, binary/media-like files, unparsed document bodies, and vendor
+(`node_modules`, `vendor`, `.venv`) or generated (`.git`, `.hg`, `.svn`, caches,
+`build`, `dist`, `__pycache__`) subtrees. Vendor and generated subtrees are recorded as
+one metadata-only directory resource each and are not traversed; the inventory
+observation lists them as limitations. The substrate derives the weak basis from
+metadata and path signals before optional content hashing. A weak metadata-only file
+keeps `content_hash = null` and is recorded as `file_metadata`, not `file_hash`, and its
+limitation states that content changes are detected only through size and modification
+time. The weak-material claim explicitly records metadata-only or limited-basis
+limitations rather than claiming text, semantic, PDF, media, or dependency
+understanding.
+
+Epistemic evidence is content-addressed: the hashed body of `resource_version` and
+`domain_signal` evidence contains the resource record but not the observation time, so an
+unchanged resource yields the same evidence row and the same version identifier across
+refreshes while observation rows still accrue per refresh.
 
 The database still does not implement semantic/vector indexes, domain cartridges, or a
 graph database. The objects directory is created but has no accepted object-store
@@ -224,9 +240,13 @@ target change independently of the T5 mutation loop.
 
 T7 awareness projection adds a compact `domain_profile` summary from the current T3
 claims: `empty_or_nascent`, `software`, `records_documents`, `mixed`,
-`generic_observed`, or `unknown`. Awareness limitations include deterministic-basis and
-weak-material limitations from T3 claim data. Awareness still does not scan the target
-for domain findings and does not directly query T3-owned tables.
+`generic_observed`, or `unknown`. The summary also carries a `projection` block with
+shown/total counts for source handles (bound 100), claim findings (bound 10), and
+resource handles in the orientation finding (bound 20); whenever a bound truncates, a
+limitation line states how many were omitted. Awareness limitations include
+deterministic-basis and weak-material limitations from T3 claim data and the inventory
+limitations of the T3 basis (untraversed subtrees). Awareness still does not scan the
+target for domain findings and does not directly query T3-owned tables.
 
 The CLI exposes `awareness status`, `awareness refresh`, `awareness current`,
 `awareness revisions list/read`, and `awareness drill`. Drill resolves awareness items
@@ -446,16 +466,23 @@ provenance. `awareness.py` remains the T4 owner of compact orientation over the 
 T3 basis.
 
 Focused fixtures prove unobserved and observed-empty targets are not collapsed; a
-substantial software target produces a traceable `target_profile_software` claim; a mixed
-records/document target produces traceable records/document orientation and
-unparsed-document limitations; weak material containing vendor/dependency-like,
+realistic software target (project markers, README/LICENSE/CHANGELOG, config JSON and
+YAML, notes, `src/`, `tests/`, a `.git` directory, and a `node_modules` tree) produces a
+traceable `target_profile_software` claim and no records/documents claim; a true mixed
+target produces `mixed` by count while a single subordinate PDF beside software does
+not; a mixed records/document target produces traceable records/document orientation
+and unparsed-document limitations; weak material containing vendor/dependency-like,
 binary/media-like, and large files is represented as metadata-only or limited-basis
 evidence without content-understanding claims; large metadata-only material is not fully
-read or hashed before classification; current awareness does not leak
+read or hashed before classification; generated and vendor subtrees are not traversed or
+read and are disclosed as untraversed; unchanged refreshes do not grow evidence or
+versions; awareness discloses truncated projections; current awareness does not leak
 historical software shape after a later records/document refresh; observe/orient does
 not create receipts, App Journal entries, mutation records, or MCP-private state; and
 CLI and MCP read the same resulting substrate/awareness world through existing
-entrances.
+entrances. The T7 gate additionally executes known-answer classification, proves the
+same answers through the installed consumer entrance, asserts working-tree provenance
+against `head_commit`, and rejects executed mutations of the classifier.
 
 Journal entry `0047` records the initial T7 candidate. Reviewer evidence at
 `.builder/evidence/reviews/T7/20260901T135332Z-external-review.md` returned it to
@@ -465,7 +492,16 @@ evidence is recorded by journal entry `0048`: T7 gate run
 passed with receipts `20260902T112836Z-96df00b1`, `20260902T112941Z-0a944a21`,
 `20260902T113058Z-7562ba83`, `20260902T113200Z-dd3b8979`,
 `20260902T113316Z-36406ca5`, `20260902T113440Z-966fd63b`, and
-`20260902T113414Z-e73f3c86`.
+`20260902T113414Z-e73f3c86`. Reviewer evidence at
+`.builder/evidence/reviews/T7/20260902T120434Z-external-review.md` returned that
+candidate to VERIFYING for misclassification of realistic software targets and
+untreated generated subtrees, and recorded the operator's D1-D3 rulings. Journal entry
+`0049` records the repaired candidate: T7 gate run `20260902T131756Z-95787587` passed
+15/15 at `head_commit` `cf4de91` from a clean tree, and cumulative T6/T5/T4/T3/T2/T1/T0
+gates passed with receipts `20260902T132410Z-6fb3b4e7`, `20260902T132333Z-980e8fc4`,
+`20260902T132456Z-8fea98cd`, `20260902T132541Z-99ab07c0`,
+`20260902T132621Z-b7e9e68f`, `20260902T132632Z-d6d89b28`, and
+`20260902T132704Z-26259de4`, all produced on Linux/CPython 3.13.15.
 
 T7 is submitted at AWAITING_APPROVAL. It is not parked, P7 is not credited, and T8 has
 not begun.

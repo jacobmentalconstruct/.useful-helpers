@@ -315,8 +315,10 @@ ownership rules, completion evidence, risks, and ordered implementation plan. En
 degradation witness and discrimination requirement. Entry `0046` records operator
 approval to enter implementation. Entry `0047` submits the initial implemented
 candidate for review. Entry `0048` submits the bounded weak-material repair after
-Reviewer return. T7 may not be parked, grant P7 credit, or begin T8 without operator
-approval of the current implemented AWAITING_APPROVAL submission.
+Reviewer return. Entry `0049` submits the bounded classification and generated-subtree
+repair, with the operator's D1-D3 rulings, after a second Reviewer return. T7 may not
+be parked, grant P7 credit, or begin T8 without operator approval of the current
+implemented AWAITING_APPROVAL submission.
 
 ## T7 declaration record
 
@@ -328,8 +330,10 @@ approval of the current implemented AWAITING_APPROVAL submission.
   `journal/0046-t7-execution-start.md`
 - Review submission:
   `journal/0047-t7-awaiting-approval.md`
-- Weak-material repair and current review submission:
+- Weak-material repair and review submission:
   `journal/0048-t7-weak-material-repair-awaiting-approval.md`
+- Classification repair, D1-D3 rulings, and current review submission:
+  `journal/0049-t7-classification-repair-awaiting-approval.md`
 
 Entry `0044` declares a bounded truthful-breadth outcome: deterministic T3-owned domain
 signals and T4 awareness projection should distinguish substantial software, mixed
@@ -360,6 +364,18 @@ submits the repaired candidate with authoritative T7 gate receipt
 `20260902T113316Z-36406ca5`, `20260902T113440Z-966fd63b`, and
 `20260902T113414Z-e73f3c86`. It preserves `0047` as historical evidence and does not
 park T7, grant P7 credit, or begin T8.
+Reviewer evidence at `evidence/reviews/T7/20260902T120434Z-external-review.md`
+returned T7 to VERIFYING because realistic software targets were classified `mixed` and
+generated/VCS subtrees were fully hashed and dominated the substrate; its addendum
+records the operator's D1-D3 rulings. Entry `0049` submits the repaired candidate with
+authoritative T7 gate receipt `20260902T131756Z-95787587` (15/15, `head_commit`
+`cf4de91`, clean tree) and cumulative T6/T5/T4/T3/T2/T1/T0 gate receipts
+`20260902T132410Z-6fb3b4e7`, `20260902T132333Z-980e8fc4`,
+`20260902T132456Z-8fea98cd`, `20260902T132541Z-99ab07c0`,
+`20260902T132621Z-b7e9e68f`, `20260902T132632Z-d6d89b28`, and
+`20260902T132704Z-26259de4`, all produced on Linux from committed trees. It preserves
+`0047` and `0048` as historical evidence and does not park T7, grant P7 credit, or
+begin T8.
 
 ## Project closure
 
