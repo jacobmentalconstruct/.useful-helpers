@@ -8,6 +8,7 @@ import os
 import platform
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -34,9 +35,34 @@ class Check:
     detail: str
 
 
-def _temporary_directory(prefix: str) -> tempfile.TemporaryDirectory:
-    RUNTIME_FIXTURE_ROOT.mkdir(parents=True, exist_ok=True)
-    return tempfile.TemporaryDirectory(prefix=prefix, dir=RUNTIME_FIXTURE_ROOT)
+class _ScratchDirectory:
+    def __init__(self, prefix: str) -> None:
+        RUNTIME_FIXTURE_ROOT.mkdir(parents=True, exist_ok=True)
+        self.path = Path(tempfile.mkdtemp(prefix=prefix, dir=RUNTIME_FIXTURE_ROOT))
+
+    def __enter__(self) -> str:
+        return str(self.path)
+
+    def __exit__(self, exc_type, exc, traceback) -> None:
+        _force_rmtree(self.path)
+
+
+def _force_rmtree(path: Path) -> None:
+    if not path.exists():
+        return
+
+    def fix_permissions(function, failed_path, exc_info) -> None:
+        try:
+            os.chmod(failed_path, stat.S_IWRITE | stat.S_IREAD | stat.S_IEXEC)
+            function(failed_path)
+        except OSError:
+            raise exc_info[1]
+
+    shutil.rmtree(path, onerror=fix_permissions)
+
+
+def _scratch_directory(prefix: str) -> _ScratchDirectory:
+    return _ScratchDirectory(prefix)
 
 
 def _run(command: list[str]) -> subprocess.CompletedProcess[str]:
@@ -211,7 +237,7 @@ def _write_records_with_ordinary_folders_target(target: Path) -> None:
 def _known_answer_profiles(substrate) -> dict[str, str]:
     """Execute the substrate's own classification against known-answer targets."""
     results: dict[str, str] = {}
-    with _temporary_directory(prefix="t7-gate-") as scratch:
+    with _scratch_directory(prefix="t7-gate-") as scratch:
         for name, writer, expected in (
             ("realistic_software", _write_realistic_software_target, "software"),
             ("true_mixed", _write_true_mixed_target, "mixed"),
@@ -282,7 +308,7 @@ def _known_answer_domain_profiles() -> str:
 
 def _consumer_entrance_known_answer() -> str:
     """Prove the same answers through the installed consumer entrance, not internal imports."""
-    with _temporary_directory(prefix="t7-gate-entrance-") as scratch:
+    with _scratch_directory(prefix="t7-gate-entrance-") as scratch:
         target = Path(scratch) / "software"
         target.mkdir()
         _write_realistic_software_target(target)
