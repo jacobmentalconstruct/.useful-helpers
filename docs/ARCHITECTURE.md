@@ -1,6 +1,6 @@
 # Architecture
 
-Status: **T8 AWAITING_APPROVAL IMPLEMENTATION MAP**
+Status: **T8 PARKED IMPLEMENTATION MAP**
 
 ## Charter relationship
 
@@ -12,7 +12,8 @@ Charter responsibilities it is intended to realize. T1, T2, T3, and T4 are parke
 operator approval. T5 Governed Mutation Loop is parked by operator approval and P5 is
 credited. T6 Removable MCP Entrance is parked by operator approval and P6 is credited.
 T7 Domain Truth is parked by operator approval and P7 is credited. T8 Release and STOP is
-submitted for review; P8 and Product STOP remain uncredited until operator approval.
+parked by operator approval in entry `0060`; P8 is credited and Product STOP is
+satisfied. Project closure remains pending a separate final closure entry.
 
 ## Current installed-instance realization
 
@@ -330,8 +331,8 @@ fixtures, sealed CLI breadth across empty, software, and mixed/document targets,
 MCP error/refusal behavior, actual sealed update payload replacement, sealed CLI survival
 after MCP adapter removal, and a WSL/Linux acceptance walk covering attach, status,
 substrate refresh, awareness refresh/current, drill, governed mutation, durable state
-checks, compatible update, and removal. Product STOP is still not credited by this
-architecture map; operator review and approval are required.
+checks, compatible update, and removal. Product STOP is credited by the T8 park entry;
+this architecture map records implementation shape and does not itself close the project.
 
 ## T1 review evidence
 
@@ -551,5 +552,5 @@ External Reviewer evidence at
 CANDIDATE for the `0050` submission. Entry `0051` records operator approval, parks T7,
 and credits P7.
 
-T8 is submitted for review by repaired entry `0059`. P8 and Product STOP remain
-uncredited until operator approval.
+T8 is parked by entry `0060`. P8 is credited and Product STOP is satisfied; project
+closure remains pending a separate final closure entry.

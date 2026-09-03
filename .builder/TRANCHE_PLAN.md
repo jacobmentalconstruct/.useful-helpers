@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **T8 AWAITING_APPROVAL**
+Status: **T8 PARKED**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -18,7 +18,7 @@ Charter and are referenced here without redefinition.
 | T5 Governed Mutation Loop | PARKED | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 PARKED; declaration approved | P5 |
 | T6 Removable MCP Entrance | PARKED | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 PARKED; declaration approved | P6 |
 | T7 Domain Truth | PARKED | Software, mixed records/documents, and empty targets degrade truthfully. | T6 PARKED; declaration approved | P7 |
-| T8 Release and STOP | AWAITING_APPROVAL | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 PARKED; pre-T8 housekeeping recorded in entry `0052`; declaration `0053` approved by same-turn operator direction; review return `0056`; repair submission `0057`; final preflight return `0058`; repair submission `0059` | P1-P8 |
+| T8 Release and STOP | PARKED | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 PARKED; pre-T8 housekeeping recorded in entry `0052`; declaration `0053` approved by same-turn operator direction; review return `0056`; repair submission `0057`; final preflight return `0058`; repair submission `0059`; operator approval and park `0060` | P1-P8 |
 
 Tranche detail is declared immediately before work. Future rows state dependency and
 outcome only; they do not authorize implementation.
@@ -46,9 +46,8 @@ boundary only. T2 grants partial P3 credit for runtime operational receipts/arti
 blank-start App Journal work memory. T3 completes and parks the epistemic substrate
 portion of P3. T4 grants P4 credit for compact immutable awareness. T5 grants P5 credit
 for the governed mutation loop. T6 grants P6 credit for the removable MCP entrance.
-T7 grants P7 credit for truthful domain breadth. P8 remains UNSCORED, and Product STOP
-remains incomplete. Each later declaration must name the P-conditions it advances and
-the exact gate assertions that do so.
+T7 grants P7 credit for truthful domain breadth. T8 grants P8 credit for releasability.
+Product STOP is satisfied because P1-P8 are credited by parked tranche outcomes.
 
 ## Pre-T8 housekeeping
 
@@ -76,6 +75,8 @@ evidence of a failed parked premise.
   `journal/0058-t8-final-preflight-return.md`
 - Final preflight review submission:
   `journal/0059-t8-final-preflight-awaiting-approval.md`
+- Operator approval and terminal park:
+  `journal/0060-t8-park-product-stop.md`
 
 Entry `0053` declares the release and Product STOP outcome, including the carried C2/C3
 MCP parity/conformance and C4 release-provenance obligations. Entry `0054` records the
@@ -90,9 +91,10 @@ cumulative T7/T6/T5/T4/T3/T2/T1/T0 receipts. Reviewer evidence
 `evidence/reviews/T8/20260903T134140Z-external-review.md` returned T8 to VERIFYING again
 for bounded final preflight witnesses covering actual sealed update payload replacement
 and sealed MCP-removal behavior. Entry `0059` submits the repaired final preflight
-candidate with T8 gate run `20260903T135132Z-5f6595f9` and fresh cumulative receipts. T8
-is not parked, P8 is not credited, and Product STOP remains incomplete until operator
-approval after review.
+candidate with T8 gate run `20260903T135132Z-5f6595f9` and fresh cumulative receipts.
+Reviewer evidence `evidence/reviews/T8/20260903T182527Z-external-review.md` recommended
+APPROVE CANDIDATE, and the operator endorsed that recommendation. Entry `0060` records
+the terminal T8 PARKED disposition, credits P8, and records Product STOP as satisfied.
 
 ## T1 synopsis
 

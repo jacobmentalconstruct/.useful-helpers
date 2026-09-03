@@ -3,17 +3,17 @@
 This file is a resumability projection, not authority.
 
 - Current tranche: **T8 Release and STOP**
-- Current state: **AWAITING_APPROVAL**
-- Operator direction: T7 is PARKED and P7 is credited. T8 has been repaired after the
-  bounded `0058` final preflight return and resubmitted in entry `0059`; do not park T8,
-  credit P8, claim Product STOP, or close the project without explicit operator approval.
+- Current state: **PARKED**
+- Operator direction: T8 is PARKED by operator endorsement of Reviewer evidence
+  `20260903T182527Z-external-review.md`; P8 is credited and Product STOP is satisfied.
+  Project closure remains pending a separate final closure entry.
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0059-t8-final-preflight-awaiting-approval.md`
+- Latest journal position: `0060-t8-park-product-stop.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
-- Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness; T5 Governed Mutation Loop; T6 Removable MCP Entrance; T7 Domain Truth
-- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5 credited by parked T5; P6 credited by parked T6; P7 credited by parked T7; P8 UNSCORED
-- Project closure: not eligible
+- Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness; T5 Governed Mutation Loop; T6 Removable MCP Entrance; T7 Domain Truth; T8 Release and STOP
+- Product STOP: SATISFIED - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5 credited by parked T5; P6 credited by parked T6; P7 credited by parked T7; P8 credited by parked T8
+- Project closure: eligible for final closure review; not closed until an operator-approved closure entry exists
 
 ## Measured implementation
 
@@ -211,16 +211,14 @@ passes 14/14 with a handle/limitations witness.
 
 Entry `0035` records operator approval and parks T4. P4 is credited. T5 is now also
 parked by entry `0039`. T6 is parked by entry `0043`; T7 is parked by entry `0051`;
-Product STOP remains incomplete because P8 is UNSCORED.
+Product STOP is satisfied by parked T8 and credited P8.
 
 ## Next entering-builder action
 
-Review repaired T8 Release and STOP under entries `0053`, `0054`, `0055`, `0056`,
-`0057`, `0058`, and `0059`. Entry `0059` adds the final preflight witnesses requested by
-Reviewer evidence `.builder/evidence/reviews/T8/20260903T134140Z-external-review.md`:
-actual sealed update payload replacement and sealed MCP-removal behavior. Do not reopen
-T0-T7 absent new evidence of a failed premise. Do not park T8, credit P8, claim Product
-STOP, or close the project without explicit operator approval.
+Prepare final closure review or post-STOP release-prep work as directed by the operator.
+Entry `0060` parks T8, credits P8, and records Product STOP as satisfied. Public
+GitHub/default-branch topology and a concise consumer quickstart remain post-STOP
+release-prep items before broad external testing.
 
 ## T7 declaration position
 

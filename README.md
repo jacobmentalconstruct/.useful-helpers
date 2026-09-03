@@ -37,7 +37,8 @@ credited. T5 Governed Mutation Loop is **PARKED by operator approval** in
 `.builder/journal/0039-t5-park.md`, supported by gate run
 `20260829T095546Z-e30c36d7` and external review
 `.builder/evidence/reviews/T5/20260829T104344Z-external-review.md`. P5 is credited.
-Product STOP remains incomplete because P8 remains UNSCORED.
+Product STOP is satisfied; project closure remains pending a separate final closure
+entry.
 
 T6 Removable MCP Entrance is **PARKED by operator approval** in
 `.builder/journal/0043-t6-park.md`, supported by T6 gate run
@@ -63,10 +64,13 @@ housekeeping is recorded in
 ownership are resolved, while MCP parity/conformance and final release provenance are
 carried into the T8 declaration surface.
 
-T8 Release and STOP is **AWAITING_APPROVAL** in
-`.builder/journal/0059-t8-final-preflight-awaiting-approval.md`, supported by repaired
-T8 gate run `20260903T135132Z-5f6595f9`. P8 and Product STOP remain uncredited until
-explicit operator approval.
+T8 Release and STOP is **PARKED by operator approval** in
+`.builder/journal/0060-t8-park-product-stop.md`, supported by repaired T8 gate run
+`20260903T135132Z-5f6595f9` and External Reviewer evidence
+`.builder/evidence/reviews/T8/20260903T182527Z-external-review.md`. P8 is credited and
+Product STOP is satisfied. Project closure remains pending a separate final closure
+entry. Public GitHub/default-branch topology and a concise consumer quickstart remain
+post-STOP release-prep items before broad external testing.
 
 Read construction authority in this order:
 
