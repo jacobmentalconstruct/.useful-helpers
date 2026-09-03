@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "gate": "T8-release-stop",
+  "status": "PASS",
+  "recorded_at": "2026-09-03T08:49:58.996090+00:00",
+  "run_id": "20260903T084958Z-64005182",
+  "head_commit": "479833e1641ad66f3184ea96b4f2120f1e508162",
+  "working_tree": "?? .builder/evidence/T8/20260903T084958Z-64005182/",
+  "source_digest": "79fef71c477debab8bbca87ac55f834fb815a34ff0c901aa7732d6fa590d3090",
+  "release_artifact": {
+    "path": ".builder/evidence/T8/20260903T084958Z-64005182/release/sidecar-workbench-0.1.0.zip",
+    "manifest": ".builder/evidence/T8/20260903T084958Z-64005182/release/sidecar-workbench-0.1.0.zip.manifest.json",
+    "sha256": "d52c5cbfcd7cb6e27bfe7d221507077d08e9d3afcddbdff2281a7c8babc244e5",
+    "file_count": 44
+  },
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "working_tree_provenance",
+      "status": "PASS",
+      "detail": "measured source is fully contained in head_commit (untracked evidence receipts only)"
+    },
+    {
+      "name": "release_artifact_boundary",
+      "status": "PASS",
+      "detail": "positive zip boundary contains 44 files and no construction material"
+    },
+    {
+      "name": "focused_t8_product_evidence",
+      "status": "PASS",
+      "detail": "....                                                                     [100%]"
+    },
+    {
+      "name": "windows_release_lifecycle",
+      "status": "PASS",
+      "detail": "sealed artifact passed Windows lifecycle and CLI/MCP mutation walk"
+    },
+    {
+      "name": "linux_release_smoke",
+      "status": "PASS",
+      "detail": "same release artifact completed Linux observe/orient/drill/mutation/state/update/removal walk"
+    },
+    {
+      "name": "mcp_governed_mutation_parity",
+      "status": "PASS",
+      "detail": "MCP exposes preview/approve/apply through mutation owner APIs"
+    },
+    {
+      "name": "dependency_direction",
+      "status": "PASS",
+      "detail": "product boundary, mechanical lower layer, and App Journal dependency direction hold"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": "....                                                                     [100%]"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 55 Python sources parsed"
+    },
+    {
+      "name": "release_discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: artifact includes construction root; artifact lacks manifest; tests omit update preservation; tests omit removal witness; MCP lacks governed apply; tests omit sealed target breadth; tests omit sealed MCP error witness"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "PASS",
+      "detail": "no generated cache, bytecode, build, or fixture debris remains"
+    }
+  ]
+}

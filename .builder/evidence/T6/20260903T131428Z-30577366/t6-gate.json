@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "gate": "T6-mcp-entrance",
+  "status": "FAIL",
+  "recorded_at": "2026-09-03T13:14:28.278004+00:00",
+  "run_id": "20260903T131428Z-30577366",
+  "head_commit": "2556cbbbff81e46f098307da0d7db38d4f84d8e7",
+  "working_tree": "?? .builder/evidence/T0/20260903T090608Z-4057d01c/\n?? .builder/evidence/T1/20260903T090144Z-5f5a55c3/\n?? .builder/evidence/T2/20260903T090124Z-8f4e4e6b/\n?? .builder/evidence/T3/20260903T090002Z-c2e785d1/\n?? .builder/evidence/T4/20260903T085846Z-30234e32/\n?? .builder/evidence/T5/20260903T085713Z-7d1a047b/\n?? .builder/evidence/T6/20260903T085553Z-d7e5a3cc/\n?? .builder/evidence/T7/20260903T085253Z-290270ae/\n?? .builder/evidence/T7/20260903T085437Z-750576cc/\n?? .builder/evidence/T7/20260903T131259Z-3aee7847/\n?? .builder/evidence/T8/20260903T084958Z-64005182/\n?? .builder/evidence/T8/20260903T131126Z-a9773084/",
+  "source_digest": "aae1e3aa1edc569e305836919ddc6bd03f2cc791624ade5ffb7b88041c12dac1",
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "t6_surfaces",
+      "status": "PASS",
+      "detail": "T6 adds a lazy MCP CLI entrance, MCP adapter, and shared host status owner"
+    },
+    {
+      "name": "mcp_adapter_owner",
+      "status": "PASS",
+      "detail": "MCP adapter routes through registry, control plane, and existing state owners"
+    },
+    {
+      "name": "lower_layers_do_not_import_mcp",
+      "status": "PASS",
+      "detail": "CLI is the only non-MCP product module allowed to mention the MCP adapter"
+    },
+    {
+      "name": "focused_t6_product_evidence",
+      "status": "PASS",
+      "detail": "........                                                                 [100%]"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": "....                                                                     [100%]"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "31 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "no_out_of_scope_surfaces",
+      "status": "PASS",
+      "detail": "T6 introduces no GUI, AI/vector, cartridge, rollback, planner, or workflow-engine surface"
+    },
+    {
+      "name": "journal_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0056-t8-verification-return.md"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 55 Python sources parsed"
+    },
+    {
+      "name": "discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: hard-coded MCP catalog; direct mechanical launch bypasses control plane; MCP-private SQL ownership; CLI imports MCP eagerly; missing removability witness; missing MCP apply authority witness; missing MCP notification witness; missing malformed request witness; missing no automatic memory witness"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "FAIL",
+      "detail": "AssertionError: generated debris remains: ['tests/.runtime (non-empty)']"
+    }
+  ]
+}

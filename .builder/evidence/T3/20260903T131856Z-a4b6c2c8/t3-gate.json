@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "gate": "T3-epistemic-substrate",
+  "status": "PASS",
+  "recorded_at": "2026-09-03T13:18:56.912727+00:00",
+  "run_id": "20260903T131856Z-a4b6c2c8",
+  "head_commit": "2556cbbbff81e46f098307da0d7db38d4f84d8e7",
+  "working_tree": "?? .builder/evidence/T0/20260903T090608Z-4057d01c/\n?? .builder/evidence/T1/20260903T090144Z-5f5a55c3/\n?? .builder/evidence/T2/20260903T090124Z-8f4e4e6b/\n?? .builder/evidence/T3/20260903T090002Z-c2e785d1/\n?? .builder/evidence/T4/20260903T085846Z-30234e32/\n?? .builder/evidence/T4/20260903T131443Z-97157605/\n?? .builder/evidence/T5/20260903T085713Z-7d1a047b/\n?? .builder/evidence/T5/20260903T131431Z-eebaf0ed/\n?? .builder/evidence/T5/20260903T131740Z-9830e735/\n?? .builder/evidence/T6/20260903T085553Z-d7e5a3cc/\n?? .builder/evidence/T6/20260903T131428Z-30577366/\n?? .builder/evidence/T6/20260903T131621Z-683d1155/\n?? .builder/evidence/T7/20260903T085253Z-290270ae/\n?? .builder/evidence/T7/20260903T085437Z-750576cc/\n?? .builder/evidence/T7/20260903T131259Z-3aee7847/\n?? .builder/evidence/T8/20260903T084958Z-64005182/\n?? .builder/evidence/T8/20260903T131126Z-a9773084/",
+  "source_digest": "4670eb94d6db519cad9920d5ba2ef0505316695bf57947802a2477fe60af1319",
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "t3_schema",
+      "status": "PASS",
+      "detail": "current schema includes distinct T3 resource, evidence, claim, and relation tables"
+    },
+    {
+      "name": "substrate_owner",
+      "status": "PASS",
+      "detail": "substrate owner exposes refresh, lookup, immutable evidence, claims, and trace"
+    },
+    {
+      "name": "cli_entrance",
+      "status": "PASS",
+      "detail": "CLI exposes minimal substrate refresh and inspection commands"
+    },
+    {
+      "name": "t1_dependency_boundary",
+      "status": "PASS",
+      "detail": "T1 mechanical dependency boundary remains intact"
+    },
+    {
+      "name": "focused_t3_product_evidence",
+      "status": "PASS",
+      "detail": "......                                                                   [100%]"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": "....                                                                     [100%]"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "31 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "no_t4_or_out_of_scope_surfaces",
+      "status": "PASS",
+      "detail": "T3 introduces no awareness, vector, MCP, GUI, or cartridge authority"
+    },
+    {
+      "name": "journal_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0056-t8-verification-return.md"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 55 Python sources parsed"
+    },
+    {
+      "name": "discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: resource/version table collapse; epistemic evidence stored as operational artifact; claim without derived_from provenance; mutable resource versions; awareness table introduced in T3"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "PASS",
+      "detail": "no generated cache, bytecode, build, release, or fixture debris remains"
+    }
+  ]
+}

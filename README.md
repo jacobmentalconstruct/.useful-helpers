@@ -64,9 +64,9 @@ ownership are resolved, while MCP parity/conformance and final release provenanc
 carried into the T8 declaration surface.
 
 T8 Release and STOP is **AWAITING_APPROVAL** in
-`.builder/journal/0055-t8-awaiting-approval.md`, supported by T8 gate run
-`20260903T073452Z-5680a19f`. P8 and Product STOP remain uncredited until explicit
-operator approval.
+`.builder/journal/0057-t8-verification-repair-awaiting-approval.md`, supported by
+repaired T8 gate run `20260903T131126Z-a9773084`. P8 and Product STOP remain uncredited
+until explicit operator approval.
 
 Read construction authority in this order:
 

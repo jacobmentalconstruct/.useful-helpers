@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "gate": "T1-mechanical-host",
+  "status": "PASS",
+  "recorded_at": "2026-09-03T13:20:32.478899+00:00",
+  "run_id": "20260903T132032Z-617c1918",
+  "head_commit": "2556cbbbff81e46f098307da0d7db38d4f84d8e7",
+  "working_tree": "?? .builder/evidence/T0/20260903T090608Z-4057d01c/\n?? .builder/evidence/T1/20260903T090144Z-5f5a55c3/\n?? .builder/evidence/T2/20260903T090124Z-8f4e4e6b/\n?? .builder/evidence/T2/20260903T132015Z-5e7ef08b/\n?? .builder/evidence/T3/20260903T090002Z-c2e785d1/\n?? .builder/evidence/T3/20260903T131856Z-a4b6c2c8/\n?? .builder/evidence/T4/20260903T085846Z-30234e32/\n?? .builder/evidence/T4/20260903T131443Z-97157605/\n?? .builder/evidence/T5/20260903T085713Z-7d1a047b/\n?? .builder/evidence/T5/20260903T131431Z-eebaf0ed/\n?? .builder/evidence/T5/20260903T131740Z-9830e735/\n?? .builder/evidence/T6/20260903T085553Z-d7e5a3cc/\n?? .builder/evidence/T6/20260903T131428Z-30577366/\n?? .builder/evidence/T6/20260903T131621Z-683d1155/\n?? .builder/evidence/T7/20260903T085253Z-290270ae/\n?? .builder/evidence/T7/20260903T085437Z-750576cc/\n?? .builder/evidence/T7/20260903T131259Z-3aee7847/\n?? .builder/evidence/T8/20260903T084958Z-64005182/\n?? .builder/evidence/T8/20260903T131126Z-a9773084/",
+  "source_digest": "47b2d2d8328f16f1fae58967d2504d2966c60a8c00059ebf6f5776203ee9625e",
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "manifest_contracts",
+      "status": "PASS",
+      "detail": "five manifests own explicit input/output, authority, domain, and invocation contracts"
+    },
+    {
+      "name": "mechanical_dependency_direction",
+      "status": "PASS",
+      "detail": "tools import only core.tool_runtime; shared runtime imports no higher core subsystem"
+    },
+    {
+      "name": "dependency_rule_discrimination",
+      "status": "PASS",
+      "detail": "positive dependency assertion rejected tool/runtime mutations: core.containment, core.contracts, core.instance"
+    },
+    {
+      "name": "focused_product_evidence",
+      "status": "PASS",
+      "detail": ".....                                                                    [100%]"
+    },
+    {
+      "name": "consumer_regression",
+      "status": "PASS",
+      "detail": "..........                                                               [100%]"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "31 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "journal_and_authority_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0056-t8-verification-return.md and gate authority remains singular"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 55 Python sources parsed"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "PASS",
+      "detail": "no generated cache, bytecode, build, release, or fixture debris remains"
+    }
+  ]
+}
