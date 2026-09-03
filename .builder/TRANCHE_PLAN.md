@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **T7 PARKED; T8 PROVISIONAL**
+Status: **T8 IMPLEMENTING**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -18,7 +18,7 @@ Charter and are referenced here without redefinition.
 | T5 Governed Mutation Loop | PARKED | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 PARKED; declaration approved | P5 |
 | T6 Removable MCP Entrance | PARKED | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 PARKED; declaration approved | P6 |
 | T7 Domain Truth | PARKED | Software, mixed records/documents, and empty targets degrade truthfully. | T6 PARKED; declaration approved | P7 |
-| T8 Release and STOP | PROVISIONAL | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 PARKED; pre-T8 housekeeping recorded in entry `0052` | P1-P8 |
+| T8 Release and STOP | IMPLEMENTING | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 PARKED; pre-T8 housekeeping recorded in entry `0052`; declaration `0053` approved by same-turn operator direction | P1-P8 |
 
 Tranche detail is declared immediately before work. Future rows state dependency and
 outcome only; they do not authorize implementation.
@@ -59,6 +59,19 @@ Plan-prose status sniffing; H2 and H3 are closed. C2 MCP governed mutation parit
 client conformance, and C4 final release provenance consistency are carried into T8.
 C5 is recorded as a historical limitation and is not a reopen trigger absent concrete
 evidence of a failed parked premise.
+
+## T8 declaration record
+
+- Declaration and implementation approval:
+  `journal/0053-t8-release-stop-declaration.md`
+- Execution start:
+  `journal/0054-t8-execution-start.md`
+
+Entry `0053` declares the release and Product STOP outcome, including the carried C2/C3
+MCP parity/conformance and C4 release-provenance obligations. Entry `0054` records the
+operator's same-message approval to enter IMPLEMENTING after the Builder found no
+declaration contradiction or blocker. T8 is not parked, P8 is not credited, and Product
+STOP remains incomplete until operator approval after review.
 
 ## T1 synopsis
 
