@@ -369,6 +369,18 @@ def _release_discrimination_witness() -> str:
                 test_source.replace('"content is required"', '"not checked"')
             ),
         ),
+        (
+            "tests omit actual payload replacement",
+            lambda: _assert_t8_tests(
+                test_source.replace("stale_payload_marker.py", "not_a_payload_witness.py")
+            ),
+        ),
+        (
+            "tests omit sealed MCP removability",
+            lambda: _assert_t8_tests(
+                test_source.replace("mcp_unavailable", "mcp_still_required")
+            ),
+        ),
     )
     for label, function in mutations:
         try:
@@ -399,6 +411,11 @@ def _assert_t8_tests(source: str) -> None:
         "changed_paths",
         "product/core/mcp.py",
         "content is required",
+        "test_sealed_update_replaces_installed_payload_while_preserving_state",
+        "stale_payload_marker.py",
+        "BROKEN_PAYLOAD",
+        "test_sealed_cli_survives_when_mcp_adapter_is_removed",
+        "mcp_unavailable",
     ):
         if term not in source:
             raise AssertionError(f"T8 tests missing {term}")

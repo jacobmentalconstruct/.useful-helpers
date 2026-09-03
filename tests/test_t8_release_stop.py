@@ -153,6 +153,43 @@ class T8ReleaseStopTests(InstalledFixture):
         self.assertFalse((moved / ".sidecar").exists())
         self.assertEqual((moved / "note.txt").read_text(encoding="utf-8"), "hello\n")
 
+    def test_sealed_update_replaces_installed_payload_while_preserving_state(self) -> None:
+        artifact, _ = self.build_release()
+        extracted = self.extract_release(artifact)
+        target = self.target("replace-payload")
+        (target / "note.txt").write_text("payload replacement witness\n", encoding="utf-8")
+        attached = self.release_factory(extracted, "attach", str(target))
+        first_uuid = attached["instance_uuid"]
+
+        self.release_sidecar(
+            target,
+            "journal",
+            "add",
+            "--type",
+            "decision",
+            "--status",
+            "decided",
+            "--title",
+            "Preserve me",
+            "--body",
+            "Runtime state survives payload replacement.",
+        )
+        installed_payload = target / ".sidecar" / "core" / "constants.py"
+        release_payload = extracted / "product" / "core" / "constants.py"
+        stale_marker = target / ".sidecar" / "core" / "stale_payload_marker.py"
+        original_release_bytes = release_payload.read_bytes()
+        self.assertEqual(installed_payload.read_bytes(), original_release_bytes)
+
+        installed_payload.write_text("BROKEN_PAYLOAD = True\n", encoding="utf-8")
+        stale_marker.write_text("SHOULD_NOT_SURVIVE_UPDATE = True\n", encoding="utf-8")
+        self.release_factory(extracted, "update", str(target))
+
+        self.assertEqual(installed_payload.read_bytes(), original_release_bytes)
+        self.assertFalse(stale_marker.exists())
+        self.assertEqual(self.release_sidecar(target, "status")["instance_uuid"], first_uuid)
+        entries = self.release_sidecar(target, "journal", "list")["entries"]
+        self.assertEqual(entries[0]["title"], "Preserve me")
+
     def test_sealed_cli_orients_empty_software_and_mixed_document_targets(self) -> None:
         artifact, _ = self.build_release()
         extracted = self.extract_release(artifact)
@@ -305,6 +342,35 @@ class T8ReleaseStopTests(InstalledFixture):
 
         receipts = self.release_sidecar(target, "receipts", "list", "--limit", "10")["receipts"]
         self.assertIn(structured["mutation"]["receipt_id"], {item["receipt_id"] for item in receipts})
+
+    def test_sealed_cli_survives_when_mcp_adapter_is_removed(self) -> None:
+        artifact, _ = self.build_release()
+        extracted = self.extract_release(artifact)
+        target = self.target("no-mcp")
+        (target / "note.txt").write_text("mcp removal witness\n", encoding="utf-8")
+        self.release_factory(extracted, "attach", str(target))
+        (target / ".sidecar" / "core" / "mcp.py").unlink()
+
+        status = self.release_sidecar(target, "status")
+        tools = self.release_sidecar(target, "tools")["tools"]
+        process, read = self.call(target, "read_file", {"path": "note.txt"})
+        self.assertEqual(process.returncode, 0, read)
+        self.assertEqual(read["result"]["content"].splitlines(), ["mcp removal witness"])
+        self.assertTrue(status["instance_uuid"])
+        self.assertIn("read_file", {tool["id"] for tool in tools})
+
+        failed = subprocess.run(
+            [sys.executable, "-B", str(target / ".sidecar" / "bin" / "sidecar.py"), "mcp"],
+            cwd=self.root,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
+        self.assertNotEqual(failed.returncode, 0)
+        document = json.loads(failed.stdout)
+        self.assertFalse(document["ok"])
+        self.assertEqual(document["error"]["code"], "mcp_unavailable")
 
 
 def _sha256(path: Path) -> str:

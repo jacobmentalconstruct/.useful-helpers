@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **T8 AWAITING_APPROVAL**
+Status: **T8 VERIFYING**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -18,7 +18,7 @@ Charter and are referenced here without redefinition.
 | T5 Governed Mutation Loop | PARKED | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 PARKED; declaration approved | P5 |
 | T6 Removable MCP Entrance | PARKED | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 PARKED; declaration approved | P6 |
 | T7 Domain Truth | PARKED | Software, mixed records/documents, and empty targets degrade truthfully. | T6 PARKED; declaration approved | P7 |
-| T8 Release and STOP | AWAITING_APPROVAL | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 PARKED; pre-T8 housekeeping recorded in entry `0052`; declaration `0053` approved by same-turn operator direction; review return `0056`; repair submission `0057` | P1-P8 |
+| T8 Release and STOP | VERIFYING | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 PARKED; pre-T8 housekeeping recorded in entry `0052`; declaration `0053` approved by same-turn operator direction; review return `0056`; repair submission `0057`; final preflight return `0058` | P1-P8 |
 
 Tranche detail is declared immediately before work. Future rows state dependency and
 outcome only; they do not authorize implementation.
