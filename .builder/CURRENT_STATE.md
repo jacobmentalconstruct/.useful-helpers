@@ -2,17 +2,16 @@
 
 This file is a resumability projection, not authority.
 
-- Current tranche: **T7 Domain Truth**
-- Current state: **AWAITING_APPROVAL**
-- Operator direction: T7 is resubmitted for review after the bounded text-document
-  ratio, ordinary-folder, and gate self-consistency repair; do not park T7, grant P7
-  credit, or begin T8 without explicit operator approval
+- Current tranche: **T8 Release and STOP**
+- Current state: **PROVISIONAL**
+- Operator direction: T7 is PARKED and P7 is credited. Do not begin T8 implementation
+  before declaration and operator approval; resolve the pre-T8 ruling items first.
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0050-t7-text-document-ratio-repair-awaiting-approval.md`
+- Latest journal position: `0051-t7-park.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
-- Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness; T5 Governed Mutation Loop; T6 Removable MCP Entrance
-- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5 credited by parked T5; P6 credited by parked T6; T7 submitted but P7-P8 UNSCORED
+- Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness; T5 Governed Mutation Loop; T6 Removable MCP Entrance; T7 Domain Truth
+- Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5 credited by parked T5; P6 credited by parked T6; P7 credited by parked T7; P8 UNSCORED
 - Project closure: not eligible
 
 ## Measured implementation
@@ -210,18 +209,17 @@ awareness item identifiers use the canonical `awareness:item:<id>` namespace. Th
 passes 14/14 with a handle/limitations witness.
 
 Entry `0035` records operator approval and parks T4. P4 is credited. T5 is now also
-parked by entry `0039`. T6 is parked by entry `0043`; Product STOP remains incomplete
-because P7-P8 are UNSCORED.
+parked by entry `0039`. T6 is parked by entry `0043`; T7 is parked by entry `0051`;
+Product STOP remains incomplete because P8 is UNSCORED.
 
 ## Next entering-builder action
 
-Review the T7 AWAITING_APPROVAL candidate in entry `0050`. If the operator approves it,
-park T7 and grant P7 credit under the normal closeout mechanism. If review returns a
-bounded defect, repair within T7 and resubmit. Do not reopen T0-T6 absent new evidence
-of a failed premise, and do not begin T8. Before T8 is declared the operator still owes
-rulings on the carried T6 findings C1-C5 and H2-H3 and the `.gitattributes`
-line-ending pin with one Windows T7 receipt (H1), which the `20260902T134914Z` review
-marks as blocking Windows evidence in practice; they are not T7 surfaces.
+Prepare the pre-T8 ruling/cleanup surface requested by the T7 park entry, or declare T8
+only after the operator resolves those pre-release items. Do not reopen T0-T7 absent new
+evidence of a failed premise, and do not begin T8 implementation before declaration and
+operator approval. Before T8 is declared the operator still owes rulings on the carried
+T6 findings C1-C5 and H2-H3 and the `.gitattributes` line-ending pin with one Windows
+T7 receipt (H1), including which byte form is canonical for receipt SHA-256 values.
 
 ## T7 declaration position
 
@@ -230,15 +228,16 @@ explicit observation and awareness should degrade usefully and honestly across a
 substantial software target, a mixed records/document target, an explicitly observed
 empty or nascent target, and an unobserved target. T7 must keep deterministic domain
 facts owned by the T3 substrate, awareness owned by T4 projection, and CLI/MCP as
-entrances rather than capability owners. P7 remains UNSCORED until an implemented T7
-candidate is approved and parked by the operator.
+entrances rather than capability owners. At declaration time, P7 remained UNSCORED until
+an implemented T7 candidate was approved and parked by the operator.
 
 Reviewer evidence at `.builder/evidence/reviews/T7/20260901T115016Z-external-review.md`
 returned the declaration for one bounded amendment: T7 must explicitly require a
 large/binary/vendor-or-weak-material degradation witness. Entry `0045` records that
 amendment and superseded `0044` only as the current declaration review position.
 Reviewer evidence at `.builder/evidence/reviews/T7/20260901T124501Z-external-review.md`
-recommended APPROVE CANDIDATE for the amended declaration. P7 remains UNSCORED.
+recommended APPROVE CANDIDATE for the amended declaration. P7 remained UNSCORED at that
+declaration checkpoint.
 
 Entry `0046` records operator approval to enter IMPLEMENTING under the effective T7
 declaration.
@@ -287,7 +286,12 @@ software are ancillary only while they do not outnumber software signals by more
 sets `sys.dont_write_bytecode` and adds notes-heavy and ordinary-folder known-answer
 targets with executed mutations. T7 gate `20260902T140854Z-09771121` passed 15/15 at
 `59c4ab5` from a clean tree launched as plain `python`; cumulative gates passed at
-`0ccb5f3`. T7 is not parked and P7 remains UNSCORED pending operator approval.
+`0ccb5f3`.
+
+Reviewer evidence at `.builder/evidence/reviews/T7/20260902T144605Z-external-review.md`
+recommends APPROVE CANDIDATE for the `0050` submission. Entry `0051` records operator
+approval, grants the terminal PARKED disposition, and parks P7 credit. T8 has not begun,
+P8 remains UNSCORED, and Product STOP remains incomplete.
 
 ## T6 declaration position
 
@@ -310,7 +314,8 @@ T6 gate, the cumulative gate receipts, and the then-pending P6 credit resolved b
 
 Entry `0043` records operator approval after External Reviewer evidence
 `20260830T125528Z-external-review.md` recommended APPROVE CANDIDATE. T6 is PARKED and P6
-is credited. Product STOP remains incomplete because P7-P8 are UNSCORED.
+is credited. T7 is now parked and P7 is credited. Product STOP remains incomplete
+because P8 is UNSCORED.
 
 ## T5 parked position
 
@@ -350,5 +355,5 @@ T0 `20260829T100254Z-e375b5eb`.
 External Reviewer evidence at
 `.builder/evidence/reviews/T5/20260829T104344Z-external-review.md` recommends APPROVE
 CANDIDATE, PARKED status, and P5 credit. Entry `0039` records operator approval and parks
-T5. P5 is credited. T6 is now parked and P6 is credited; P7-P8 remain UNSCORED and
-Product STOP remains incomplete.
+T5. P5 is credited. T6 is now parked and P6 is credited; T7 is now parked and P7 is
+credited. Product STOP remains incomplete because P8 is UNSCORED.

@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **T7 AWAITING_APPROVAL**
+Status: **T7 PARKED**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -17,8 +17,8 @@ Charter and are referenced here without redefinition.
 | T4 Awareness | PARKED | Compact immutable awareness exposes handles, provenance, freshness, and unknowns. | T3 PARKED; amended declaration approved | P4 |
 | T5 Governed Mutation Loop | PARKED | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 PARKED; declaration approved | P5 |
 | T6 Removable MCP Entrance | PARKED | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 PARKED; declaration approved | P6 |
-| T7 Domain Truth | AWAITING_APPROVAL | Software, mixed records/documents, and empty targets degrade truthfully. | T6 PARKED; declaration approved | P7 |
-| T8 Release and STOP | PROVISIONAL | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 | P1-P8 |
+| T7 Domain Truth | PARKED | Software, mixed records/documents, and empty targets degrade truthfully. | T6 PARKED; declaration approved | P7 |
+| T8 Release and STOP | PROVISIONAL | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 PARKED; pre-T8 rulings resolved | P1-P8 |
 
 Tranche detail is declared immediately before work. Future rows state dependency and
 outcome only; they do not authorize implementation.
@@ -46,8 +46,9 @@ boundary only. T2 grants partial P3 credit for runtime operational receipts/arti
 blank-start App Journal work memory. T3 completes and parks the epistemic substrate
 portion of P3. T4 grants P4 credit for compact immutable awareness. T5 grants P5 credit
 for the governed mutation loop. T6 grants P6 credit for the removable MCP entrance.
-P7-P8 remain UNSCORED, and Product STOP remains incomplete. Each later declaration must
-name the P-conditions it advances and the exact gate assertions that do so.
+T7 grants P7 credit for truthful domain breadth. P8 remains UNSCORED, and Product STOP
+remains incomplete. Each later declaration must name the P-conditions it advances and
+the exact gate assertions that do so.
 
 ## T1 synopsis
 
@@ -267,8 +268,8 @@ run `20260829T095546Z-e30c36d7` and cumulative T4/T3/T2/T1/T0 runs
 `20260829T100131Z-0431a9bf`, `20260829T100153Z-73086b49`, and
 `20260829T100254Z-e375b5eb`. It does not park T5, grant P5 credit, or begin T6.
 Entry `0039` records operator approval, grants the terminal PARKED disposition, and parks
-P5 credit. T6 is now parked by entry `0043`; P6 is credited. P7-P8 remain UNSCORED and
-Product STOP remains incomplete.
+P5 credit. T6 is now parked by entry `0043`; P6 is credited. T7 is now parked by entry
+`0051`; P7 is credited. Product STOP remains incomplete because P8 is UNSCORED.
 
 ## T6 synopsis
 
@@ -303,12 +304,12 @@ gate receipts `20260830T101603Z-967e76c8`, `20260830T101728Z-3e23e4f5`,
 park T6, grant P6 credit, or begin T7.
 External Reviewer evidence at `evidence/reviews/T6/20260830T125528Z-external-review.md`
 recommends APPROVE CANDIDATE. Entry `0043` records operator approval, grants the terminal
-PARKED disposition, and parks P6 credit. P7-P8 remain UNSCORED and Product STOP remains
-incomplete.
+PARKED disposition, and parks P6 credit. T7 is now parked by entry `0051`; P7 is
+credited. Product STOP remains incomplete because P8 is UNSCORED.
 
 ## T7 synopsis
 
-T7 Domain Truth is AWAITING_APPROVAL. The sequence outcome above remains the
+T7 Domain Truth is PARKED by operator approval. The sequence outcome above remains the
 Plan-owned tranche property; entry `0044` owns its historical measured scope, non-goals,
 ownership rules, completion evidence, risks, and ordered implementation plan. Entry
 `0045` amends the current declaration submission with an explicit weak-material
@@ -318,9 +319,9 @@ candidate for review. Entry `0048` submits the bounded weak-material repair afte
 Reviewer return. Entry `0049` submits the bounded classification and generated-subtree
 repair, with the operator's D1-D3 rulings, after a second Reviewer return. Entry `0050`
 submits the bounded text-document ratio, ordinary-folder, and gate self-consistency
-repair after a third, narrow Reviewer return. T7 may not be parked, grant P7 credit,
-or begin T8 without operator approval of the current implemented AWAITING_APPROVAL
-submission.
+repair after a third, narrow Reviewer return. Entry `0051` records operator approval,
+grants the terminal PARKED disposition, and parks P7 credit. T8 may not begin without
+its own declaration and operator approval.
 
 ## T7 declaration record
 
@@ -338,6 +339,8 @@ submission.
   `journal/0049-t7-classification-repair-awaiting-approval.md`
 - Text-document ratio repair and current review submission:
   `journal/0050-t7-text-document-ratio-repair-awaiting-approval.md`
+- Operator approval and terminal park:
+  `journal/0051-t7-park.md`
 
 Entry `0044` declares a bounded truthful-breadth outcome: deterministic T3-owned domain
 signals and T4 awareness projection should distinguish substantial software, mixed
@@ -390,6 +393,13 @@ receipts `20260902T140938Z-675dd781`, `20260902T141016Z-a5874aa7`,
 `20260902T141218Z-47ff381a`, `20260902T141224Z-51e6043d`, and
 `20260902T141258Z-5bb1cbcb`. It preserves `0047`-`0049` as historical evidence and
 does not park T7, grant P7 credit, or begin T8.
+External Reviewer evidence at `evidence/reviews/T7/20260902T144605Z-external-review.md`
+recommends APPROVE CANDIDATE for the `0050` submission. Entry `0051` records operator
+approval, grants the terminal PARKED disposition, and parks P7 credit. P8 remains
+UNSCORED and Product STOP remains incomplete. Before T8 declaration, the operator still
+owes rulings on `.gitattributes`/renormalization with one Windows T7 receipt and on
+carried findings C1-C5 and H2-H3, including canonical byte form for receipt SHA-256
+values.
 
 ## Project closure
 

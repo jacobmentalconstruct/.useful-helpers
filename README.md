@@ -37,14 +37,14 @@ credited. T5 Governed Mutation Loop is **PARKED by operator approval** in
 `.builder/journal/0039-t5-park.md`, supported by gate run
 `20260829T095546Z-e30c36d7` and external review
 `.builder/evidence/reviews/T5/20260829T104344Z-external-review.md`. P5 is credited.
-Product STOP remains incomplete because P7-P8 remain UNSCORED.
+Product STOP remains incomplete because P8 remains UNSCORED.
 
 T6 Removable MCP Entrance is **PARKED by operator approval** in
 `.builder/journal/0043-t6-park.md`, supported by T6 gate run
 `20260830T101453Z-956b023b`, cumulative receipts listed in
 `.builder/journal/0042-t6-awaiting-approval.md`, and External Reviewer evidence
 `.builder/evidence/reviews/T6/20260830T125528Z-external-review.md`. P6 is credited.
-T7 Domain Truth is **AWAITING_APPROVAL** under
+T7 Domain Truth is **PARKED by operator approval** under
 `.builder/journal/0044-t7-domain-truth-declaration.md`, amended by
 `.builder/journal/0045-t7-declaration-weak-material-amendment.md` after Reviewer
 declaration evidence
@@ -56,8 +56,9 @@ repair resubmitted in
 classification/generated-subtree repair with operator rulings D1-D3 resubmitted in
 `.builder/journal/0049-t7-classification-repair-awaiting-approval.md`, and the bounded
 text-document ratio and gate self-consistency repair resubmitted in
-`.builder/journal/0050-t7-text-document-ratio-repair-awaiting-approval.md`. It is not
-parked, and P7 remains UNSCORED pending operator approval.
+`.builder/journal/0050-t7-text-document-ratio-repair-awaiting-approval.md`. Entry
+`.builder/journal/0051-t7-park.md` records operator approval and parks P7 credit. T8
+remains PROVISIONAL and unstarted.
 
 Read construction authority in this order:
 
