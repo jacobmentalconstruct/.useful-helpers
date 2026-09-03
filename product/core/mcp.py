@@ -106,6 +106,27 @@ def _tool_descriptors(context: InstanceContext) -> list[dict]:
         _descriptor("awareness.current", "Read the current awareness revision.", _schema({})),
         _descriptor("awareness.drill", "Drill into an awareness item.", _schema({"item_id": "string"}, ["item_id"])),
         _descriptor("mutation.status", "Read governed mutation state counts.", _schema({})),
+        _descriptor(
+            "mutation.preview_write",
+            "Create a governed write preview.",
+            _schema(
+                {"path": "string", "content": "string", "overwrite": "boolean"},
+                ["path", "content"],
+            ),
+        ),
+        _descriptor(
+            "mutation.approve",
+            "Approve a governed mutation preview.",
+            _schema(
+                {"preview_id": "string", "journal_entry_id": "string"},
+                ["preview_id"],
+            ),
+        ),
+        _descriptor(
+            "mutation.apply",
+            "Apply an approved governed mutation.",
+            _schema({"approval_id": "string", "preview_id": "string"}, ["approval_id"]),
+        ),
         _descriptor("mutation.history", "List governed mutation records.", _schema({"limit": "integer"})),
         _descriptor("mutation.links", "List mutation links for a source id.", _schema({"source_id": "string"}, ["source_id"])),
     ]
@@ -204,6 +225,22 @@ def _call_projection(context: InstanceContext, name: str, arguments: dict) -> di
             "drill": awareness.drill(context, _required(args, "item_id")),
         },
         "mutation.status": lambda _: mutation.status(context),
+        "mutation.preview_write": lambda args: mutation.preview_write(
+            context,
+            path=_required(args, "path"),
+            content=_required(args, "content"),
+            overwrite=bool(args.get("overwrite", False)),
+        ),
+        "mutation.approve": lambda args: mutation.approve(
+            context,
+            _required(args, "preview_id"),
+            journal_entry_id=args.get("journal_entry_id"),
+        ),
+        "mutation.apply": lambda args: mutation.apply(
+            context,
+            _required(args, "approval_id"),
+            preview_id=args.get("preview_id"),
+        ),
         "mutation.history": lambda args: {
             "ok": True,
             "mutations": mutation.list_history(context, args.get("limit", 50)),
