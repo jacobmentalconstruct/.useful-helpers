@@ -1,0 +1,1123 @@
+<title>Sidecar Workbench Preflight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap">
+<style>
+:root{
+  --ground:#F6F8F7; --surface:#FFFFFF; --surface-2:#EEF2F0;
+  --ink:#151B1A; --ink-2:#3A4644; --muted:#66736F; --faint:#8B9793;
+  --rule:#DCE3E0; --rule-2:#C4CFCB;
+  --accent:#0E5C4F; --accent-soft:#E2EFEB; --accent-ink:#0A423A;
+  --crit:#8E2E1C; --crit-bg:#F8E9E5;
+  --high:#A44415; --high-bg:#FAECE2;
+  --med:#8A6512; --med-bg:#F7EFDD;
+  --low:#4A5F73; --low-bg:#E9EFF4;
+  --info:#4A5A57; --info-bg:#ECF0EE;
+  --good:#2C6B44; --good-bg:#E4F0E7;
+  --shadow:0 1px 2px rgba(21,27,26,.05),0 8px 24px -16px rgba(21,27,26,.28);
+  --measure:68ch;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0D1312; --surface:#141B1A; --surface-2:#1A2322;
+    --ink:#E7EDEB; --ink-2:#C3CFCC; --muted:#8F9C98; --faint:#6E7B78;
+    --rule:#243231; --rule-2:#31423F;
+    --accent:#63C2AB; --accent-soft:#122B27; --accent-ink:#8FD8C6;
+    --crit:#E5806A; --crit-bg:#2D1712;
+    --high:#E2955F; --high-bg:#2C1C10;
+    --med:#D4B063; --med-bg:#2A2211;
+    --low:#94AEC6; --low-bg:#151E27;
+    --info:#9AAAA6; --info-bg:#1A2120;
+    --good:#77C48F; --good-bg:#122318;
+    --shadow:0 1px 2px rgba(0,0,0,.5),0 10px 30px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0D1312; --surface:#141B1A; --surface-2:#1A2322;
+  --ink:#E7EDEB; --ink-2:#C3CFCC; --muted:#8F9C98; --faint:#6E7B78;
+  --rule:#243231; --rule-2:#31423F;
+  --accent:#63C2AB; --accent-soft:#122B27; --accent-ink:#8FD8C6;
+  --crit:#E5806A; --crit-bg:#2D1712;
+  --high:#E2955F; --high-bg:#2C1C10;
+  --med:#D4B063; --med-bg:#2A2211;
+  --low:#94AEC6; --low-bg:#151E27;
+  --info:#9AAAA6; --info-bg:#1A2120;
+  --good:#77C48F; --good-bg:#122318;
+  --shadow:0 1px 2px rgba(0,0,0,.5),0 10px 30px -18px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:16px; line-height:1.62; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px 120px}
+@media(max-width:760px){.wrap{padding:0 18px 80px}}
+.mast{border-bottom:1px solid var(--rule);padding:56px 0 34px;margin-bottom:40px}
+.eyebrow{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--accent);font-weight:600;margin:0 0 18px}
+h1{font-family:Newsreader,Georgia,serif;font-weight:500;font-size:clamp(2.3rem,5.4vw,3.5rem);
+  line-height:1.08;letter-spacing:-.012em;margin:0 0 14px;text-wrap:balance;color:var(--ink)}
+.dek{font-size:1.09rem;color:var(--ink-2);max-width:60ch;margin:0 0 30px}
+.factgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:3px;overflow:hidden}
+@media(max-width:860px){.factgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.factgrid{grid-template-columns:1fr}}
+.fact{background:var(--surface);padding:13px 15px}
+.fact dt{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint);margin:0 0 5px}
+.fact dd{margin:0;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12.5px;
+  color:var(--ink);overflow-wrap:anywhere;line-height:1.45}
+.cols{display:grid;grid-template-columns:210px minmax(0,1fr);gap:52px;align-items:start}
+@media(max-width:980px){.cols{grid-template-columns:1fr;gap:0}}
+nav.toc{position:sticky;top:22px;font-size:13px;line-height:1.45}
+@media(max-width:980px){nav.toc{position:static;border:1px solid var(--rule);border-radius:3px;
+  padding:16px 18px;background:var(--surface);margin-bottom:44px}}
+nav.toc h2{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--faint);margin:0 0 12px;font-weight:600}
+nav.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+@media(max-width:980px){nav.toc ol{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:4px 20px}}
+nav.toc a{color:var(--muted);text-decoration:none;display:flex;gap:8px}
+nav.toc a:hover,nav.toc a:focus-visible{color:var(--accent)}
+nav.toc .n{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;color:var(--faint);min-width:1.4em}
+main{min-width:0}
+section{scroll-margin-top:22px;padding-top:14px}
+section + section{margin-top:54px;border-top:1px solid var(--rule);padding-top:44px}
+h2{font-family:Newsreader,Georgia,serif;font-weight:600;font-size:1.72rem;line-height:1.2;
+  letter-spacing:-.008em;margin:0 0 6px;text-wrap:balance;color:var(--ink)}
+h2 .secnum{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.72em;color:var(--accent);
+  font-weight:500;margin-right:.55em}
+h3{font-family:"IBM Plex Sans",sans-serif;font-weight:600;font-size:1.02rem;letter-spacing:-.002em;
+  margin:34px 0 10px;color:var(--ink)}
+h4{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--faint);font-weight:600;margin:26px 0 9px}
+p,li{max-width:var(--measure)}
+p{margin:0 0 14px;color:var(--ink-2)}
+ul,ol{margin:0 0 16px;padding-left:1.25em;color:var(--ink-2)}
+li{margin-bottom:6px}
+li::marker{color:var(--faint)}
+strong{color:var(--ink);font-weight:600}
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:2px}
+code,.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.855em}
+p code,li code,td code,dd code{background:var(--surface-2);padding:.1em .34em;border-radius:2px;
+  color:var(--ink);word-break:break-word}
+pre{background:var(--surface);border:1px solid var(--rule);border-left:2px solid var(--accent);
+  border-radius:2px;padding:14px 16px;overflow-x:auto;margin:0 0 18px;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12.5px;line-height:1.55;color:var(--ink-2)}
+pre b{color:var(--ink);font-weight:600}
+.lede{font-size:1.04rem;color:var(--ink-2);max-width:62ch}
+.verdict{border:1px solid var(--rule-2);border-radius:3px;background:var(--surface);
+  box-shadow:var(--shadow);overflow:hidden;margin:0 0 26px}
+.verdict-top{padding:22px 24px 20px;border-bottom:1px solid var(--rule);border-left:4px solid var(--med)}
+.verdict-label{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--faint);margin:0 0 8px}
+.verdict-value{font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;
+  font-size:clamp(1.05rem,2.6vw,1.42rem);letter-spacing:-.01em;color:var(--med);margin:0}
+.verdict-body{padding:20px 24px}
+.verdict-body p{max-width:66ch}
+.verdict-body p:last-child{margin-bottom:0}
+.pill{display:inline-block;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;
+  font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:2px;
+  white-space:nowrap;vertical-align:1px}
+.p-crit{background:var(--crit-bg);color:var(--crit)}
+.p-high{background:var(--high-bg);color:var(--high)}
+.p-med{background:var(--med-bg);color:var(--med)}
+.p-low{background:var(--low-bg);color:var(--low)}
+.p-info{background:var(--info-bg);color:var(--info)}
+.p-good{background:var(--good-bg);color:var(--good)}
+.finding{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--rule-2);
+  border-radius:2px;padding:16px 18px;margin:0 0 14px}
+.finding.sev-high{border-left-color:var(--high)}
+.finding.sev-med{border-left-color:var(--med)}
+.finding.sev-low{border-left-color:var(--low)}
+.finding.sev-info{border-left-color:var(--info)}
+.finding-head{display:flex;flex-wrap:wrap;gap:9px;align-items:baseline;margin-bottom:9px}
+.finding-id{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;font-weight:600;color:var(--faint)}
+.finding-title{font-weight:600;font-size:1rem;color:var(--ink);flex:1 1 260px;min-width:0}
+.finding dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:5px 16px;margin:10px 0 0;font-size:14px}
+.finding dt{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--faint);padding-top:4px}
+.finding dd{margin:0;color:var(--ink-2);min-width:0}
+.finding p{max-width:none}
+@media(max-width:620px){.finding dl{grid-template-columns:1fr;gap:2px}}
+.tablewrap{overflow-x:auto;margin:0 0 20px;border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px}
+th,td{text-align:left;padding:9px 13px;border-bottom:1px solid var(--rule);vertical-align:top}
+thead th{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--faint);font-weight:600;background:var(--surface-2);
+  border-bottom:1px solid var(--rule-2);white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+td.num{font-variant-numeric:tabular-nums;text-align:right;font-family:"IBM Plex Mono",ui-monospace,monospace}
+td.mono,th.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px}
+.checklist{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1px;
+  background:var(--rule);border:1px solid var(--rule);border-radius:3px;overflow:hidden;margin:0 0 20px}
+.chk{background:var(--surface);padding:10px 14px;display:flex;justify-content:space-between;
+  align-items:baseline;gap:14px}
+.chk:last-child{grid-column:1/-1}
+.chk-name{font-size:13.5px;color:var(--ink-2)}
+.chk-note{display:block;font-size:11.5px;color:var(--faint);margin-top:2px;max-width:38ch}
+.note{background:var(--accent-soft);border:1px solid var(--rule);border-left:3px solid var(--accent);
+  border-radius:2px;padding:14px 17px;margin:0 0 20px;font-size:14.5px;color:var(--ink-2)}
+.note p{max-width:none;margin-bottom:8px}
+.note p:last-child{margin-bottom:0}
+.note-label{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--accent-ink);font-weight:600;display:block;margin-bottom:6px}
+.diagram{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+  padding:20px 18px;overflow-x:auto;margin:0 0 20px}
+.diagram pre{border:none;background:none;padding:0;margin:0;font-size:12px;line-height:1.5;color:var(--ink-2)}
+footer{margin-top:70px;padding-top:26px;border-top:1px solid var(--rule);
+  font-size:12.5px;color:var(--faint);font-family:"IBM Plex Mono",ui-monospace,monospace}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+<header class="mast">
+  <p class="eyebrow">Independent forensic preflight &middot; read-only assessment</p>
+  <h1>Sidecar Workbench Preflight</h1>
+  <p class="dek">A from-scratch reconstruction of what the repository actually contains, what the product actually does, and which completion claims survive independent testing at the T8 <span class="mono">PARKED</span> state.</p>
+  <dl class="factgrid">
+    <div class="fact"><dt>Repository</dt><dd>.UsefulHELPERS<br>sidecar-workbench 0.1.0</dd></div>
+    <div class="fact"><dt>Branch / HEAD</dt><dd>codex/t1-mechanical-host<br>2affeef</dd></div>
+    <div class="fact"><dt>Working tree</dt><dd>clean (0 modified,<br>0 untracked)</dd></div>
+    <div class="fact"><dt>Source digest</dt><dd>136600c4ac287f17&hellip;<br>unchanged since 403e196</dd></div>
+    <div class="fact"><dt>Assessed</dt><dd>2026-09-03<br>Linux 6.18<br>CPython 3.11 / 3.12 / 3.13</dd></div>
+    <div class="fact"><dt>Repository mutations</dt><dd>none &mdash; all execution<br>in isolated copies</dd></div>
+  </dl>
+</header>
+
+<div class="cols">
+<nav class="toc" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1"><span class="n">1</span> Executive verdict</a></li>
+    <li><a href="#s2"><span class="n">2</span> In plain English</a></li>
+    <li><a href="#s3"><span class="n">3</span> Architecture</a></li>
+    <li><a href="#s4"><span class="n">4</span> Walkthroughs</a></li>
+    <li><a href="#s5"><span class="n">5</span> Authority &amp; truth</a></li>
+    <li><a href="#s6"><span class="n">6</span> Verification results</a></li>
+    <li><a href="#s7"><span class="n">7</span> T0&ndash;T8 audit</a></li>
+    <li><a href="#s8"><span class="n">8</span> Findings</a></li>
+    <li><a href="#s9"><span class="n">9</span> Frailties</a></li>
+    <li><a href="#s10"><span class="n">10</span> Complexity</a></li>
+    <li><a href="#s11"><span class="n">11</span> Regression ledger</a></li>
+    <li><a href="#s12"><span class="n">12</span> Governance coherency</a></li>
+    <li><a href="#s13"><span class="n">13</span> Install &amp; release</a></li>
+    <li><a href="#s14"><span class="n">14</span> Domain breadth</a></li>
+    <li><a href="#s15"><span class="n">15</span> Security boundaries</a></li>
+    <li><a href="#s16"><span class="n">16</span> Tidiness</a></li>
+    <li><a href="#s17"><span class="n">17</span> What went well</a></li>
+    <li><a href="#s18"><span class="n">18</span> Claim vs reality</a></li>
+    <li><a href="#s19"><span class="n">19</span> Risk register</a></li>
+    <li><a href="#s20"><span class="n">20</span> Preflight checklist</a></li>
+    <li><a href="#s21"><span class="n">21</span> Final judgment</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="s1">
+<h2><span class="secnum">01</span>Executive verdict</h2>
+
+<div class="verdict">
+  <div class="verdict-top">
+    <p class="verdict-label">Overall classification</p>
+    <p class="verdict-value">CONDITIONALLY RELEASE READY</p>
+  </div>
+  <div class="verdict-body">
+    <p><strong>The product is real and it works.</strong> I installed the sealed artifact on native Linux under three CPython versions and completed the entire consumer acceptance walk &mdash; attach, blank state, observe, orient, drill, preview, approve, apply, independently-measured changed paths, receipt visibility, post-apply awareness, compatible update with UUID preserved, clean uninstall with target files intact. That is the core P8 claim, and it reproduces outside the project's own harness.</p>
+    <p><strong>Three uncaught exceptions stand between this and unconditional readiness</strong>, all reachable by ordinary use, all of which break the CLI's own JSON contract by emitting a Python traceback and nothing on stdout. One of them &mdash; replacing a directory with a file of the same name &mdash; <em>permanently</em> breaks <code>substrate refresh</code> for that target, which disables orientation and the whole governed mutation loop, with no recovery path short of deleting the state database.</p>
+    <p><strong>T8 / PARKED is justified as a construction disposition</strong> &mdash; the declared evidence exists, was produced from a clean tree at the current source digest, and was independently re-run by the project's reviewer. It is not justified as a claim that the product degrades truthfully under adverse conditions: P7's "degrade usefully" and P6's "same authority" are supported with real caveats, and one carried finding (C3, MCP client conformance) was discharged by redefinition rather than by evidence.</p>
+    <p><strong>Most important caveat:</strong> the project's discrimination witnesses &mdash; the machinery meant to prove the gates can tell success from failure &mdash; are, in T2 through T6 and T8, string mutations checked by string assertions. I sabotaged <code>mutation.py</code> to record verification as <span class="mono">"passed"</span> and to fabricate the changed-path measurement, and the T5 gate's <code>discrimination_witness</code> check still returned PASS. The real discriminating power lives in the pytest suites, which did catch it. T7 is the exception: its <code>_executed_mutations</code> genuinely patches live code and re-runs known-answer classification.</p>
+  </div>
+</div>
+
+<h3>Would I release this exact state?</h3>
+<p>To a small group of technical early testers who are told the limitations: yes. To anyone else: not until <span class="pill p-high">F-01</span> and <span class="pill p-high">F-02</span> are fixed. Neither is deep; both are a few lines. Nothing found is unsafe, nothing loses user data, nothing escapes containment, and nothing reports a change that did not happen.</p>
+</section>
+
+<section id="s2">
+<h2><span class="secnum">02</span>The project in plain English</h2>
+
+<p class="lede">Sidecar Workbench is a self-contained instrument you attach to one directory. It installs itself <em>into</em> that directory as a hidden <code>.sidecar/</code> folder, watches what is there, records durable evidence about it in SQLite, and lets a human or an agent make governed file changes through a single control plane that leaves receipts.</p>
+
+<h3>What gets installed</h3>
+<p>Running <code>python -m factory attach /path/to/target</code> copies three directories &mdash; <code>bin/</code>, <code>core/</code>, <code>tools/</code> &mdash; into <code>&lt;target&gt;/.sidecar/</code>, creates <code>state/</code> and <code>logs/</code>, writes an <code>instance.json</code> holding a UUID and the literal relation <code>".."</code>, and bootstraps a SQLite database. Nothing is written anywhere else on the machine. There is no registry, no home-directory config, no <code>.gitignore</code> dropped into the target. The instrument knows where it lives only structurally: it resolves its target by walking <code>..</code> from itself, which is why you can rename or move the whole folder and it still works.</p>
+
+<h3>What it observes and derives</h3>
+<p>Nothing happens automatically. <code>substrate refresh</code> is an explicit act that walks the target (skipping <code>.sidecar/</code>), records one <em>resource</em> per file and directory, hashes the ones worth hashing, and writes content-addressed <em>evidence</em> plus deterministic <em>observations</em>. From those it derives a small number of hedged <em>claims</em>: this target has text-like files; this target has software-project signals; this target contains weak material we only saw the metadata of. Every claim is linked by typed provenance edges (<code>derived_from</code>, <code>supported_by</code>, <code>concerns</code>, <code>version_of</code>) back to the observations and evidence that support it, and <code>substrate trace</code> will walk that graph for you.</p>
+<p><code>awareness refresh</code> then builds a compact, immutable <em>revision</em> over the latest coherent substrate basis: a domain profile, a handful of findings, and &mdash; this is the part that is genuinely well done &mdash; explicit <em>limitations</em> and <em>unknowns</em>. A directory nobody has observed reports <span class="mono">unknown_unobserved</span> with freshness <span class="mono">unknown</span>. A directory observed and found empty reports <span class="mono">observed_empty</span>. Those are different states and the product never conflates them.</p>
+
+<h3>What it transforms, and what stops it</h3>
+<p>Exactly one thing can change a target: writing a file. And it can only do so through a four-step loop. <code>mutation preview-write</code> records the proposed change, the payload digest, the awareness revision it was reviewed against, and a signature of the whole target. <code>mutation approve</code> binds to that exact preview digest. <code>mutation apply</code> refuses &mdash; before launching any process &mdash; if the approval is missing, if the caller-named preview does not match, if the target has changed since review, or if the awareness basis has moved. If it proceeds, it routes through the ordinary governed host, then <em>independently</em> snapshots the target before and after and reports which paths actually changed, rather than believing the tool's own success message. Verification is recorded honestly as <span class="mono">unavailable</span>, because there is no target-native check to run; the product does not invent a PASS.</p>
+
+<h3>Who talks to it</h3>
+<p>A human uses the CLI: <code>python .sidecar/bin/sidecar.py status</code> and about fifty subcommands under it, all of which emit JSON on stdout. An agent uses the same binary in MCP mode (<code>sidecar mcp</code>), a line-delimited JSON-RPC server over stdio that advertises 21 tools &mdash; 16 projections of the product's own read and mutation surfaces plus the 5 manifest tools. Both entrances converge on the same <code>ControlPlane</code>, the same SQLite file, and the same receipts; I confirmed a receipt created through MCP appears verbatim in the CLI's receipt list.</p>
+
+<h3>What makes it distinctive</h3>
+<p>Three things, and they are the reason this is worth taking seriously. First, <strong>the epistemic separation is real</strong>: operational receipts, App Journal work memory, epistemic evidence, and awareness projections live in different tables with different owners and different meanings, and the code genuinely does not collapse them. Second, <strong>unobserved means unknown</strong>: the product distinguishes "I looked and found nothing" from "I never looked", which almost nothing does. Third, <strong>measured reality outranks self-report</strong>: after a write, it goes and looks.</p>
+</section>
+
+<section id="s3">
+<h2><span class="secnum">03</span>Architectural decomposition</h2>
+
+<p>The repository has four zones with a strictly enforced dependency direction. I verified statically (AST import analysis over all 31 product modules) and at runtime (an installed <code>.sidecar</code> runs with no <code>PYTHONPATH</code> and no <code>product/</code> or <code>factory/</code> anywhere on disk near it) that the shipped runtime imports nothing from <code>factory/</code>, <code>.builder/</code>, or <code>tests/</code>.</p>
+
+<div class="diagram"><pre>
+   HUMAN                                   AGENT
+     |                                       |
+  bin/sidecar.py ---------> core/cli.py &lt;----+-- core/mcp.py   (lazy import;
+  (composition root,         (arg parsing,        (JSON-RPC/stdio)   deletable)
+   sets sys.path)             50 subcommands)
+                                  |                   |
+        +-------------------------+-------------------+
+        |
+        v   owner modules - each owns one record class
+  +-------------------------------------------------------------------+
+  | host.py         status projection (shared by CLI + MCP)           |
+  | control.py      ControlPlane.invoke - the single governed path    |
+  | mutation.py     preview / approve / apply / measure / link        |
+  | awareness.py    immutable projections over the current basis      |
+  | substrate.py    resources, versions, observations, evidence,      |
+  |                 claims, provenance relations, trace               |
+  | runtime_records receipts + operational artifacts                  |
+  | app_journal.py  deliberate work memory + links                    |
+  +-------------------------------------------------------------------+
+        |              |                |
+        v              v                v
+  registry.py    containment.py    storage.py ----&gt; .sidecar/state/
+  (manifests)    (path resolution)  (5 schema versions,  workbench.sqlite3
+        |                            18 tables)          (WAL)
+        v
+  contracts.py  -- validates manifests + a small JSON-Schema subset
+        |
+        v   child process boundary (subprocess, allowlisted env)
+  +-------------------------------------------------------------------+
+  | tools/&lt;id&gt;/manifest.json  +  tools/&lt;id&gt;/tool.py                   |
+  | inventory . read_file . search_text . hash_file . write_file      |
+  | import ONLY core.tool_runtime.{MechanicalContext, run_tool}       |
+  +-------------------------------------------------------------------+
+
+  factory/  attach . update . uninstall . release build/inspect
+            imports product; product never imports factory
+  .builder/ 9 gates . 60 journal entries . 250 receipts . 21 reviews
+            never shipped, never imported at runtime
+</pre></div>
+
+<h4>Subsystem responsibilities</h4>
+<div class="tablewrap"><table>
+<thead><tr><th>Module</th><th class="num">LOC</th><th>Owns</th><th>State</th><th>Key invariant</th></tr></thead>
+<tbody>
+<tr><td class="mono">core/substrate.py</td><td class="num">1522</td><td>Resources, versions, observations, evidence, claims, relations, domain classification, target signature</td><td>6 tables</td><td>Evidence is content-addressed; unchanged resources yield the same evidence row and version id across refreshes</td></tr>
+<tr><td class="mono">core/mutation.py</td><td class="num">773</td><td>Preview, approval and apply records, staleness policy, changed-path measurement, verification, links</td><td>5 tables</td><td>Refuses before child launch on stale target or stale basis</td></tr>
+<tr><td class="mono">core/control.py</td><td class="num">464</td><td>The one governed invocation path: identity, receipt, authority, schema, containment, subprocess, result validation, receipt completion</td><td>via runtime_records</td><td>A receipt exists before any child process starts; artifact insert and receipt completion share one transaction</td></tr>
+<tr><td class="mono">core/awareness.py</td><td class="num">449</td><td>Immutable revisions, items, freshness, limitations, unknowns, drill</td><td>2 tables</td><td>Composes only from <code>substrate.current_awareness_basis()</code>, never from raw T3 tables</td></tr>
+<tr><td class="mono">core/storage.py</td><td class="num">381</td><td>SQLite bootstrap, 5 versioned migrations, instance-ownership verification</td><td>the database</td><td>Refuses re-entry when the DB's UUID disagrees with <code>instance.json</code></td></tr>
+<tr><td class="mono">core/cli.py</td><td class="num">377</td><td>Argument parsing and dispatch to owners; owns no behaviour</td><td>none</td><td>MCP imported lazily inside the <code>mcp</code> branch only</td></tr>
+<tr><td class="mono">core/mcp.py</td><td class="num">273</td><td>JSON-RPC/stdio adapter and 16 projections</td><td>none</td><td>Never touches sqlite3 or a mutation table directly</td></tr>
+<tr><td class="mono">core/runtime_records.py</td><td class="num">255</td><td>Operation receipts and operational artifacts</td><td>2 tables</td><td>Receipts are append-only; completion is transactional</td></tr>
+<tr><td class="mono">core/contracts.py</td><td class="num">229</td><td>Manifest parsing, a closed 11-field manifest schema, a small JSON-Schema subset validator</td><td>none</td><td>Manifest id must equal its directory name; entry point must resolve inside <code>tools/</code></td></tr>
+<tr><td class="mono">core/app_journal.py</td><td class="num">186</td><td>Deliberate entries and links to <code>operation:</code> and <code>artifact:</code> ids</td><td>2 tables</td><td>Never populated automatically by a tool call</td></tr>
+<tr><td class="mono">core/instance.py</td><td class="num">137</td><td>Identity: UUID, schema version, structural target relation</td><td><code>instance.json</code></td><td><code>target_relation</code> must be <code>".."</code> and the instance must be a direct child of its target</td></tr>
+<tr><td class="mono">core/tool_runtime.py</td><td class="num">89</td><td>The mechanical contract: strict context, stdin/stdout JSON protocol</td><td>none</td><td>Rejects unknown context fields, so identity cannot leak back into tools</td></tr>
+<tr><td class="mono">core/containment.py</td><td class="num">63</td><td>Path resolution and refusal</td><td>none</td><td>Real-path based, symlink-aware, rejects absolute paths and the instrument's own subtree</td></tr>
+</tbody></table></div>
+
+<h4>Dependency direction &mdash; measured, not asserted</h4>
+<p>Fan-in across <code>product/core</code>: <code>instance</code> is imported by 12 modules, <code>storage</code> by 8, <code>registry</code> by 5. Nothing imports upward: <code>tool_runtime</code> imports no other <code>core</code> module; the five tools import only <code>core.tool_runtime</code>; <code>app_journal</code> mentions neither awareness nor MCP. The one cycle-adjacent edge is <code>mutation &rarr; control &rarr; runtime_records &rarr; storage</code> alongside <code>mutation &rarr; awareness &rarr; substrate &rarr; storage</code>, which is a diamond, not a cycle.</p>
+</section>
+
+<section id="s4">
+<h2><span class="secnum">04</span>End-to-end operational walkthroughs</h2>
+
+<h3>A governed tool call (the spine)</h3>
+<p>Tracing <code>sidecar call read_file --args '{"path":"note.txt"}'</code> completely:</p>
+<pre><b>bin/sidecar.py</b>      sets sys.dont_write_bytecode, inserts .sidecar on sys.path,
+                     passes INSTANCE_ROOT (its own parent) into core.cli.main
+<b>cli.py:155</b>          instance.load(instance_root) reads instance.json, validates
+                     schema/UUID/created_at, resolves target via ".." and asserts
+                     instance_root.parent == target_root
+<b>control.py:24</b>        ControlPlane.__post_init__ -&gt; storage.bootstrap: opens SQLite,
+                     verifies the persisted UUID matches instance.json, migrates to v5
+<b>control.py:139</b>       begin_receipt -&gt; INSERT operation_receipts (status='started')
+                     -- every later refusal is recorded against this receipt --
+<b>control.py:165-201</b>   validate client, authority string, arguments shape, manifest lookup
+<b>control.py:203</b>       authority comparison: caller &gt;= manifest.authority
+<b>control.py:223</b>       validate_json(arguments, manifest.input_schema)
+<b>containment.py:21</b>    resolve_path: reject absolute, reject NUL, resolve() the candidate,
+                     assert it stays inside the target root, assert it is NOT inside
+                     the instrument subtree
+<b>control.py:265</b>       _mechanical_context -&gt; { target_root, excluded_roots } and nothing else
+<b>control.py:272</b>       subprocess.run([sys.executable, tools/read_file/tool.py],
+                     cwd=target_root, env=13-name allowlist + PYTHONPATH,
+                     timeout clamped to [1,300]
+<b>tool_runtime.py:62</b>   child parses {"args","context"}, rejects unknown context fields,
+                     runs, prints exactly one JSON object
+<b>control.py:325-394</b>   parse stdout as JSON, require an object, validate against
+                     manifest.output_schema, check exit code
+<b>control.py:429</b>       _complete_receipt -&gt; ONE transaction: INSERT artifact + UPDATE receipt
+                     (rowcount must be 1, else RecordError)
+<b>cli.py:372</b>          print(json.dumps(response, indent=2, sort_keys=True)); exit 0/1</pre>
+
+<h3>The mutation path, and where it refuses</h3>
+<p>Verified by execution. <code>preview-write</code> first requires that current awareness reports <span class="mono">freshness == "current"</span>; on a stale basis it refuses with <em>"current awareness is not fresh enough to preview mutation"</em>. <code>apply</code> then checks, in order: approval exists, caller's preview matches the approval, approval digest still matches the stored preview, live target signature equals the reviewed one, and current awareness id, basis signature and freshness all match. I confirmed each refusal is a durable <code>mutation_records</code> row with <code>measurement.source = "not_launched"</code>, and that replaying a consumed approval is blocked by <span class="mono">stale_target</span> because the successful write changes the file's mtime, which is part of the signature.</p>
+
+<h3>The failure path that matters most</h3>
+<p>I injected a SQLite trigger that aborts every <code>UPDATE</code> on <code>operation_receipts</code>, then applied an approved mutation. The child process ran and <em>did</em> write the file. What the product reported:</p>
+<pre>status            <b>failed</b>
+refusal_code      <b>receipt_persistence_failed</b>
+receipt_id        <b>null</b>
+post_awareness_id <b>null</b>
+measurement       {"changed_paths": [<b>"doc.txt"</b>], "source": "independent_target_snapshot"}
+receipts table    one row, status='started', completed_at=NULL, artifact_id=NULL</pre>
+<p>This is the correct direction on every axis. It did not claim success. It did not hide the physical change &mdash; the independent measurement still names the changed path. It left an incomplete receipt rather than a false one. The only residue is that nothing ever reconciles that orphaned <span class="mono">started</span> receipt, which I record as informational rather than a defect.</p>
+
+<h3>The agent entrance</h3>
+<p>I wrote an independent MCP client that sends only what the 2024-11-05 spec defines and used nothing from the project's fixtures. Handshake, <code>tools/list</code> (21 tools), and every read projection worked. What did not work is covered in <span class="pill p-med">F-06</span>.</p>
+
+<h3>Install, update, remove</h3>
+<p><code>attach</code> refuses if <code>.sidecar</code> already exists, and removes a partial footprint if anything in the sequence throws. <code>update</code> stages fresh payload into <code>.sidecar/.update-&lt;token&gt;/</code>, renames each of <code>bin</code>, <code>core</code> and <code>tools</code> aside as <code>.old-&lt;name&gt;-&lt;token&gt;</code>, copies the new payload in, then deletes both. <code>uninstall</code> is a single <code>rmtree</code> of <code>.sidecar</code>; I confirmed target-owned files survive it byte-for-byte. Behaviour under interruption is <span class="pill p-med">F-07</span>.</p>
+</section>
+
+<section id="s5">
+<h2><span class="secnum">05</span>Authority, ownership, and the truth model</h2>
+
+<h3>Where truth lives</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Question</th><th>Authoritative surface</th><th>Honoured?</th></tr></thead>
+<tbody>
+<tr><td>What is this product?</td><td class="mono">docs/PRODUCT_CHARTER.md</td><td><span class="pill p-good">Yes</span> &mdash; Architecture defers to it and does not restate invariants</td></tr>
+<tr><td>What is installed and where?</td><td class="mono">.sidecar/instance.json</td><td><span class="pill p-good">Yes</span> &mdash; single source; the DB's <code>instances</code> row must agree or the runtime refuses</td></tr>
+<tr><td>Which tools exist?</td><td class="mono">tools/*/manifest.json</td><td><span class="pill p-good">Yes</span> &mdash; read live from disk each call; there is no generated catalog</td></tr>
+<tr><td>What version is installed?</td><td class="mono">instance.json / constants.py</td><td><span class="pill p-med">No</span> &mdash; two sources that diverge after update (<span class="pill p-med">F-08</span>)</td></tr>
+<tr><td>What did we observe?</td><td class="mono">observations + epistemic_evidence</td><td><span class="pill p-good">Yes</span> &mdash; content-addressed, immutable, provenance-linked</td></tr>
+<tr><td>What do we currently think?</td><td class="mono">awareness_revisions</td><td><span class="pill p-good">Yes</span> &mdash; never leaks history; recomputes freshness live</td></tr>
+<tr><td>What is authoritative construction status?</td><td class="mono">.builder/TRANCHE_PLAN.md</td><td><span class="pill p-med">Partly</span> &mdash; <code>CURRENT_STATE.md</code> contradicts itself (&sect;12)</td></tr>
+</tbody></table></div>
+
+<h3>How authority actually works</h3>
+<p>Three levels &mdash; <code>observe</code> &lt; <code>sandbox</code> &lt; <code>apply</code> &mdash; declared per manifest, compared against a caller-supplied level, checked before the child process starts, and recorded on the receipt whether the call succeeds or is refused. It works exactly as designed.</p>
+<div class="note">
+  <span class="note-label">Read this correctly</span>
+  <p>Authority here is <strong>attribution and intent, not access control</strong>. The CLI accepts <code>--authority apply</code> from anyone who can run the binary; there is no token, no prompt, no credential. That is a coherent choice for a single-user local instrument, and the Charter never claims otherwise. But a reader who sees "governed mutation" and "authority" should not infer that Sidecar restricts what a local actor can do. It restricts what <em>Sidecar</em> does, and it leaves a receipt for each one.</p>
+</div>
+
+<h3>Provenance you can actually follow</h3>
+<p>Every awareness finding carries source handles; <code>awareness drill &lt;item&gt;</code> resolves them through <code>substrate.trace</code> into observations, evidence and resources. Every claim records its <code>derivation_method</code> (<span class="mono">deterministic.domain_signals</span>, <span class="mono">deterministic.resource_count</span>, <span class="mono">deterministic.suffix_classification</span>) and a confidence. Every mutation record links preview, approval, verification, receipt, artifact, both awareness revisions, and any journal entry. A user can answer "what was observed, what was derived, from what, when" for any statement the product makes. This is the strongest part of the design.</p>
+</section>
+
+<section id="s6">
+<h2><span class="secnum">06</span>Verification results</h2>
+<p>Everything below is separated by evidence class. Nothing is blurred.</p>
+
+<h4>Reproduced success &mdash; executed here, passed</h4>
+<div class="tablewrap"><table>
+<thead><tr><th>Experiment</th><th>Command or method</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td>Canonical product suite</td><td class="mono">python -m pytest</td><td>78 passed, 37.4 s, 0 skips, 0 xfails, 0 warnings</td></tr>
+<tr><td>Each test file alone</td><td class="mono">pytest tests/test_*.py (9 runs)</td><td>All pass; no shared-state contamination</td></tr>
+<tr><td>Reverse and shuffled order</td><td class="mono">pytest &lt;reversed&gt;; pytest t8 first</td><td>Order-independent</td></tr>
+<tr><td>Static check</td><td class="mono">ruff check . --no-cache</td><td>All checks passed, 55 sources</td></tr>
+<tr><td>Release build</td><td class="mono">python -m factory release build</td><td>44 files, no construction material, no absolute paths</td></tr>
+<tr><td><strong>Native-Linux acceptance walk from the sealed artifact</strong></td><td>Independent script: attach, observe, orient, drill, preview, approve, apply, measure, receipts, update, uninstall</td><td><strong>Passed on CPython 3.11.15, 3.12.3 and 3.13.13</strong>, kernel 6.18, target files preserved</td></tr>
+<tr><td>Containment</td><td>16 escape attempts (relative, deep, absolute, backslash, dot-segments, NUL, whitespace, symlink-to-file, symlink-to-dir, writes through each)</td><td>16 of 16 refused; nothing written outside the target</td></tr>
+<tr><td>Concurrency</td><td>16 simultaneous <code>substrate refresh</code> processes</td><td>16 of 16 succeeded</td></tr>
+<tr><td>Identity spoof</td><td>Rewrote <code>instance_uuid</code> in <code>instance.json</code></td><td>Clean JSON refusal: "SQLite instance identity does not agree"</td></tr>
+<tr><td>Schema from the future</td><td><code>PRAGMA user_version = 99</code></td><td>Clean JSON refusal naming both versions</td></tr>
+<tr><td>Missing or corrupt <code>instance.json</code></td><td>Deleted; then wrote <code>{ broken</code></td><td>Clean JSON refusals</td></tr>
+<tr><td>Missing tools directory</td><td><code>rm -rf .sidecar/tools</code></td><td>Clean <code>registry_error</code> refusal, receipt recorded</td></tr>
+<tr><td>Manifest robustness</td><td>Malformed JSON; id not equal to directory; entry escaping <code>tools/</code>; underscore-prefixed dir</td><td>All refused correctly (fail-closed for the whole catalog)</td></tr>
+<tr><td>Tool timeout</td><td>Planted a 30 s tool, called with <code>--timeout 2</code></td><td>2.1 s wall, <code>timeout</code> code, receipt recorded, <code>durably_governed: true</code></td></tr>
+<tr><td>Receipt failure after a real write</td><td>SQLite trigger aborting receipt completion</td><td>Reported failure, measurement still honest, no false success</td></tr>
+<tr><td>Approval replay</td><td>Applied the same approval twice</td><td>Second attempt refused <span class="mono">stale_target</span></td></tr>
+<tr><td>MCP removability</td><td>Deleted <code>.sidecar/core/mcp.py</code></td><td>status, catalog and <code>read_file</code> still work; <code>sidecar mcp</code> returns <code>mcp_unavailable</code></td></tr>
+<tr><td>Runtime self-containment</td><td>Ran installed <code>.sidecar</code> with <code>PYTHONPATH</code> unset, no <code>product/</code> on disk</td><td>Works standalone</td></tr>
+</tbody></table></div>
+
+<h4>Reproduced failure &mdash; executed here, defect confirmed</h4>
+<div class="tablewrap"><table>
+<thead><tr><th>Experiment</th><th>Observed</th><th>Finding</th></tr></thead>
+<tbody>
+<tr><td>Replace a directory with a file of the same name, then refresh</td><td><code>sqlite3.IntegrityError: UNIQUE constraint failed: resources.path</code>; permanent, both directions</td><td><span class="pill p-high">F-01</span></td></tr>
+<tr><td><code>mutation apply &lt;unknown-approval-id&gt;</code></td><td><code>sqlite3.IntegrityError: FOREIGN KEY constraint failed</code>; 0 bytes on stdout</td><td><span class="pill p-high">F-02</span></td></tr>
+<tr><td>One unreadable file in the target (unprivileged)</td><td><code>PermissionError</code> traceback from <code>substrate refresh</code></td><td><span class="pill p-med">F-03</span></td></tr>
+<tr><td>One unreadable <em>directory</em> in the target</td><td>Silently omitted; <code>limitations: []</code>; 3 files vanish with no disclosure</td><td><span class="pill p-med">F-04</span></td></tr>
+<tr><td>Truncated or non-SQLite state file</td><td><code>sqlite3.DatabaseError</code> traceback; 0 bytes on stdout; every command</td><td><span class="pill p-med">F-05</span></td></tr>
+<tr><td>Spec-compliant MCP client calling <code>tool.write_file</code></td><td>Always <code>authority_denied</code>; authority appears nowhere in <code>tools/list</code></td><td><span class="pill p-med">F-06</span></td></tr>
+<tr><td>Interrupted update (SIGKILL at the rename window)</td><td>Instrument broken (<code>No module named 'core'</code>); 13 orphan dirs and 2.7 MB after 4 cycles; <code>status</code> still reports healthy</td><td><span class="pill p-med">F-07</span></td></tr>
+<tr><td>Compatible update to a different version</td><td>Payload is 0.2.0; <code>status</code>, <code>instance.json</code> and the DB all still say 0.1.0</td><td><span class="pill p-med">F-08</span></td></tr>
+<tr><td>Unrelated SQLite DB planted at the state path</td><td>Silently adopted: 19 product tables created inside it, <code>user_version</code> stamped to 5, foreign rows untouched</td><td><span class="pill p-med">F-09</span></td></tr>
+<tr><td>Foreign DB with a colliding table name</td><td><code>sqlite3.OperationalError: table claims already exists</code>, uncaught</td><td><span class="pill p-med">F-09</span></td></tr>
+<tr><td><code>journal read journal:&lt;huge int&gt;</code></td><td><code>OverflowError</code> traceback</td><td><span class="pill p-low">F-12</span></td></tr>
+<tr><td>Sabotage <code>mutation.py</code> (verification to "passed", measurement fabricated)</td><td>T5 gate <code>discrimination_witness</code> still <strong>PASS</strong>; only pytest caught it</td><td><span class="pill p-high">F-10</span></td></tr>
+<tr><td>Reword one Charter sentence ("MCP is removable" to "MCP can be removed")</td><td>T0 gate <code>vision_alignment</code> flips PASS to FAIL with zero code change</td><td><span class="pill p-med">F-11</span></td></tr>
+<tr><td>Two release builds of identical source</td><td>Different SHA-256 (<code>67ec83a6&hellip;</code> vs <code>885dfe61&hellip;</code>); only <code>created_at</code> differs</td><td><span class="pill p-low">F-13</span></td></tr>
+<tr><td>Run the README's own <code>python -m pytest</code></td><td>Creates <code>__pycache__</code> in <code>product/</code> and <code>tests/</code>, which fails the T8 gate's own <code>repository_hygiene</code></td><td><span class="pill p-low">F-14</span></td></tr>
+<tr><td>Grep for consumption of <code>expected_changed_paths</code></td><td>Written and read back; <strong>never compared</strong> to the measured result</td><td><span class="pill p-low">F-15</span></td></tr>
+</tbody></table></div>
+
+<h4>Static evidence &mdash; read, not executed</h4>
+<ul>
+<li>The T8 gate's <code>_linux_release_smoke</code> shells out to <code>wsl</code> and <code>_wsl_path</code> assumes a Windows drive letter; the authoritative release gate therefore cannot run on Linux at all. All 16 T8 receipts record <span class="mono">Windows-10-10.0.19045-SP0</span>.</li>
+<li><code>t0_bootstrap.py</code> records neither <code>working_tree</code> nor <code>source_digest</code> &mdash; confirmed against the two most recent T0 receipts, which carry only 9 top-level fields.</li>
+<li>Product and factory code contain <strong>zero</strong> platform branches: no <code>os.name</code>, no <code>sys.platform</code>, no hard-coded separators. Everything goes through <code>pathlib</code>.</li>
+</ul>
+
+<h4>Historical evidence &mdash; trusted as record, not re-derived</h4>
+<ul>
+<li>All 250 committed gate receipts and 21 external reviews were read as evidence of intent and history. The Windows halves of the T8 lifecycle claims rest on receipts I cannot reproduce.</li>
+<li>Two T8 gate runs at the identical source digest <code>136600c4&hellip;</code> and identical <code>head_commit e864e85</code> produced <strong>FAIL then PASS</strong> 52 minutes apart. The FAIL was a Windows <code>PermissionError</code> during <code>TemporaryDirectory</code> cleanup &mdash; environment noise, disclosed by the reviewer &mdash; but it means the authoritative PASS was obtained on a re-run.</li>
+</ul>
+
+<h4>Could not verify</h4>
+<ul>
+<li>Native Windows behaviour of any kind: reserved device names (<code>CON</code>, <code>AUX</code>), file locking, <code>rmtree</code> on read-only files, path length, junctions. The device bridge exposes a Linux VM, not the Windows host.</li>
+<li>macOS &mdash; UNSCORED by Charter design, correctly.</li>
+<li>Whether the <code>.UsefulHELPERS.7z</code> tracked at the repository root contains anything sensitive (no 7z binary available).</li>
+</ul>
+</section>
+
+<section id="s7">
+<h2><span class="secnum">07</span>T0&ndash;T8 completion audit</h2>
+<p>Retrospective per tranche. Space is weighted toward the late tranches, as their outcomes are what a new maintainer inherits.</p>
+
+<div class="tablewrap"><table>
+<thead><tr><th>T</th><th>Capability</th><th>Claimed</th><th>Does it still exist?</th><th>Confidence</th></tr></thead>
+<tbody>
+<tr><td class="mono">T0</td><td>Bootstrap: authority documents, ownership zones, finite plan, gate root</td><td>PARKED twice (reopened once for vision alignment)</td><td>Yes &mdash; all five authority documents present and referenced; the BCC authority map is honoured in practice</td><td><span class="pill p-good">High</span></td></tr>
+<tr><td class="mono">T1</td><td>Mechanical hands and governed host; tools decoupled from Sidecar identity</td><td>PARKED, P1/P2 credited</td><td>Yes &mdash; verified by AST that all five tools import only <code>core.tool_runtime</code>, and that <code>MechanicalContext</code> rejects unknown fields</td><td><span class="pill p-good">High</span></td></tr>
+<tr><td class="mono">T2</td><td>Operation receipts, operational artifacts, blank-start App Journal</td><td>PARKED, partial P3</td><td>Yes &mdash; and the two repairs it was returned for (state-ownership verification before every entrance; transactional receipt completion) are both present, and I reproduced the second under fault injection</td><td><span class="pill p-good">High</span></td></tr>
+<tr><td class="mono">T3</td><td>Epistemic substrate: resources, versions, observations, evidence, claims, relations, trace</td><td>PARKED, P3 completed</td><td>Yes &mdash; six tables, trace works, provenance edges are typed</td><td><span class="pill p-good">High</span> structure / <span class="pill p-med">Caveat</span> (<span class="pill p-high">F-01</span> lives here)</td></tr>
+<tr><td class="mono">T4</td><td>Compact immutable awareness with freshness, limitations, unknowns, drill</td><td>PARKED after two returns, P4</td><td>Yes &mdash; and the two hardest repairs held: a target mutated between T3 and T4 refresh cannot report <span class="mono">current</span>, and an empty later refresh does not leak historical resources. I re-confirmed both.</td><td><span class="pill p-good">High</span></td></tr>
+<tr><td class="mono">T5</td><td>Governed mutation loop</td><td>PARKED, P5</td><td>Yes &mdash; every declared refusal reproduces. But its discrimination witness proves nothing (<span class="pill p-high">F-10</span>) and its "approval not found" path crashes (<span class="pill p-high">F-02</span>)</td><td><span class="pill p-med">Supported with caveats</span></td></tr>
+<tr><td class="mono">T6</td><td>Removable MCP entrance</td><td>PARKED after one return, P6</td><td>Removability: fully verified. Parity of the <em>catalog</em>: partial &mdash; MCP drops authority, reads, writes, applicability, output schema and manifest digest that the CLI exposes</td><td><span class="pill p-med">Supported with caveats</span></td></tr>
+<tr><td class="mono">T7</td><td>Truthful domain breadth</td><td>PARKED after <strong>three</strong> returns, P7</td><td>The best-tested tranche. Empty, unobserved, software, records, mixed, binary and unknown all behave sensibly and I reproduced all seven classes. Its gate is the only one with genuinely executed discrimination.</td><td><span class="pill p-med">Supported with caveats</span> &mdash; <span class="pill p-med">F-04</span> is squarely a T7 truthfulness gap</td></tr>
+<tr><td class="mono">T8</td><td>Sealed release, lifecycle, Product STOP</td><td>PARKED, P8, STOP satisfied</td><td>Artifact composition, install, update, removal and the Linux walk all reproduce independently</td><td><span class="pill p-med">Supported with caveats</span></td></tr>
+</tbody></table></div>
+
+<h3>Did later work quietly invalidate earlier parked work?</h3>
+<p>No, and this is worth stating plainly because it is the most common way a tranche project rots. Two specific checks:</p>
+<ul>
+<li><strong>T6 narrowed the parked T3 and T5 gates</strong> to permit the new MCP surface. I read the exemptions: they are now explicit allowlist constants (<code>POST_T3_MCP_ALLOWED_FILES</code>, <code>POST_T5_MCP_ALLOWED_FILES</code>) naming exact files, not open-ended term removals. The parked invariants &mdash; substrate and storage must not grow MCP ownership; mutation and control must not grow MCP behaviour &mdash; still hold.</li>
+<li><strong>T7 substantially rewrote <code>substrate.py</code></strong> (the domain classifier, the weak-material path, the untraversed-subtree behaviour). The T3 gate was left untouched and still passes, and the T3-owned tables and trace semantics are unchanged. The rewrite added behaviour above the parked contract rather than altering it.</li>
+</ul>
+<p>The cumulative gate discipline &mdash; re-running T7 down to T0 at each submission &mdash; is real and it worked. Eight fresh receipts back the terminal park.</p>
+
+<h3>Where T8's evidence is thinner than it looks</h3>
+<ul>
+<li>The "Windows lifecycle" gate check runs two pytest tests with no platform assertion; it is Windows evidence only because the machine was Windows.</li>
+<li>The "Linux" check cannot execute on Linux. It is a WSL subprocess from that same Windows machine &mdash; real Linux, but one distro, one machine, never independently reproducible. <em>I have now reproduced it natively on three CPython versions, which strengthens the claim beyond what the project itself established.</em></li>
+<li>The <code>release_discrimination_witness</code> check is nine string mutations checked by string assertions and executes nothing.</li>
+<li>Carried finding C3 (MCP client conformance) was declared satisfied by a fixture that uses the project's own request shapes and an LSP-style <code>shutdown</code> method that is not part of MCP.</li>
+</ul>
+</section>
+
+<section id="s8">
+<h2><span class="secnum">08</span>Bugs and correctness findings</h2>
+
+<div class="finding sev-high">
+<div class="finding-head"><span class="finding-id">F-01</span><span class="finding-title">Replacing a directory with a file of the same name permanently breaks <code>substrate refresh</code></span><span class="pill p-high">HIGH</span></div>
+<p>The <code>resources</code> table declares both <code>handle</code> and <code>path</code> as <code>UNIQUE</code>, and <code>resource_id</code> is the handle. The handle encodes kind &mdash; a directory <code>foo</code> becomes <code>path:foo/</code>, a file <code>foo</code> becomes <code>path:foo</code> &mdash; but <code>path</code> is <code>'foo'</code> for both. The <code>ON CONFLICT</code> clause in <code>substrate.refresh</code> targets <code>resource_id</code> only, so when a name changes kind the insert collides on <code>path</code> and nothing handles it.</p>
+<dl>
+  <dt>Evidence</dt><dd><code>product/core/storage.py:127-136</code> (schema), <code>product/core/substrate.py:834-861</code> (upsert), <code>substrate.py:140-149</code> (<code>_resource_handle</code>)</dd>
+  <dt>Reproduction</dt><dd><code>mkdir t/thing; echo x &gt; t/thing/inner.txt</code>, attach, <code>substrate refresh</code>, then <code>rm -rf t/thing; echo x &gt; t/thing</code>, <code>substrate refresh</code>. Also reproduces file to directory.</dd>
+  <dt>Consequence</dt><dd><code>sqlite3.IntegrityError: UNIQUE constraint failed: resources.path</code>, uncaught, traceback on stderr, nothing on stdout, exit 1. <strong>Permanent</strong> &mdash; every later refresh fails identically. Awareness therefore never leaves <span class="mono">stale</span>, and because <code>preview-write</code> requires fresh awareness, the entire governed mutation loop is dead for that target. The only recoveries are deleting the state database (losing all App Journal entries and receipts) or hand-editing SQL.</dd>
+  <dt>Mitigating</dt><dd>Awareness stays <em>honest</em> throughout &mdash; it reports <span class="mono">freshness: stale</span> and does not fabricate. Nothing is lost or corrupted; the instrument simply stops being able to see.</dd>
+  <dt>Why tests missed it</dt><dd>No fixture in any of the nine test files changes a path's kind between refreshes. The T7 suite exercises many target shapes but always builds each one once.</dd>
+</dl>
+</div>
+
+<div class="finding sev-high">
+<div class="finding-head"><span class="finding-id">F-02</span><span class="finding-title"><code>mutation apply</code> with an unknown approval id crashes instead of refusing</span><span class="pill p-high">HIGH</span></div>
+<p><code>_refusal()</code> writes a <code>mutation_records</code> row whose <code>preview_id</code> column has a foreign key to <code>mutation_previews</code>. On the <code>approval_not_found</code> path it passes the caller's unknown identifier straight into that column, so with <code>PRAGMA foreign_keys = ON</code> the insert violates the constraint.</p>
+<dl>
+  <dt>Evidence</dt><dd><code>product/core/mutation.py:239-247</code> and <code>mutation.py:629-660</code>; FK declared at <code>storage.py:299</code></dd>
+  <dt>Reproduction</dt><dd><code>sidecar mutation apply mutation:approval:doesnotexist</code></dd>
+  <dt>Consequence</dt><dd><code>sqlite3.IntegrityError: FOREIGN KEY constraint failed</code>, uncaught. The CLI emits zero bytes on stdout, breaking the contract that every response is JSON. Any agent or script parsing stdout gets a <code>JSONDecodeError</code> instead of a refusal it can reason about. A typo, a stale id from an earlier session, or an id copied from a different instance all trigger it.</dd>
+  <dt>Divergence</dt><dd>The same call through MCP returns a structured <code>-32000</code> error, because <code>mcp._handle_line</code> has a broad <code>except Exception</code>. Identical defect, two different behaviours &mdash; directly relevant to the parity claim.</dd>
+  <dt>Why tests missed it</dt><dd><strong>The test that claims to cover this passes a valid preview id as the approval id.</strong> <code>tests/test_t5_governed_mutation.py:263</code> calls <code>self.mutation_refusal(target, "apply", preview["preview_id"])</code>. Because that identifier does exist in <code>mutation_previews</code>, the FK is satisfied and the refusal path works. The test named <code>test_apply_without_approval_and_stale_apply_refuse_before_launch</code> has never exercised a genuinely unknown identifier.</dd>
+</dl>
+</div>
+
+<div class="finding sev-med">
+<div class="finding-head"><span class="finding-id">F-03</span><span class="finding-title">One unreadable file aborts the entire substrate refresh</span><span class="pill p-med">MEDIUM</span></div>
+<dl>
+  <dt>Evidence</dt><dd><code>product/core/substrate.py:639</code> &mdash; <code>path.read_bytes()</code> with no guard; same pattern in <code>mutation.py:745</code> (<code>_target_snapshot</code>)</dd>
+  <dt>Reproduction</dt><dd>As an unprivileged user, <code>chmod 000</code> one <code>.txt</code> file in the target, then <code>substrate refresh</code>: <code>PermissionError: [Errno 13]</code>, uncaught.</dd>
+  <dt>Consequence</dt><dd>Any file the process cannot read &mdash; root-owned, exclusively locked on Windows, a cloud placeholder &mdash; stops all observation. Contrast <code>search_text/tool.py:49</code>, which catches <code>OSError</code> per file and reports "<em>N files could not be read</em>" as a limitation. The mechanical tool degrades; the epistemic core does not.</dd>
+  <dt>Note</dt><dd>The <em>direction</em> is safe: <code>_target_snapshot</code> runs before the child process, so a permission problem aborts before any write.</dd>
+</dl>
+</div>
+
+<div class="finding sev-med">
+<div class="finding-head"><span class="finding-id">F-04</span><span class="finding-title">An unreadable subtree is silently omitted with no limitation</span><span class="pill p-med">MEDIUM</span></div>
+<p>This one is a truthfulness defect, not merely a robustness one, and it lands on the product's central invariant.</p>
+<dl>
+  <dt>Evidence</dt><dd><code>substrate.py:549</code> &mdash; <code>os.walk()</code> with the default <code>onerror=None</code>, which discards <code>listdir</code> errors</dd>
+  <dt>Reproduction</dt><dd>Target with <code>visible/a.txt</code> and <code>sealed/{s1,s2,s3}.txt</code>; <code>chmod 000 sealed</code>; refresh as an unprivileged user. Result: <code>resource_count: 3</code>, <code>limitations: []</code>. <code>sealed/</code> is recorded as an ordinary traversed directory. The three files simply are not there.</dd>
+  <dt>Consequence</dt><dd>Charter invariant 9 says "<em>Unobserved means unknown, never absent</em>". Here, unobserved is reported as absent. The asymmetry is sharp: T7 built careful <code>_UNTRAVERSED_SUBTREE</code> limitation machinery for subtrees the product <em>chooses</em> to skip (<code>node_modules</code>, <code>.git</code>), and discloses those precisely &mdash; but subtrees it is <em>forced</em> to skip are silent.</dd>
+  <dt>Why tests missed it</dt><dd>All T7 fixtures build their targets with full permissions. The known-answer classifier tests never construct an inaccessible path.</dd>
+</dl>
+</div>
+
+<div class="finding sev-med">
+<div class="finding-head"><span class="finding-id">F-05</span><span class="finding-title">A corrupted state database produces a traceback, not a refusal</span><span class="pill p-med">MEDIUM</span></div>
+<dl>
+  <dt>Evidence</dt><dd><code>product/core/cli.py:354-363</code> &mdash; the <code>except</code> tuple lists eight product exception types and does not include <code>sqlite3.Error</code></dd>
+  <dt>Reproduction</dt><dd>Truncate <code>workbench.sqlite3</code> to half its length: every command yields <code>sqlite3.DatabaseError: database disk image is malformed</code>, exit 1, <strong>0 bytes on stdout</strong>. Same for a non-database file at that path.</dd>
+  <dt>Consequence</dt><dd>Database corruption is the most likely durable-state failure in the field &mdash; power loss, a sync client, antivirus. It is also the one condition where the product produces no machine-readable output at all. The taxonomy is otherwise good: schema-too-new, identity mismatch, malformed <code>instance.json</code>, and missing tools all refuse cleanly in JSON. The database-integrity family is the hole.</dd>
+</dl>
+</div>
+
+<div class="finding sev-med">
+<div class="finding-head"><span class="finding-id">F-06</span><span class="finding-title">A standards-compliant MCP client can never invoke an apply-authority tool</span><span class="pill p-med">MEDIUM</span></div>
+<p>Verified with an independently written client that sends only spec-defined fields.</p>
+<dl>
+  <dt>Evidence</dt><dd><code>product/core/mcp.py:178-191</code> reads <code>authority</code> and <code>timeout</code> from the <code>tools/call</code> <em>params</em> object, as siblings of <code>arguments</code>. <code>mcp.py:133-140</code> projects only <code>name</code>, <code>description</code> and <code>inputSchema</code>.</dd>
+  <dt>Reproduction</dt><dd><code>tools/call</code> with <code>{"name":"tool.write_file","arguments":{&hellip;}}</code> always returns <code>authority_denied</code>. The string "authority" appears nowhere in the entire <code>tools/list</code> response.</dd>
+  <dt>Consequence</dt><dd>An external client cannot discover that the tool needs <code>apply</code>, and cannot supply it through any spec-defined channel. Official SDK clients send exactly <code>name</code> and <code>arguments</code>. The escape hatch is that the <code>mutation.*</code> projections hardcode <code>authority="apply"</code> internally, so governed writes <em>are</em> reachable &mdash; but the advertised manifest tools are not.</dd>
+  <dt>Other gaps</dt><dd><code>initialize</code> ignores the client's requested <code>protocolVersion</code> and unconditionally answers <span class="mono">2024-11-05</span>; <code>ping</code> returns <span class="mono">-32601</span>; JSON-RPC batches are rejected; <code>shutdown</code> is an LSP method, not an MCP one, and the project's own fixtures depend on it.</dd>
+  <dt>Why tests missed it</dt><dd><code>tests/test_t6_mcp_entrance.py:96-97</code> deliberately asserts that <code>authority</code> is <em>not</em> in the advertised schema, and line 160 supplies it as a params sibling. The fixture encodes the private convention rather than exposing it as a gap.</dd>
+</dl>
+</div>
+
+<div class="finding sev-med">
+<div class="finding-head"><span class="finding-id">F-07</span><span class="finding-title">Failed or interrupted updates accumulate full payload copies inside <code>.sidecar</code></span><span class="pill p-med">MEDIUM</span></div>
+<dl>
+  <dt>Evidence</dt><dd><code>factory/installer.py:100-105</code> &mdash; the rollback restores a backup only <code>if not current.exists()</code>, so a backup whose replacement already succeeded is neither restored nor deleted</dd>
+  <dt>Reproduction</dt><dd>Four interrupt-then-repair cycles left 13 orphaned <code>.old-*</code> and <code>.update-*</code> directories and grew <code>.sidecar</code> from about 350 KB to 2.7 MB. Throughout, <code>sidecar status</code> reported <code>ok: true, tool_count: 5</code>.</dd>
+  <dt>Consequence</dt><dd>A hard kill in the rename-to-copy window leaves the instrument unusable (<code>ModuleNotFoundError: No module named 'core'</code>) with no self-repair on next launch; re-running <code>factory update</code> does fix it, but nothing ever cleans the debris and nothing surfaces it.</dd>
+</dl>
+</div>
+
+<div class="finding sev-med">
+<div class="finding-head"><span class="finding-id">F-08</span><span class="finding-title">After a compatible update the product misreports its own version</span><span class="pill p-med">MEDIUM</span></div>
+<dl>
+  <dt>Evidence</dt><dd><code>factory/installer.py:62-114</code> replaces payload only; nothing rewrites <code>instance.json</code>'s <code>product_version</code>, and <code>storage.bootstrap</code> inserts the <code>instances</code> row only when the table is empty</dd>
+  <dt>Reproduction</dt><dd>Set <code>PRODUCT_VERSION = "0.2.0"</code>, run <code>factory update</code>. Installed <code>constants.py</code> reads 0.2.0; <code>status</code>, <code>instance.json</code> and the <code>instances</code> row all still read 0.1.0.</dd>
+  <dt>Consequence</dt><dd>There is no way for a human or agent to learn which runtime is installed. This sits awkwardly beside Charter invariant 12 &mdash; "<em>independently measured reality outranks a mutating tool's self-report</em>" &mdash; since <code>status</code> reports a self-recorded value rather than the measured one.</dd>
+  <dt>Why tests missed it</dt><dd>The update fixture updates 0.1.0 to 0.1.0, so the assertion cannot discriminate.</dd>
+</dl>
+</div>
+
+<div class="finding sev-med">
+<div class="finding-head"><span class="finding-id">F-09</span><span class="finding-title">An unrelated SQLite database at the state path is silently adopted</span><span class="pill p-med">MEDIUM</span></div>
+<dl>
+  <dt>Evidence</dt><dd><code>product/core/storage.py:337-344</code> &mdash; <code>_verify_existing_identity</code> returns early when the <code>instances</code> table is absent, so "not ours" is indistinguishable from "new and empty"</dd>
+  <dt>Reproduction</dt><dd>Plant a database containing a <code>customers</code> table at <code>.sidecar/state/workbench.sqlite3</code>. Result: all 19 product tables created inside it, <code>user_version</code> stamped to 5, <code>customers</code> rows untouched, no warning. A foreign database that already has a <code>claims</code> table instead yields an uncaught <code>OperationalError</code>.</dd>
+  <dt>Consequence</dt><dd>Bounded &mdash; the path lives inside <code>.sidecar</code>, which the installer creates. It becomes real in restore-from-backup, folder-merge, and mixed-tooling scenarios. The parked T2 evidence explicitly claims the runtime "<em>refuses mismatched legacy databases before migration</em>"; that is true for a database with a <em>different</em> instance UUID, and false for one with no instance table at all.</dd>
+</dl>
+</div>
+
+<div class="finding sev-high">
+<div class="finding-head"><span class="finding-id">F-10</span><span class="finding-title">Gate discrimination witnesses are string assertions checking string mutations</span><span class="pill p-high">HIGH</span><span class="pill p-info">process, not runtime</span></div>
+<p>Severity is HIGH for what it means about the evidence, not for the shipped product. Nothing here is a runtime defect.</p>
+<dl>
+  <dt>Evidence</dt><dd><code>.builder/gates/t5_governed_mutation.py:291-345</code>, <code>t8_release_stop.py:330-427</code>, and the equivalents in T2, T3, T4 and T6. Each takes a source file as a <em>string</em>, applies <code>.replace()</code>, and asserts that another substring check fails. Nothing is executed.</dd>
+  <dt>Demonstration</dt><dd>I patched <code>mutation.py</code> to record verification as <span class="mono">status="passed"</span> and to fabricate <code>measurement</code> instead of taking the independent snapshot, while keeping the literals the gate greps for in a comment. The T5 gate's <code>discrimination_witness</code> check returned <strong>PASS</strong>. The <em>pytest fixtures</em> caught it (<code>focused_t5_product_evidence</code> and <code>canonical_product_regression</code> both FAILed).</dd>
+  <dt>Consequence</dt><dd>The witnesses contribute no assurance. They are self-referential: <code>_assert_honest_verification</code> asserts <code>'"unavailable"'</code> is in the source; the "mutation" removes it; the assert fails; that is recorded as discrimination. A reader of the receipts sees "<em>rejected: verification unavailable converted to pass</em>" and reasonably concludes the gate would catch that regression. It would &mdash; but through the tests, not the witness.</dd>
+  <dt>The exception</dt><dd><code>t7_domain_truth.py:586-635</code> is genuinely different. <code>_executed_mutations</code> monkey-patches live substrate constants and functions, re-runs a known-answer classification, and asserts the answers break. That is real behavioural discrimination and it should be the model for the others.</dd>
+</dl>
+</div>
+
+<div class="finding sev-med">
+<div class="finding-head"><span class="finding-id">F-11</span><span class="finding-title">Editing documentation prose can flip the T0 gate</span><span class="pill p-med">MEDIUM</span><span class="pill p-info">process</span></div>
+<dl>
+  <dt>Evidence</dt><dd><code>.builder/gates/t0_bootstrap.py</code> reads <code>TRANCHE_PLAN.md</code> at five points plus the Charter, Protocol, Architecture and <code>PHASE_1.md</code>, asserting on literal sentences and an allowlist of document status headers</dd>
+  <dt>Demonstration</dt><dd>Rewording one Charter sentence from "<em>MCP is removable without removing the host</em>" to "<em>MCP can be removed without removing the host</em>" &mdash; semantically identical, zero code change &mdash; flips <code>vision_alignment</code> from PASS to FAIL.</dd>
+  <dt>Consequence</dt><dd>The T0 gate is re-run and cited as passing in every park entry including the terminal T8 park. Its result is partly a function of prose. This is exactly carried finding C1, which the pre-T8 housekeeping entry declares "<em>resolved</em>" &mdash; resolved for the T3/T5 MCP exemption idiom, but not for the broader coupling C1 actually described.</dd>
+</dl>
+</div>
+
+<div class="finding sev-low">
+<div class="finding-head"><span class="finding-id">F-12</span><span class="finding-title">Oversized numeric handles raise <code>OverflowError</code></span><span class="pill p-low">LOW</span></div>
+<p><code>journal read journal:999999999999999999999999</code> yields <code>OverflowError: Python int too large to convert to SQLite INTEGER</code>, uncaught. <code>app_journal._parse_handle</code> validates the prefix and that the suffix is an integer, but not its range. Same missing-except-clause class as <span class="pill p-med">F-05</span>.</p>
+</div>
+
+<div class="finding sev-low">
+<div class="finding-head"><span class="finding-id">F-13</span><span class="finding-title">The release artifact is not byte-reproducible</span><span class="pill p-low">LOW</span></div>
+<p>Two builds of identical source produced <code>67ec83a6&hellip;</code> and <code>885dfe61&hellip;</code>. The zip is otherwise deterministic (fixed member timestamps, sorted members, fixed attributes); the only difference is <code>created_at</code> inside the embedded <code>RELEASE_MANIFEST.json</code>. Consequence: the artifact digest cannot be used to prove two builds came from the same source &mdash; you have to compare the <code>source_digest</code> instead. Separately, <code>_git()</code> returns the literal string <code>"unavailable"</code> when git is absent, so a build from a tarball silently produces an unprovenanced artifact. I saw this in my own build.</p>
+</div>
+
+<div class="finding sev-low">
+<div class="finding-head"><span class="finding-id">F-14</span><span class="finding-title">The documented test entrance fails the project's own hygiene gate</span><span class="pill p-low">LOW</span></div>
+<p>The README names <code>python -m pytest</code> as "<em>the canonical product-test entrance</em>". Running it creates <code>__pycache__</code> in <code>product/</code>, <code>product/core/</code> and <code>tests/</code>, which makes the T8 gate's <code>repository_hygiene</code> check FAIL. The workaround &mdash; <code>-B</code> plus <code>sys.dont_write_bytecode = True</code> &mdash; is duplicated across five files and nine gates, and produced five commits in a single day. One rule, six implementations.</p>
+</div>
+
+<div class="finding sev-low">
+<div class="finding-head"><span class="finding-id">F-15</span><span class="finding-title">Expected and measured changed paths are never compared</span><span class="pill p-low">LOW</span></div>
+<p><code>expected_changed_paths</code> is computed at preview, persisted, and read back into every preview document &mdash; and never once compared against the measured result. A no-op write (content identical to what is on disk) is recorded as <code>status: "applied"</code> with <code>measurement.changed_paths: []</code> against an expectation of <code>["doc.txt"]</code>, and nothing flags the divergence. Separately, <code>write_file</code> calls <code>path.parent.mkdir(parents=True)</code>, so a write can create directories that appear in neither the expectation nor the measurement (which records files only).</p>
+</div>
+
+<div class="finding sev-info">
+<div class="finding-head"><span class="finding-id">F-16</span><span class="finding-title">Previews and approvals have no single-use semantics</span><span class="pill p-info">INFORMATIONAL</span></div>
+<p>Nothing ever transitions a preview out of <span class="mono">"previewed"</span> or an approval out of <span class="mono">"approved"</span>; both status columns are effectively dead. One preview can carry many approvals (confirmed), and an approval can be applied repeatedly. In practice replay is blocked by two independent staleness checks &mdash; target signature and awareness id &mdash; and I could not construct a successful double-apply. Worth knowing that the protection is emergent rather than explicit.</p>
+</div>
+
+<div class="finding sev-info">
+<div class="finding-head"><span class="finding-id">F-17</span><span class="finding-title">Unbounded observation and relation growth per refresh</span><span class="pill p-info">INFORMATIONAL</span></div>
+<p>On an unchanged 2001-file target, each <code>substrate refresh</code> adds 4,043 observations and 16,089 relations and grows the database by about 5.3 MB. Evidence and versions correctly do <em>not</em> grow &mdash; that is the T7/D1 repair working &mdash; but the two largest tables still do, with no retention or compaction. Five refreshes produced a 26.6 MB database for an 8 MB target. Related: <code>awareness revisions list</code> recomputes a full target signature <em>per row</em>, so it went from 0.26 s at 1 revision to 3.22 s at 21 on that target, with a default limit of 50.</p>
+</div>
+</section>
+
+<section id="s9">
+<h2><span class="secnum">09</span>Architectural frailties</h2>
+<p>Structural risks, distinct from the defects above.</p>
+
+<h3>Resource identity conflates address and kind</h3>
+<p>The root cause of <span class="pill p-high">F-01</span> is not the missing exception handler; it is that <code>resource_id == handle</code> and the handle encodes kind, while <code>path</code> is separately unique. A resource's identity should be its path; its kind should be a mutable attribute of the current version. As written, a name that changes kind is two conflicting identities for one address. Fixing the crash without fixing the model leaves the same tension for any future kind (symlink, socket, junction).</p>
+
+<h3>The three-caller scan is the hottest path and it is unmemoised</h3>
+<p><code>_resource_records()</code> walks and hashes the whole target. It is called by <code>substrate.refresh</code>, by <code>target_signature</code>, and therefore by <code>_freshness</code> &mdash; which runs once per awareness row read. That means a read-only listing performs N full target scans. It is also where <span class="pill p-med">F-03</span> lives. One function, three very different callers, no caching, no error tolerance.</p>
+
+<h3>Duplicated knowledge &mdash; one rule, several implementations</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Rule</th><th>Implementations</th><th>Relationship</th></tr></thead>
+<tbody>
+<tr><td>Never write bytecode</td><td><code>bin/sidecar.py</code>, <code>factory/__init__.py</code>, <code>factory/__main__.py</code>, <code>factory/cli.py</code>, all 9 gates, plus <code>-B</code> in every subprocess</td><td><span class="pill p-med">Parallel</span> &mdash; six hand-maintained copies</td></tr>
+<tr><td>What must not ship</td><td><code>release._EXCLUDED_PARTS</code>, the T8 gate's <code>forbidden_fragments</code>, the T8 test's <code>forbidden_fragments</code></td><td><span class="pill p-med">Parallel</span> &mdash; three lists, manually synchronised</td></tr>
+<tr><td>Instrument subtree exclusion</td><td><code>containment.resolve_path</code>, <code>control._mechanical_context</code>, <code>substrate._resource_records</code>, <code>mutation._target_snapshot</code>, <code>MechanicalContext.is_excluded</code></td><td><span class="pill p-med">Parallel</span> &mdash; five expressions of one boundary</td></tr>
+<tr><td>Bounded list limits</td><td><code>max(1, min(int(limit), 500))</code> inline in 8 places across 4 modules</td><td><span class="pill p-low">Copy</span></td></tr>
+<tr><td>Tool catalog</td><td><code>registry.discover</code> reads manifests live</td><td><span class="pill p-good">Single source</span></td></tr>
+<tr><td>Schema version</td><td><code>constants.DATABASE_SCHEMA_VERSION</code> drives <code>_migrate</code></td><td><span class="pill p-good">Single source</span></td></tr>
+</tbody></table></div>
+
+<h3>The MCP projection is hand-maintained and lossy</h3>
+<p><code>_call_projection</code> is a 58-line literal dict mapping 16 names to lambdas. Every new CLI capability requires a matching hand-written MCP entry, and the two can drift silently &mdash; there is no test that asserts the CLI and MCP surfaces cover the same operations. The catalog projection drops five manifest fields the CLI exposes.</p>
+
+<h3>Two giant dispatchers</h3>
+<p><code>cli.main</code> is a 222-line if/elif chain; <code>cli._parser</code> is 133 lines of declarations; <code>control.invoke</code> is 315 lines with 11 near-identical refusal blocks that each repeat the same six-argument <code>_complete_receipt</code> call. These are readable, but they are where a future contributor will make a copy-paste mistake, and the eleven refusal blocks are exactly the shape that hid <span class="pill p-high">F-02</span>'s sibling in <code>mutation._refusal</code>.</p>
+
+<h3>Fail-closed catalog</h3>
+<p><code>registry.discover</code> raises on the first invalid manifest, so a single malformed third-party tool disables <em>every</em> tool and <code>status</code>. Defensible for a governance product, but it should be a stated property rather than an emergent one.</p>
+</section>
+
+<section id="s10">
+<h2><span class="secnum">10</span>Complexity growth assessment</h2>
+
+<div class="tablewrap"><table>
+<thead><tr><th>Zone</th><th class="num">Python LOC</th><th class="num">Files</th><th>Ships?</th></tr></thead>
+<tbody>
+<tr><td>product/ &mdash; installed runtime</td><td class="num">5,558</td><td class="num">31</td><td><span class="pill p-good">Yes</span></td></tr>
+<tr><td>factory/ &mdash; build, install, update, remove</td><td class="num">385</td><td class="num">5</td><td><span class="pill p-good">Yes</span></td></tr>
+<tr><td>tests/ &mdash; product fixtures</td><td class="num">3,025</td><td class="num">10</td><td><span class="pill p-info">No</span></td></tr>
+<tr><td>.builder/gates/ &mdash; tranche gates</td><td class="num">4,378</td><td class="num">9</td><td><span class="pill p-info">No</span></td></tr>
+<tr><td><strong>Total Python</strong></td><td class="num"><strong>13,346</strong></td><td class="num"><strong>55</strong></td><td></td></tr>
+<tr><td>Governance prose (docs, .builder, reviews)</td><td class="num">4,731 lines</td><td class="num">30</td><td><span class="pill p-info">No</span></td></tr>
+<tr><td>Gate receipts</td><td class="num">250 files</td><td class="num">&mdash;</td><td><span class="pill p-info">No</span></td></tr>
+</tbody></table></div>
+
+<h3>Did the runtime stay conceptually small?</h3>
+<p><strong>Yes.</strong> 5,558 lines across 31 files for a product that does identity, storage with five migrations, a subprocess tool protocol, an epistemic substrate, awareness projection, a governed mutation loop, a CLI and an MCP server is lean. The whole runtime can be explained in the four paragraphs of &sect;2 without mentioning tranches, gates, journals or PARKED once &mdash; which is the real test, and it passes.</p>
+
+<h3>Did development process bleed into the runtime?</h3>
+<p><strong>No, and this is the project's best structural result.</strong> Not one product module references <code>factory</code>, <code>.builder</code>, <code>tests</code>, a tranche, a gate, or a park state. There is no <code>TRANCHE</code> constant, no construction-role concept, no evidence directory at runtime. The 4,378 lines of gates and 4,700 lines of governance prose are fully quarantined and excluded from the artifact by positive selection. Governance complexity is 60% of the Python in the repository and 0% of the shipped product.</p>
+
+<h3>Hotspots</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Location</th><th class="num">Lines</th><th>Assessment</th></tr></thead>
+<tbody>
+<tr><td class="mono">control.py::invoke</td><td class="num">315</td><td><span class="pill p-med">Accidental</span> &mdash; 11 near-identical refusal blocks; extract a helper</td></tr>
+<tr><td class="mono">substrate.py::refresh</td><td class="num">299</td><td><span class="pill p-med">Mixed</span> &mdash; one long transaction is right; the inline evidence, version, observation and relation writing wants three helpers</td></tr>
+<tr><td class="mono">storage.py::_migrate</td><td class="num">298</td><td><span class="pill p-good">Justified</span> &mdash; five sequential DDL steps, each transactional, idempotent by <code>user_version</code>; long by nature</td></tr>
+<tr><td class="mono">cli.py::main</td><td class="num">222</td><td><span class="pill p-med">Accidental</span> &mdash; a dispatch table would halve it</td></tr>
+<tr><td class="mono">mutation.py::apply</td><td class="num">131</td><td><span class="pill p-good">Justified</span> &mdash; a linear policy sequence that reads exactly as specified</td></tr>
+<tr><td class="mono">t7_domain_truth.py</td><td class="num">763</td><td><span class="pill p-good">Justified</span> &mdash; the only gate with executed discrimination; the size buys real assurance</td></tr>
+</tbody></table></div>
+
+<h3>What would become painful if development resumed?</h3>
+<ol>
+<li><strong>Adding a sixth tool or a new CLI command</strong> touches the parser, the dispatcher, the MCP projection dict, and probably a gate's forbidden-term list. Four places, none of which reference each other.</li>
+<li><strong>Adding a schema version 6</strong> is easy, but no gate or test asserts that a v5 database migrates forward correctly with real data in it &mdash; migrations are only ever exercised from empty.</li>
+<li><strong>Any documentation edit</strong> risks the T0 gate (<span class="pill p-med">F-11</span>), so writing gets coupled to gate runs.</li>
+<li><strong>Scaling past a few thousand files</strong> hits <span class="pill p-info">F-17</span> before it hits anything else.</li>
+</ol>
+</section>
+
+<section id="s11">
+<h2><span class="secnum">11</span>Historical problems and regression ledger</h2>
+<p>Built from the T4&ndash;T8 external reviews, the T6 carried-findings draft, and the pre-T8 housekeeping ruling &mdash; then checked against the current implementation.</p>
+
+<div class="tablewrap"><table>
+<thead><tr><th>Prior finding</th><th>Original risk</th><th>Claimed fix</th><th>Current status</th><th>Verdict</th></tr></thead>
+<tbody>
+<tr><td><strong>T2</strong> CLI entrances bypass SQLite identity verification</td><td>Reading or writing another instance's state</td><td>All entrances route through <code>storage.connect</code></td><td>Verified: identity spoof refused cleanly</td><td><span class="pill p-good">Fixed</span></td></tr>
+<tr><td><strong>T2</strong> Receipt completion could orphan an artifact</td><td>Artifact claiming durable governance with no receipt</td><td>Artifact insert and receipt update in one transaction</td><td>Verified by fault injection</td><td><span class="pill p-good">Fixed</span></td></tr>
+<tr><td><strong>T4</strong> Awareness could report <span class="mono">current</span> after a post-refresh mutation</td><td>Orientation lying about freshness</td><td>Freshness baselined on the T3-observed signature</td><td>Verified: reports <span class="mono">stale</span> correctly, even when refresh is broken</td><td><span class="pill p-good">Fixed</span></td></tr>
+<tr><td><strong>T4</strong> Deleted resources leaked into current awareness</td><td>Showing content that no longer exists</td><td>Compose only from the current basis</td><td>Verified against the empty-transition case</td><td><span class="pill p-good">Fixed</span></td></tr>
+<tr><td><strong>T4</strong> Non-canonical <code>awareness-item:</code> handle</td><td>Handles that do not round-trip</td><td>Canonical <code>awareness:item:&lt;id&gt;</code></td><td>Confirmed in emitted findings</td><td><span class="pill p-good">Fixed</span></td></tr>
+<tr><td><strong>T6/R2</strong> MCP advertised <code>additionalProperties:false</code> while accepting <code>_authority</code> and <code>_timeout</code></td><td>Advertised contract not equal to accepted contract</td><td>Moved to the call envelope</td><td>The contradiction is gone; the contract is now <em>undiscoverable</em> instead</td><td><span class="pill p-med">Moved, not eliminated</span> &mdash; <span class="pill p-med">F-06</span></td></tr>
+<tr><td><strong>T6/R4</strong> Missing MCP adapter gave an unhandled traceback</td><td>Non-JSON output</td><td><code>except ImportError</code> to <code>mcp_unavailable</code></td><td>Verified</td><td><span class="pill p-good">Fixed</span></td></tr>
+<tr><td><strong>T6/R5</strong> Replies to id-less JSON-RPC requests</td><td>Protocol violation</td><td>Notifications return no response</td><td>Verified</td><td><span class="pill p-good">Fixed</span></td></tr>
+<tr><td><strong>T6/R6</strong> Gate assertions judged <code>cli.py</code> by text position, not AST</td><td>A module-level MCP import below <code>_parser</code> would pass</td><td>AST-based detection</td><td>Confirmed AST in use</td><td><span class="pill p-good">Fixed</span></td></tr>
+<tr><td><strong>C1</strong> Gate exemptions coupled to editable Plan prose</td><td>Editing a doc flips gates between PASS and FAIL</td><td>"Resolved by explicit gate-owned exemption constants"</td><td>True for T3/T5. <strong>T0 still reads the Plan in 5 places</strong> plus Charter, Protocol and Architecture prose; I flipped it with a one-sentence reword</td><td><span class="pill p-med">Partially fixed</span> &mdash; <span class="pill p-med">F-11</span></td></tr>
+<tr><td><strong>C2</strong> MCP has no route into the governed mutation loop</td><td>Agent entrance reaches only the ungoverned write</td><td>T8 added <code>mutation.preview_write/approve/apply</code></td><td>Verified end-to-end through MCP</td><td><span class="pill p-good">Fixed</span></td></tr>
+<tr><td><strong>C3</strong> MCP client conformance unverified &mdash; "<em>the fixtures drive the loop with this repository's own request shapes</em>"</td><td>An external client cannot use the entrance</td><td>T8 "realistic JSON-RPC/MCP smoke witness"</td><td><strong>The T8 witness still uses the repository's own <code>McpSession</code> and an LSP <code>shutdown</code>.</strong> My independent client found five real conformance gaps</td><td><span class="pill p-high">Discharged by redefinition</span> &mdash; <span class="pill p-med">F-06</span></td></tr>
+<tr><td><strong>C4</strong> Gate provenance fields inconsistent; T0 records no <code>working_tree</code> or <code>source_digest</code></td><td>A cumulative receipt set cannot support a clean-tree claim</td><td>Carried to T8: "final evidence must include head commit, working-tree state, source digest&hellip;"</td><td>True of the <em>T8</em> receipt. <strong>The T0 receipts cited in park entry 0060 still carry neither field</strong></td><td><span class="pill p-med">Narrowed, not fixed</span></td></tr>
+<tr><td><strong>C5</strong> Discrimination quality of parked gates T1&ndash;T5 unaudited</td><td>Unknown whether earlier gates discriminate</td><td>Explicitly DECLINED and recorded</td><td>I audited it: T5's witness passes on a sabotaged product</td><td><span class="pill p-high">Declined finding now substantiated</span> &mdash; <span class="pill p-high">F-10</span></td></tr>
+<tr><td><strong>H1</strong> All 107 receipts show modified from CRLF normalisation</td><td><code>git status</code> useless as a cleanliness signal</td><td><code>.gitattributes</code> pinning text to LF</td><td>Present and correct; working tree is clean</td><td><span class="pill p-good">Fixed</span></td></tr>
+<tr><td><strong>H2</strong> README stopped at T5 while Architecture was at T6</td><td>Contradictory status surfaces</td><td>Post-approval reconciliation</td><td>README and Architecture now agree at T8; <code>CURRENT_STATE.md</code> does not (&sect;12)</td><td><span class="pill p-med">Partially fixed</span></td></tr>
+<tr><td><strong>H3</strong> Gate crashes when <code>--evidence-root</code> points outside the repo</td><td>A documented flag crashes</td><td>"H2 and H3 are closed"</td><td><strong>Still present.</strong> I hit <code>ValueError: &hellip; is not in the subpath of &hellip;</code> running the T5 gate with an external evidence root; the same unguarded <code>relative_to(ROOT)</code> is in the T8 gate at line 579</td><td><span class="pill p-med">Declared closed, not closed</span></td></tr>
+<tr><td><strong>T7/D1</strong> Every refresh grew evidence and versions</td><td>Unbounded state growth</td><td>Content-addressed evidence</td><td>Evidence and versions: 0 growth, confirmed. Observations grow by 4,043 and relations by 16,089 per unchanged refresh</td><td><span class="pill p-med">Partially fixed</span> &mdash; <span class="pill p-info">F-17</span></td></tr>
+<tr><td><strong>T7</strong> Every realistic software target classified <code>mixed</code>; <code>.git</code> was 80% of the substrate</td><td>Domain classification useless on real repos</td><td>Count-based discrimination plus untraversed vendor and generated subtrees</td><td>Verified: a realistic software target with <code>.git</code> and <code>node_modules</code> now reads <code>software</code> with an untraversed-subtree limitation</td><td><span class="pill p-good">Fixed</span></td></tr>
+<tr><td><strong>T7</strong> A notes collection with helper scripts read <code>software</code></td><td>Text-heavy targets misprofiled</td><td>2:1 text-dominance ratio</td><td>Verified: 20 notes plus 1 script now reads <code>mixed</code></td><td><span class="pill p-good">Fixed</span></td></tr>
+<tr><td><strong>T7</strong> Large weak material was read and hashed before classification</td><td>Contradicted the metadata-only claim</td><td>Classify before hashing</td><td>Confirmed in code order and by the gate's own ordering assertion</td><td><span class="pill p-good">Fixed</span></td></tr>
+</tbody></table></div>
+</section>
+
+<section id="s12">
+<h2><span class="secnum">12</span>Documentation, evidence and governance coherency</h2>
+
+<h3>Does documentation describe reality?</h3>
+<p>Largely yes, and to an unusual degree. <code>docs/ARCHITECTURE.md</code> is 556 lines describing the implementation module by module, and I found no place where it describes behaviour the code no longer has. The Charter genuinely governs: the Architecture defers to it rather than restating it, and the BCC's authority map matches how the repository actually behaves.</p>
+
+<h3>Internal contradictions found</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Surface</th><th>Says</th><th>Contradicted by</th></tr></thead>
+<tbody>
+<tr><td><code>CURRENT_STATE.md</code> header</td><td>"Product STOP: <strong>SATISFIED</strong>"</td><td>Its own T5 section: "<em>Product STOP remains incomplete because P8 is UNSCORED</em>"; its T6 section says the same; its T7 section says "<em>T8 is now submitted for review by entry 0055; P8 remains UNSCORED</em>"</td></tr>
+<tr><td><code>README.md</code></td><td>T8 supported by gate run <code>20260903T135132Z-5f6595f9</code></td><td>Journal 0060 additionally cites the reviewer rerun <code>20260903T182454Z-13060d42</code>; the README omits it, and omits that an intervening run at the same source FAILed</td></tr>
+<tr><td><code>pyproject.toml</code></td><td>"<em>T0 intentionally chooses no build backend or artifact format. Release composition is a later positive-boundary decision.</em>"</td><td>T8 defines the artifact format. This comment ships inside the sealed release.</td></tr>
+<tr><td><code>CURRENT_STATE.md</code></td><td>A <code>_projectmapper</code> SQLite snapshot "<em>was locked by another process&hellip; remove it when the external lock is released</em>"</td><td>No <code>_projectmapper</code> directory exists. Stale instruction.</td></tr>
+<tr><td>Pre-T8 housekeeping</td><td>"<em>H3 is closed</em>", "<em>C1 is resolved</em>"</td><td>Both reproduce today (&sect;11)</td></tr>
+</tbody></table></div>
+<p><code>CURRENT_STATE.md</code> does open with "<em>This file is a resumability projection, not authority</em>", which mitigates the first row considerably &mdash; but it is also the file a new agent is told to read for orientation, and it currently tells them two opposite things about the project's terminal state.</p>
+
+<h3>Is the evidence provenance credible?</h3>
+<p>Mostly, and it is far above the norm. Every receipt records the head commit, timestamp, platform, Python version and per-check detail; every submission cites specific run ids and SHA-256s; the reviewer independently recomputed the source digest and confirmed no drift. Three qualifications:</p>
+<ul>
+<li>Receipts are checked into git, not append-only in any enforced sense. A rewrite would be visible in history but nothing prevents one.</li>
+<li>The T0 receipts carry no <code>working_tree</code> or <code>source_digest</code>, so one of the eight cumulative receipts backing Product STOP cannot substantiate the clean-tree claim the others make.</li>
+<li>The authoritative T8 PASS was a re-run after a FAIL at the identical source digest. The cause was disclosed and environmental, but it means gate PASS/FAIL is partly a function of Windows temp-directory timing.</li>
+</ul>
+
+<h3>Do the gates discriminate?</h3>
+<p>The gates as wholes do, because they run the pytest suites. The <em>discrimination witnesses</em> &mdash; the checks whose entire purpose is to prove discrimination &mdash; do not, outside T7. See <span class="pill p-high">F-10</span>.</p>
+
+<h3>What could mislead a future maintainer?</h3>
+<ol>
+<li>Reading "<em>rejected: verification unavailable converted to pass</em>" in a receipt and concluding the gate independently proves that regression is caught.</li>
+<li>Reading "<em>windows_release_lifecycle: PASS</em>" and concluding the check tests Windows.</li>
+<li>Reading the shipped README and looking for <code>docs/PRODUCT_CHARTER.md</code>, which is not in the artifact.</li>
+<li>Reading <code>CURRENT_STATE.md</code>'s T5, T6 and T7 sections and concluding P8 is unscored.</li>
+</ol>
+</section>
+
+<section id="s13">
+<h2><span class="secnum">13</span>Installation and release audit</h2>
+
+<h3>What the sealed artifact contains</h3>
+<p>44 files, 60 KB: <code>product/</code> (27 files), <code>factory/</code> (5), <code>README.md</code>, <code>pyproject.toml</code>, and an embedded <code>RELEASE_MANIFEST.json</code> with a per-file SHA-256 table. I confirmed by extraction that there is no <code>.builder/</code>, no <code>tests/</code>, no <code>.git/</code>, no <code>__pycache__</code>, no evidence, no fixtures, no absolute paths, and no <code>_projectmapper</code> or <code>_exports</code> residue. The positive-selection design works exactly as claimed.</p>
+
+<div class="note">
+  <span class="note-label">What it does not contain</span>
+  <p>The artifact ships <strong>no consumer documentation at all</strong>. Its only human-facing file is the construction README, which is 90% tranche narrative and contains <strong>11 distinct dangling references</strong> &mdash; <code>docs/PRODUCT_CHARTER.md</code> ("<em>its governing product definition</em>"), <code>.builder/BCC.md</code>, <code>.builder/CURRENT_STATE.md</code>, <code>.builder/TRANCHE_PLAN.md</code>, <code>.builder/gates/</code>, <code>.builder/journal/</code>, and more &mdash; every one of which the release deliberately excludes. There is also no LICENSE. The boundary is clean at the file level and broken at the document level.</p>
+</div>
+
+<h3>Lifecycle results</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Operation</th><th>Condition</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td>Fresh install</td><td>Blank directory</td><td><span class="pill p-good">Pass</span> &mdash; one <code>.sidecar</code>, blank receipts, journal, substrate, awareness and mutation state</td></tr>
+<tr><td>Fresh install</td><td>Directory with unrelated files</td><td><span class="pill p-good">Pass</span> &mdash; nothing else touched, no <code>.gitignore</code> added</td></tr>
+<tr><td>Fresh install</td><td>Directory with existing hidden folders</td><td><span class="pill p-good">Pass</span></td></tr>
+<tr><td>Repeat install</td><td><code>.sidecar</code> already present</td><td><span class="pill p-good">Refused</span> &mdash; "<em>an entry already exists&hellip; refusing to overwrite it</em>", exit 1, JSON</td></tr>
+<tr><td>Interrupted install</td><td>Exception during payload copy</td><td><span class="pill p-good">Pass</span> &mdash; partial <code>.sidecar</code> removed</td></tr>
+<tr><td>Operation after install</td><td>From the sealed artifact, no source tree</td><td><span class="pill p-good">Pass</span> &mdash; full walk on 3 Python versions</td></tr>
+<tr><td>Relocation</td><td><code>mv target moved</code></td><td><span class="pill p-good">Pass</span> &mdash; same UUID; structural identity works</td></tr>
+<tr><td>Compatible update</td><td>Payload replaced, state preserved</td><td><span class="pill p-good">Pass</span> for UUID, App Journal, receipts and substrate &mdash; <span class="pill p-med">Fails</span> to update the recorded version (<span class="pill p-med">F-08</span>)</td></tr>
+<tr><td>Interrupted update</td><td>Exception</td><td><span class="pill p-med">Partial</span> &mdash; rolls back, leaks one <code>.old-*</code> directory</td></tr>
+<tr><td>Interrupted update</td><td>SIGKILL</td><td><span class="pill p-med">Broken</span> &mdash; instrument unusable until <code>update</code> is re-run; debris permanent (<span class="pill p-med">F-07</span>)</td></tr>
+<tr><td>Removal</td><td><code>factory uninstall</code></td><td><span class="pill p-good">Pass</span> &mdash; <code>.sidecar</code> gone, target files byte-identical, no launcher stub, no debris</td></tr>
+<tr><td>Reinstall after removal</td><td>Clean second install</td><td><span class="pill p-good">Pass</span> &mdash; new UUID, blank state</td></tr>
+</tbody></table></div>
+
+<h3>Repository cleanliness and reproducibility</h3>
+<p>The working tree is clean: zero modified, zero untracked (only the gitignored <code>_exports/</code> is present). 411 tracked files, 4 MB working tree, 18 MB <code>.git</code>. I reconstructed the release from source and it built identically in <em>content</em>; the digest differs per build (<span class="pill p-low">F-13</span>).</p>
+
+<h3>Distribution topology</h3>
+<p>The reviewer flagged this as advisory and it is worth restating plainly: the governed lineage lives on a branch called <code>codex/t1-mechanical-host</code> &mdash; named for T1, carrying T8 &mdash; that shares <strong>no common ancestor</strong> with <code>origin/main</code>. <code>git merge-base HEAD origin/main</code> returns nothing; the divergence is 95 commits against 115. There are <strong>no tags at all</strong>, so nothing marks 0.1.0 in history. And <code>.UsefulHELPERS.7z</code>, a 113 KB opaque archive from the pre-bootstrap donor state, is still tracked at the repository root (correctly excluded from the artifact). Anyone cloning this repository today lands on an unrelated project.</p>
+</section>
+
+<section id="s14">
+<h2><span class="secnum">14</span>Domain-generalization assessment</h2>
+<p>I built ten target classes and ran observe plus orient on each from the sealed artifact.</p>
+
+<div class="tablewrap"><table>
+<thead><tr><th>Target class</th><th class="mono">domain_profile</th><th>Assessment</th></tr></thead>
+<tbody>
+<tr><td>Never observed</td><td class="mono">unknown</td><td><span class="pill p-good">Correct</span> &mdash; <code>unknown_unobserved</code>, freshness <code>unknown</code>, basis <code>missing</code></td></tr>
+<tr><td>Observed empty</td><td class="mono">empty_or_nascent</td><td><span class="pill p-good">Correct</span> &mdash; and distinct from the row above, which is the hard part</td></tr>
+<tr><td>Software project (markers, src/, tests/, config, <code>.git</code>, <code>node_modules</code>)</td><td class="mono">software</td><td><span class="pill p-good">Correct</span> &mdash; 2 subtrees recorded as untraversed metadata-only with an explicit limitation</td></tr>
+<tr><td>Records collection (6 CSVs plus a PDF)</td><td class="mono">records_documents</td><td><span class="pill p-good">Correct</span> &mdash; PDF disclosed as an unparsed document body</td></tr>
+<tr><td>Notes-heavy (20 <code>.md</code> plus 1 script)</td><td class="mono">mixed</td><td><span class="pill p-good">Correct</span> &mdash; the 2:1 dominance rule working as designed</td></tr>
+<tr><td>Binary-heavy (8 random <code>.bin</code> plus a 1.5 MB blob)</td><td class="mono">generic_observed</td><td><span class="pill p-good">Correct</span> &mdash; weak-material claim, metadata-only basis, no content claims</td></tr>
+<tr><td>Unknown extensions (5 files of <code>.qqq</code>)</td><td class="mono">generic_observed</td><td><span class="pill p-good">Correct</span> &mdash; zero claims, no invented structure. This is the honest-degradation case and it is right.</td></tr>
+<tr><td>Deeply nested (12 levels)</td><td class="mono">records_documents</td><td><span class="pill p-good">Handled</span> &mdash; no depth limit hit</td></tr>
+<tr><td>Unicode and reserved names (<code>caf&eacute;.txt</code>, Japanese, emoji, <code>CON.txt</code>, trailing space)</td><td class="mono">records_documents</td><td><span class="pill p-good">Handled</span> on Linux; Windows reserved-name behaviour unverified</td></tr>
+<tr><td>Hidden files (<code>.env</code>, <code>.hidden/</code>)</td><td class="mono">records_documents</td><td><span class="pill p-good">Handled</span> &mdash; hidden files are observed, not skipped</td></tr>
+<tr><td><strong>One single <code>.txt</code> file</strong></td><td class="mono">records_documents</td><td><span class="pill p-med">Overstated</span> &mdash; see below</td></tr>
+<tr><td>Unreadable subtree</td><td class="mono">records_documents</td><td><span class="pill p-med">Silently wrong</span> &mdash; <span class="pill p-med">F-04</span></td></tr>
+<tr><td>Directory replaced by a file</td><td>&mdash;</td><td><span class="pill p-high">Crash</span> &mdash; <span class="pill p-high">F-01</span></td></tr>
+</tbody></table></div>
+
+<h3>The single-file over-classification</h3>
+<p>A directory containing exactly one <code>onefile.txt</code> is reported as a "<em>records/document collection</em>" with confidence 0.75 and <code>decision: "records_documents_without_software"</code>. T7's repairs added a substantiveness threshold &mdash; at least two files and at least one fifth of the software signals &mdash; but only for the <em>second</em> profile beside software. In the no-software branch, one file suffices. The claim's own data does disclose <code>document_signal_count: 1</code>, so a careful reader can see the thinness; but the awareness summary a consumer actually reads just says <code>records_documents</code>. This is a calibration asymmetry rather than a fabrication.</p>
+
+<h3>Truthfulness under uncertainty &mdash; the honest scorecard</h3>
+<ul>
+<li><strong>Distinguishes observation from inference:</strong> yes. Observations are typed (<code>file_hash</code>, <code>file_metadata</code>, <code>resource_seen</code>, <code>domain_signal</code>, <code>resource_inventory</code>); claims carry a <code>derivation_method</code> and a confidence.</li>
+<li><strong>Distinguishes inference from uncertainty:</strong> yes. Every awareness revision carries <code>limitations</code> and <code>unknowns</code> arrays, and a weak-material claim states that content changes are detected only through size and mtime.</li>
+<li><strong>Refuses unsupported interpretation:</strong> yes. Five unknown-extension files produce zero claims and <code>generic_observed</code>. It does not guess.</li>
+<li><strong>Applies software concepts to non-software data:</strong> no.</li>
+<li><strong>Claims completeness without evidence:</strong> no &mdash; awareness always states it is "<em>a compact projection over the latest substrate refresh, not a complete target scan</em>", and discloses shown and total counts whenever a bound truncates.</li>
+<li><strong>Degrades gracefully under adversity:</strong> <strong>no</strong>. This is the gap. An unreadable file crashes it; an unreadable directory is silently dropped; a kind change bricks it. The design degrades beautifully across <em>content</em> it does not understand, and not at all across <em>access</em> it does not have.</li>
+</ul>
+</section>
+
+<section id="s15">
+<h2><span class="secnum">15</span>Security, boundaries and failure modes</h2>
+<p>Judged against the documented threat model: a single-user local instrument attached to a directory the user already controls. There is no multi-user story, no network surface, no authentication, and none is claimed.</p>
+
+<h3>Containment &mdash; the strongest result in the review</h3>
+<p>16 escape attempts, 16 refusals, nothing written outside the target. Containment is <strong>real-path based and symlink-aware</strong>, not lexical: <code>resolve_path</code> calls <code>.resolve()</code> before the boundary check, so a symlink pointing out of the target is caught (verified for both a symlinked file and a symlinked directory, read and write). Absolute paths are rejected outright, NUL bytes are rejected, and target-scoped tools are additionally forbidden from touching the instrument's own subtree. The walking tools (<code>inventory</code>, <code>search_text</code>) never follow symlinks and disclose how many they skipped.</p>
+
+<h3>Where the boundary actually is</h3>
+<div class="note">
+  <span class="note-label">State this plainly to anyone evaluating the product</span>
+  <p>Sidecar governs <em>its own</em> operations. It does not govern the filesystem, and it cannot. Any local process &mdash; including an agent that has been given a shell &mdash; can write to the target directly, or run <code>python .sidecar/tools/write_file/tool.py</code> with a crafted stdin, and no receipt will exist. I demonstrated the second. The mechanical tools carry no containment of their own; that is by design (Charter invariant 5 gives containment to the host) and it is what makes them portable. The honest framing is: <strong>receipts prove what Sidecar did, not what happened to the directory.</strong> The substrate's target signature <em>will</em> notice the change on the next refresh, so out-of-band edits are detectable &mdash; just not attributable.</p>
+</div>
+
+<h3>Boundary by boundary</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Surface</th><th>Finding</th></tr></thead>
+<tbody>
+<tr><td>Path traversal and symlink escape</td><td><span class="pill p-good">Refused</span> &mdash; real-path based, consistently enforced on every path argument</td></tr>
+<tr><td>Time-of-check to time-of-use</td><td><span class="pill p-low">Present but narrow</span> &mdash; the host resolves the path, then a child process opens it. A symlink swapped in that window would escape. Local-only, requires precise timing.</td></tr>
+<tr><td>Arbitrary code execution</td><td><span class="pill p-info">By design</span> &mdash; <code>tools/&lt;id&gt;/tool.py</code> is arbitrary Python executed as a child process. Manifests are shape-validated; content is not. There is no allowlist, and the recorded <code>manifest_digest</code> is never compared against an expected value, so it gives attribution after the fact, not prevention. I planted a working tool by dropping a directory into <code>.sidecar/tools/</code>.</td></tr>
+<tr><td>Environment leakage into children</td><td><span class="pill p-good">Contained</span> &mdash; a 13-name allowlist; ambient <code>SIDECAR_IDENTITY_*</code> and operator secrets do not pass. Verified by the T5 fixtures and by reading <code>_child_environment</code>.</td></tr>
+<tr><td>SQL construction</td><td><span class="pill p-good">Parameterised throughout</span> &mdash; the only f-string SQL is table names from module-level constant tuples and <code>?</code> placeholder counts</td></tr>
+<tr><td>Unsafe deserialization</td><td><span class="pill p-good">None</span> &mdash; <code>json</code> only; no pickle, no eval, no yaml</td></tr>
+<tr><td>Archive extraction</td><td><span class="pill p-good">Not performed by product code</span> &mdash; <code>release inspect</code> reads the zip without extracting; the consumer extracts</td></tr>
+<tr><td>Untrusted target content influencing execution</td><td><span class="pill p-good">No</span> &mdash; no generative AI anywhere in the product; classification is suffix and marker matching; file <em>content</em> only ever becomes a hash or a search result. There is no path by which target content becomes an instruction.</td></tr>
+<tr><td>Absolute-path leakage in errors</td><td><span class="pill p-low">Present</span> &mdash; <code>registry_error</code> and instance errors embed installed absolute paths, and MCP relays them to the client via <code>-32000</code>. Local-only, low impact.</td></tr>
+<tr><td>Authority spoofing</td><td><span class="pill p-info">Not applicable</span> &mdash; authority is caller-asserted by design (&sect;5)</td></tr>
+<tr><td>State and ownership spoofing</td><td><span class="pill p-good">Refused</span> for a mismatched UUID; <span class="pill p-med">accepted</span> for a database with no instance table (<span class="pill p-med">F-09</span>)</td></tr>
+<tr><td>Broad <code>except Exception</code></td><td><span class="pill p-info">Two, both appropriate</span> &mdash; <code>tool_runtime.run_tool</code> (serialises the error into the protocol) and <code>mcp._handle_line</code> (converts to a JSON-RPC error). Neither swallows silently; both report. The problem is the <em>opposite</em>: the CLI's <code>except</code> is too narrow.</td></tr>
+</tbody></table></div>
+
+<h3>Answers to the required adversarial questions</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Question</th><th>Answer</th></tr></thead>
+<tbody>
+<tr><td>Easiest way to make it lie about reality?</td><td>Put an unreadable directory in the target. Its contents vanish from the inventory with no limitation (<span class="pill p-med">F-04</span>).</td></tr>
+<tr><td>Easiest way to make it mutate something it should not?</td><td>None found through the product. 16 of 16 containment attempts refused. Outside the product, write the file yourself.</td></tr>
+<tr><td>Easiest way to make persistent state disagree with the filesystem?</td><td>Rename a directory to a file. Refresh dies permanently and the database freezes at the old picture &mdash; though awareness correctly reports <code>stale</code> (<span class="pill p-high">F-01</span>).</td></tr>
+<tr><td>Easiest way to bypass authority?</td><td>Pass <code>--authority apply</code>. It is a declaration, not a credential.</td></tr>
+<tr><td>Easiest way to create an apparently successful but incomplete operation?</td><td>A no-op write: <code>status: "applied"</code>, <code>changed_paths: []</code>, expectation never compared (<span class="pill p-low">F-15</span>).</td></tr>
+<tr><td>Easiest way to corrupt or spoof ownership?</td><td>Delete the database and put your own SQLite file there; it is adopted (<span class="pill p-med">F-09</span>). Editing the UUID is correctly refused.</td></tr>
+<tr><td>Easiest way to make one entrance behave differently from another?</td><td><code>mutation apply</code> with an unknown id: CLI traceback, MCP structured error (<span class="pill p-high">F-02</span>).</td></tr>
+<tr><td>What important rule has multiple implementations?</td><td>Instrument-subtree exclusion, in five places; bytecode suppression, in six (&sect;9).</td></tr>
+<tr><td>Runtime-critical file missing?</td><td>Clean JSON refusal for <code>tools/</code> and <code>instance.json</code>; <code>ModuleNotFoundError</code> traceback for <code>core/</code>.</td></tr>
+<tr><td>Optional adapter missing?</td><td>Clean <code>mcp_unavailable</code>; everything else keeps working. Verified.</td></tr>
+<tr><td>Malformed manifest?</td><td>Clean refusal &mdash; but it disables the whole catalog, not just that tool.</td></tr>
+<tr><td>State from an older version?</td><td>Migrated forward correctly. Newer-than-supported is refused with both version numbers named.</td></tr>
+<tr><td>Target changes underneath it?</td><td>Detected via the target signature; awareness goes <code>stale</code>; mutation refuses <code>stale_target</code>.</td></tr>
+<tr><td>Target completely empty?</td><td>Truthful <code>observed_empty</code>, one honest claim, thin awareness with explicit limitations.</td></tr>
+<tr><td>Target is not software?</td><td>Correct &mdash; records, notes, binary and unknown all behave sensibly.</td></tr>
+<tr><td>Something it cannot classify?</td><td><code>generic_observed</code>, zero claims. It does not invent.</td></tr>
+<tr><td>Installation interrupted?</td><td>Partial footprint removed cleanly.</td></tr>
+<tr><td>Mutation finalization fails after a real change?</td><td>Reports failure, still names the changed path, leaves an incomplete receipt. Correct.</td></tr>
+<tr><td>Durable persistence succeeds but the operation does not?</td><td>Not reachable &mdash; the receipt is created before the child launches and completed after the result is validated.</td></tr>
+<tr><td>What can an external client do that the fixture never attempts?</td><td>Request a different protocol version, send <code>ping</code>, send a batch, and call a write tool without the private authority key &mdash; all four behave badly or fail (<span class="pill p-med">F-06</span>).</td></tr>
+<tr><td>What could pass every test while violating the architecture?</td><td>Anything the <em>discrimination witnesses</em> alone are supposed to catch &mdash; demonstrated with a sabotaged <code>mutation.py</code> that passed the witness (<span class="pill p-high">F-10</span>).</td></tr>
+<tr><td>Which completion claim rests on the weakest evidence?</td><td><strong>C3, MCP client conformance under P6.</strong> Carried through two tranches, declared satisfied by a fixture using the project's own request shapes and a non-MCP method.</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="s16">
+<h2><span class="secnum">16</span>Tidiness and release hygiene</h2>
+
+<h4>Release-significant</h4>
+<ul>
+<li><strong>The shipped README is construction narrative with 11 dangling references</strong>, including its own "governing product definition". The artifact has no consumer documentation and no LICENSE.</li>
+<li><strong><code>pyproject.toml</code> ships a stale T0 comment</strong> declaring that no artifact format has been chosen, plus dev dependencies on pytest and ruff that the artifact does not contain.</li>
+<li><strong>No tags exist</strong>, so nothing in history marks 0.1.0.</li>
+<li><strong>The default branch is an unrelated project.</strong></li>
+</ul>
+
+<h4>Repository, not release</h4>
+<ul>
+<li><code>.UsefulHELPERS.7z</code> &mdash; a 113 KB opaque archive tracked at the root since the pre-bootstrap era. Correctly excluded from the artifact; still in every clone.</li>
+<li><code>CURRENT_STATE.md</code> carries three stale "<em>Product STOP remains incomplete</em>" statements and an instruction to delete a <code>_projectmapper</code> directory that no longer exists.</li>
+<li>15 T8 release zips are committed under <code>.builder/evidence/T8/</code> &mdash; 900 KB of near-identical artifacts, of which 9 belong to FAILed runs. Defensible as immutable evidence; worth an explicit retention decision.</li>
+<li>The pre-T8 housekeeping entry declares H3 and C1 closed; both reproduce (&sect;11).</li>
+</ul>
+
+<h4>Cosmetic</h4>
+<ul>
+<li><code>runtime_records.create_artifact</code> is defined and never called.</li>
+<li><code>mutation_previews.status</code> and <code>mutation_approvals.status</code> are written once and never transitioned.</li>
+<li>The redundant <code>not name.startswith("SIDECAR_IDENTITY_")</code> filter in <code>_child_environment</code> can never fire &mdash; no allowlisted name has that prefix.</li>
+<li><code>substrate.list_versions</code> has a hard-coded <code>LIMIT 100</code> while every sibling takes a bounded parameter.</li>
+</ul>
+
+<h4>Genuinely clean</h4>
+<p>No dead modules, no commented-out implementations, no debug prints, no editor files, no platform junk, no build output, no accidental binaries beyond the two noted, and ruff passes with zero findings across 55 Python sources. For a project with 60 journal entries and eight tranches of rework, the source tree is remarkably free of sediment.</p>
+</section>
+
+<section id="s17">
+<h2><span class="secnum">17</span>What went especially well</h2>
+
+<h3>Product and process separation</h3>
+<p>The single best decision in the project. 4,378 lines of gates and 4,700 lines of governance prose exist, and <strong>not one line of them reaches the runtime</strong>. No tranche concept, no gate, no PARKED state, no evidence path appears in <code>product/</code>. The release excludes them by positive selection rather than a growing denylist, and the boundary is checked by AST rather than grep. Many projects with this much process end up shipping it; this one does not.</p>
+
+<h3>Containment</h3>
+<p>Real-path-based, symlink-aware, uniformly applied, and it held against every attack I could construct. The decision to resolve before checking &mdash; rather than doing lexical <code>..</code> stripping &mdash; is the correct one and it is rarer than it should be.</p>
+
+<h3>The unobserved and empty distinction</h3>
+<p>A never-observed directory and an observed-empty directory are genuinely different states with different profiles, different freshness, different unknowns. Systems routinely collapse these. This one does not, and the whole epistemic model is better for it.</p>
+
+<h3>Honest failure direction</h3>
+<p>Every failure I injected pushed toward under-claiming. Receipt persistence failure after a real write reports failure while still naming the changed path. Verification with no mechanism available records <code>unavailable</code>, not PASS. Awareness with a broken substrate reports <code>stale</code> rather than guessing. In a product whose entire pitch is truthful instrumentation, the failure modes point the right way &mdash; and that is much harder to get right than the success paths.</p>
+
+<h3>Genuine adapter removability</h3>
+<p>MCP is imported in exactly one place, lazily, inside its own subcommand branch. Deleting <code>mcp.py</code> from an installed instrument leaves status, catalog, tool calls, receipts, substrate, awareness and mutation completely intact, and <code>sidecar mcp</code> returns a truthful <code>mcp_unavailable</code>. Removability claims are usually aspirational. This one is verifiable in one <code>rm</code>.</p>
+
+<h3>T7's executed discrimination</h3>
+<p>After three reviewer returns, T7 produced the only gate in the repository that proves its own discriminating power by <em>running</em> mutated code against known answers. It is the template the other eight gates need.</p>
+
+<h3>Cumulative gate discipline</h3>
+<p>Re-running T7 down to T0 at every submission, with fresh receipts cited by run id and SHA-256, is the reason I can say with confidence that later tranches did not quietly invalidate earlier ones. The discipline cost a lot of receipts and it bought a real answer.</p>
+
+<h3>The reviews themselves</h3>
+<p>The external reviews are unusually good. They returned candidates three times in T7 alone, over substantive issues &mdash; every real repository classifying as <code>mixed</code>, <code>.git</code> being 80% of the substrate, large files being hashed before being declared metadata-only &mdash; rather than style. The carried-findings draft is a model of how to record a disposition for every finding instead of letting them evaporate. The gaps I found are gaps in what those reviews <em>tested</em>, not in their seriousness.</p>
+</section>
+
+<section id="s18">
+<h2><span class="secnum">18</span>What does not match the project's claims</h2>
+
+<div class="tablewrap"><table>
+<thead><tr><th>Project claim</th><th>Intended evidence</th><th>What the repository proves</th><th>Gap</th><th>Judgment</th></tr></thead>
+<tbody>
+<tr><td><strong>P8:</strong> One sealed artifact passes the consumer walk on clean Windows and Linux</td><td>T8 gate <code>windows_release_lifecycle</code> plus <code>linux_release_smoke</code></td><td>The walk passes. I reproduced it natively on Linux across CPython 3.11, 3.12 and 3.13</td><td>The "Windows" check has no platform assertion; the "Linux" check cannot run on Linux (it shells to <code>wsl</code>). All 16 receipts are from one Windows machine</td><td><span class="pill p-good">Independently verified</span> claim / <span class="pill p-med">Weak</span> mechanism</td></tr>
+<tr><td><strong>P6:</strong> CLI and MCP expose the same host catalog, <strong>authority</strong>, substrate, awareness, receipts and App Journal</td><td>T6 fixtures; T8 CLI and MCP mutation walk</td><td>Same host, same state, same receipts &mdash; genuinely one world, verified</td><td>The MCP catalog omits authority, reads, writes, applicability, output schema and manifest digest. A compliant client cannot reach an apply tool at all</td><td><span class="pill p-med">Supported with caveats</span></td></tr>
+<tr><td><strong>P7:</strong> Degrade usefully across a substantial software target, a mixed target and an empty target</td><td>T7 fixtures plus known-answer classification</td><td>All three plus seven more classes behave truthfully; I reproduced every one</td><td>Degradation across <em>content</em> is excellent; degradation across <em>access</em> does not exist &mdash; unreadable file crashes, unreadable directory silently omitted</td><td><span class="pill p-med">Supported with caveats</span></td></tr>
+<tr><td>Charter invariant 9: <strong>"Unobserved means unknown, never absent"</strong></td><td>T3, T4 and T7 limitation machinery</td><td>Holds for everything deliberately skipped, and for never-observed targets</td><td>An unreadable subtree is reported as absent with <code>limitations: []</code></td><td><span class="pill p-med">Contradicted in one case</span></td></tr>
+<tr><td>C3 discharged: MCP client conformance witnessed through the sealed install</td><td><code>test_sealed_cli_and_mcp_complete_the_same_governed_mutation_walk</code></td><td>A JSON-RPC session using the repository's own <code>McpSession</code> and an LSP <code>shutdown</code></td><td>The original finding was that <em>no MCP client</em> had completed a handshake. That is still true</td><td><span class="pill p-high">Only self-asserted</span></td></tr>
+<tr><td>C1 resolved: gate exemptions no longer sniff Plan prose</td><td>Explicit exemption constants in T3 and T5</td><td>True for T3 and T5</td><td>The T0 gate still reads Plan, Charter, Protocol and Architecture prose in about ten assertions; I flipped it with a one-sentence reword</td><td><span class="pill p-med">Partially true</span></td></tr>
+<tr><td>C4 resolved: release evidence records consistent provenance</td><td>T8 receipt fields</td><td>The T8 receipt carries all of them</td><td>The T0 receipts cited by the terminal park carry neither <code>working_tree</code> nor <code>source_digest</code> &mdash; the exact inconsistency C4 named</td><td><span class="pill p-med">Narrowed, not fixed</span></td></tr>
+<tr><td>H3 closed: gate crash on external <code>--evidence-root</code></td><td>Pre-T8 housekeeping ruling</td><td>&mdash;</td><td>Reproduced today on the T5 gate; the same unguarded call is in T8</td><td><span class="pill p-med">Contradicted</span></td></tr>
+<tr><td>Gate receipts: "<em>rejected: verification unavailable converted to pass</em>" and similar</td><td><code>_discrimination_witness</code></td><td>String assertions detecting string removals</td><td>A product genuinely converted to a false PASS still passes the witness</td><td><span class="pill p-high">Weakly evidenced</span></td></tr>
+<tr><td>T2: "<em>refuses mismatched legacy databases before migration</em>"</td><td>T2 failure-injection fixtures</td><td>True for a database with a different instance UUID</td><td>A database with no <code>instances</code> table at all is silently adopted and migrated</td><td><span class="pill p-med">Supported with caveats</span></td></tr>
+<tr><td>T5: "<em>missing approval&hellip; refuse before child launch</em>"</td><td><code>test_apply_without_approval_and_stale_apply_refuse_before_launch</code></td><td>The fixture passes a <em>valid preview id</em> as the approval id</td><td>A genuinely unknown identifier raises an uncaught FK violation</td><td><span class="pill p-high">False positive in the fixture</span></td></tr>
+<tr><td>Architecture: "<em>unchanged refreshes do not grow evidence or versions</em>"</td><td>T7/D1 repair</td><td>Literally true &mdash; both tables show zero growth</td><td>Observations grow by 4,043 and relations by 16,089 per unchanged refresh on a 2,001-file target</td><td><span class="pill p-med">Technically true, misleading</span></td></tr>
+<tr><td>Release artifact "<em>excludes construction history</em>"</td><td>Positive selection plus the T8 boundary check</td><td>True at the file level &mdash; 44 files, verified clean</td><td>Its only document is construction narrative with 11 references into the excluded directories</td><td><span class="pill p-med">True in letter</span></td></tr>
+<tr><td><code>CURRENT_STATE.md</code>: "Product STOP: SATISFIED"</td><td>Journal 0060</td><td>The park entry is real and P8 is credited</td><td>The same file says "Product STOP remains incomplete because P8 is UNSCORED" in three later sections</td><td><span class="pill p-med">Self-contradictory</span></td></tr>
+</tbody></table></div>
+</section>
+
+<section id="s19">
+<h2><span class="secnum">19</span>Final risk register</h2>
+
+<div class="tablewrap"><table>
+<thead><tr><th>Risk</th><th>Sev</th><th>Prob</th><th>Impact</th><th>Component</th><th>Disposition</th></tr></thead>
+<tbody>
+<tr><td>Directory to file rename permanently disables observation and mutation</td><td><span class="pill p-high">HIGH</span></td><td>Medium &mdash; routine in any active directory</td><td>Instrument becomes unusable for that target; recovery costs all journal and receipt state</td><td class="mono">substrate.py<br>storage.py</td><td><strong>MUST FIX BEFORE RELEASE</strong></td></tr>
+<tr><td>Unknown approval id crashes instead of refusing; the covering test is a false positive</td><td><span class="pill p-high">HIGH</span></td><td>High &mdash; a typo does it</td><td>Breaks the JSON contract; agents get a parse error instead of a refusal</td><td class="mono">mutation.py</td><td><strong>MUST FIX BEFORE RELEASE</strong></td></tr>
+<tr><td>Unreadable subtrees silently omitted with no limitation</td><td><span class="pill p-med">MEDIUM</span></td><td>Medium</td><td>Violates the product's central truthfulness invariant</td><td class="mono">substrate.py</td><td><strong>SHOULD FIX BEFORE RELEASE</strong></td></tr>
+<tr><td>Storage and permission errors escape as tracebacks</td><td><span class="pill p-med">MEDIUM</span></td><td>Medium</td><td>Zero stdout on the most likely field failure</td><td class="mono">cli.py<br>substrate.py</td><td><strong>SHOULD FIX BEFORE RELEASE</strong> &mdash; widen the <code>except</code> tuple; three lines</td></tr>
+<tr><td>Compliant MCP clients cannot use apply-authority tools</td><td><span class="pill p-med">MEDIUM</span></td><td>High if an agent entrance is advertised</td><td>The advertised agent surface is partly unusable; C3 remains open</td><td class="mono">mcp.py</td><td><strong>SHOULD FIX BEFORE RELEASE</strong> &mdash; or state the limitation explicitly</td></tr>
+<tr><td>Gate discrimination witnesses prove nothing outside T7</td><td><span class="pill p-high">HIGH</span></td><td>Certain &mdash; already true</td><td>Evidence appears stronger than it is; a future maintainer over-trusts the receipts</td><td class="mono">.builder/gates/</td><td><strong>DOCUMENT AS LIMITATION</strong>, then port T7's approach</td></tr>
+<tr><td>Interrupted update leaves a broken instrument and permanent debris</td><td><span class="pill p-med">MEDIUM</span></td><td>Low</td><td>Recoverable by re-running update; disk grows unbounded</td><td class="mono">factory/installer.py</td><td>ACCEPTABLE RELEASE DEBT</td></tr>
+<tr><td>Version misreported after update</td><td><span class="pill p-med">MEDIUM</span></td><td>Certain on any real update</td><td>Nobody can tell which runtime is installed</td><td class="mono">factory/installer.py</td><td><strong>SHOULD FIX BEFORE RELEASE</strong> &mdash; matters the first time 0.2.0 ships</td></tr>
+<tr><td>Unrelated SQLite database silently adopted</td><td><span class="pill p-med">MEDIUM</span></td><td>Low</td><td>Product tables written into someone else's database</td><td class="mono">storage.py</td><td>ACCEPTABLE RELEASE DEBT</td></tr>
+<tr><td>Documentation edits can flip the T0 gate</td><td><span class="pill p-med">MEDIUM</span></td><td>High if writing resumes</td><td>Governance friction; false confidence in the check</td><td class="mono">.builder/gates/t0_bootstrap.py</td><td>FUTURE WORK ONLY</td></tr>
+<tr><td>Unbounded observation and relation growth</td><td><span class="pill p-low">LOW</span></td><td>Certain over time</td><td>About 5 MB per refresh on a 2,000-file target; no retention policy</td><td class="mono">substrate.py</td><td><strong>DOCUMENT AS LIMITATION</strong></td></tr>
+<tr><td><code>awareness revisions list</code> is O(revisions x target)</td><td><span class="pill p-low">LOW</span></td><td>Certain over time</td><td>3.2 s at 21 revisions; minutes on a large repo at the default limit of 50</td><td class="mono">awareness.py</td><td>FUTURE WORK ONLY</td></tr>
+<tr><td>Sealed artifact has no consumer documentation</td><td><span class="pill p-med">MEDIUM</span></td><td>Certain</td><td>First-run experience is a construction README with broken links</td><td class="mono">README.md<br>release.py</td><td><strong>SHOULD FIX BEFORE RELEASE</strong> &mdash; already an accepted post-STOP item</td></tr>
+<tr><td>Default branch is an unrelated project; no tags</td><td><span class="pill p-med">MEDIUM</span></td><td>Certain</td><td>Anyone cloning gets the wrong software</td><td>git topology</td><td><strong>SHOULD FIX BEFORE RELEASE</strong> &mdash; already an accepted post-STOP item</td></tr>
+<tr><td>Migrations never exercised against a populated older database</td><td><span class="pill p-low">LOW</span></td><td>Low today, rises at v6</td><td>A future migration could corrupt real state undetected</td><td class="mono">storage.py</td><td>FUTURE WORK ONLY</td></tr>
+<tr><td>Native Windows edge cases unverified by this review</td><td><span class="pill p-low">LOW</span></td><td>Unknown</td><td>Reserved names, locking, read-only <code>rmtree</code>, path length</td><td>platform</td><td><strong>DOCUMENT AS LIMITATION</strong></td></tr>
+<tr><td>Expected and measured changed paths never reconciled</td><td><span class="pill p-low">LOW</span></td><td>Low</td><td>A divergence between plan and reality is recorded but not flagged</td><td class="mono">mutation.py</td><td>FUTURE WORK ONLY</td></tr>
+<tr><td>Release artifact not byte-reproducible</td><td><span class="pill p-low">LOW</span></td><td>Certain</td><td>Digest cannot prove same-source; <code>head_commit</code> degrades silently to "unavailable"</td><td class="mono">factory/release.py</td><td>NO ACTION REQUIRED &mdash; <code>source_digest</code> already covers it</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="s20">
+<h2><span class="secnum">20</span>Final preflight checklist</h2>
+
+<div class="checklist">
+  <div class="chk"><span class="chk-name">Repository cleanliness<span class="chk-note">clean tree, ruff clean, no debris</span></span><span class="pill p-good">PASS</span></div>
+  <div class="chk"><span class="chk-name">Documentation coherency<span class="chk-note">CURRENT_STATE self-contradicts; stale pyproject comment</span></span><span class="pill p-med">PARTIAL</span></div>
+  <div class="chk"><span class="chk-name">Architecture coherency<span class="chk-note">docs match implementation module by module</span></span><span class="pill p-good">PASS</span></div>
+  <div class="chk"><span class="chk-name">Dependency boundaries<span class="chk-note">verified by AST and at runtime</span></span><span class="pill p-good">PASS</span></div>
+  <div class="chk"><span class="chk-name">Persistence integrity<span class="chk-note">F-01 kind collision; F-09 foreign DB adoption</span></span><span class="pill p-med">PARTIAL</span></div>
+  <div class="chk"><span class="chk-name">Containment<span class="chk-note">16 of 16 escapes refused, symlink-aware</span></span><span class="pill p-good">PASS</span></div>
+  <div class="chk"><span class="chk-name">Authority<span class="chk-note">works as designed; caller-asserted by design</span></span><span class="pill p-good">PASS</span></div>
+  <div class="chk"><span class="chk-name">Awareness<span class="chk-note">immutable, honest freshness, explicit unknowns</span></span><span class="pill p-good">PASS</span></div>
+  <div class="chk"><span class="chk-name">Domain truthfulness<span class="chk-note">excellent on content; F-04 on access</span></span><span class="pill p-med">PARTIAL</span></div>
+  <div class="chk"><span class="chk-name">Mutation governance<span class="chk-note">every refusal reproduces; F-02 crashes one path</span></span><span class="pill p-med">PARTIAL</span></div>
+  <div class="chk"><span class="chk-name">Human entrance<span class="chk-note">JSON contract broken by 4 uncaught exception classes</span></span><span class="pill p-med">PARTIAL</span></div>
+  <div class="chk"><span class="chk-name">Agent entrance<span class="chk-note">same host and state; reachable and correct</span></span><span class="pill p-good">PASS</span></div>
+  <div class="chk"><span class="chk-name">Protocol interoperability<span class="chk-note">authority undiscoverable; no ping, no negotiation, no batch</span></span><span class="pill p-crit">FAIL</span></div>
+  <div class="chk"><span class="chk-name">Test suite<span class="chk-note">78/78, order-independent, isolated, with F-02's blind spot</span></span><span class="pill p-good">PASS</span></div>
+  <div class="chk"><span class="chk-name">Gate integrity<span class="chk-note">suites discriminate; witnesses do not, except T7</span></span><span class="pill p-med">PARTIAL</span></div>
+  <div class="chk"><span class="chk-name">Evidence provenance<span class="chk-note">strong overall; T0 receipts lack tree state and digest</span></span><span class="pill p-med">PARTIAL</span></div>
+  <div class="chk"><span class="chk-name">Fresh install<span class="chk-note">5 conditions, all correct</span></span><span class="pill p-good">PASS</span></div>
+  <div class="chk"><span class="chk-name">Update<span class="chk-note">payload and state correct; version not refreshed</span></span><span class="pill p-med">PARTIAL</span></div>
+  <div class="chk"><span class="chk-name">Remove<span class="chk-note">clean, target work products intact</span></span><span class="pill p-good">PASS</span></div>
+  <div class="chk"><span class="chk-name">Reinstall<span class="chk-note">refused over existing; clean after removal</span></span><span class="pill p-good">PASS</span></div>
+  <div class="chk"><span class="chk-name">Release artifact<span class="chk-note">44 files, boundary clean; no consumer docs, no LICENSE</span></span><span class="pill p-med">PARTIAL</span></div>
+  <div class="chk"><span class="chk-name">Windows compatibility<span class="chk-note">no platform branches in code; not executed by me</span></span><span class="pill p-low">NOT VERIFIED</span></div>
+  <div class="chk"><span class="chk-name">Linux compatibility<span class="chk-note">full walk, CPython 3.11 / 3.12 / 3.13, native</span></span><span class="pill p-good">PASS</span></div>
+  <div class="chk"><span class="chk-name">Runtime and development separation<span class="chk-note">zero construction references in product/</span></span><span class="pill p-good">PASS</span></div>
+  <div class="chk"><span class="chk-name">Security boundaries<span class="chk-note">appropriate to the documented local trust model</span></span><span class="pill p-good">PASS</span></div>
+  <div class="chk"><span class="chk-name">Error handling<span class="chk-note">good taxonomy; DB, permission and overflow families escape</span></span><span class="pill p-med">PARTIAL</span></div>
+  <div class="chk"><span class="chk-name">Final STOP conditions<span class="chk-note">P1-P8 credited; P6 and P7 carry real caveats</span></span><span class="pill p-med">PARTIAL</span></div>
+</div>
+<p><strong>Tally:</strong> 13 PASS &middot; 12 PARTIAL &middot; 1 FAIL &middot; 1 NOT VERIFIED.</p>
+</section>
+
+<section id="s21">
+<h2><span class="secnum">21</span>Final judgment</h2>
+
+<p class="lede">If this repository were handed to an entirely new maintainer today as the finished prototype, is it sufficiently coherent, truthful, reproducible, understandable, testable, installable, removable and complete to deserve its final parked state?</p>
+
+<p><strong>Yes, with three qualifications.</strong></p>
+<ol>
+<li>Two defects must be fixed before anyone outside the project uses it: the resource-kind collision that permanently disables observation (<span class="pill p-high">F-01</span>), and the approval-not-found crash whose covering test is a false positive (<span class="pill p-high">F-02</span>). Both are small; neither is architectural.</li>
+<li>Two claims must be restated to match reality: P6's "same authority" (an MCP client cannot discover or supply it) and P7's "degrade usefully" (which holds across content and not across access).</li>
+<li>The gate discrimination witnesses outside T7 must be documented as decorative, or replaced with T7's executed approach, before anyone treats a receipt's "<em>rejected: &hellip;</em>" line as assurance.</li>
+</ol>
+
+<h3>The strongest aspect</h3>
+<p><strong>Product and process separation, and the epistemic honesty built on top of it.</strong> A project carrying 4,378 lines of gates, 60 journal entries, 250 receipts and 21 external reviews shipped a 5,558-line runtime with zero construction concepts in it &mdash; and that runtime distinguishes what it saw from what it inferred from what it does not know, links every claim to its evidence, and points its failure modes toward under-claiming. Those two things together are rare, and they are the reason this prototype is worth continuing.</p>
+
+<h3>The weakest aspect</h3>
+<p><strong>Robustness against the filesystem it is built to instrument.</strong> A directory-bound instrument for arbitrary directories crashes on an unreadable file, silently omits an unreadable folder, and permanently breaks when a name changes from a folder to a file. The product reasons carefully about content it cannot understand and not at all about access it does not have. Every one of these is a few lines of exception handling and one schema decision &mdash; the gap is narrow, but it sits directly on the product's central promise.</p>
+
+<h3>The single most important unresolved issue</h3>
+<p><strong><span class="pill p-high">F-01</span></strong> &mdash; the <code>resources.path</code> uniqueness collision. It is the only finding that is permanent, that disables the core loop rather than one command, and that has no recovery path a normal user could execute. It also reveals a model problem &mdash; identity conflated with kind &mdash; rather than just a missing <code>try</code>.</p>
+
+<h3>The single most important thing not to disturb</h3>
+<p><strong>The dependency direction and the mechanical tool contract.</strong> <code>MechanicalContext</code> carrying exactly <code>target_root</code> and <code>excluded_roots</code> and rejecting anything else is the hinge the whole architecture turns on. It is what makes the tools portable, the host authoritative, MCP removable, and the release boundary provable. It was the hardest thing T1 fought for, and it has survived seven subsequent tranches unbroken. Anything that puts identity, state, or a projection back into that context undoes more than it looks like it does.</p>
+
+<h3>Would I release this exact state?</h3>
+<p><strong>Not this exact state &mdash; but very close to it.</strong> Fix <span class="pill p-high">F-01</span> and <span class="pill p-high">F-02</span>, widen the CLI's exception tuple, add an <code>onerror</code> handler to the substrate walk, and write the two-page consumer README the reviewer already asked for. That is perhaps a day of work, and none of it touches the architecture. Then release it, with the MCP authority limitation and the state-growth behaviour stated plainly as known limitations rather than discovered by the first person who tries.</p>
+
+<div class="note">
+  <span class="note-label">On the T8 / PARKED declaration itself</span>
+  <p>Nothing in this review invalidates it. The tranche produced the evidence it declared, from a clean tree at a source digest that has not drifted, reviewed by someone who re-ran the gate independently and recorded its residual risks honestly. The findings above are things the project's own process was not designed to look for &mdash; adversarial filesystem conditions, an external protocol client, and the gates' own discriminating power &mdash; rather than things it looked for and got wrong. That is a meaningful distinction, and the project earns it.</p>
+</div>
+</section>
+
+<footer>
+Independent forensic preflight &middot; HEAD 2affeef &middot; source digest 136600c4ac287f17&hellip; &middot; assessed 2026-09-03<br>
+Read-only assessment: no file in the repository was created, modified or deleted. All execution ran against isolated copies and sealed artifacts built into temporary directories.
+</footer>
+
+</main>
+</div>
+</div>
