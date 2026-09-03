@@ -69,7 +69,7 @@ def _imports(source: str, filename: str) -> list[str]:
 
 
 def _build_release(output: Path) -> dict:
-    process = _run([sys.executable, "-m", "factory", "release", "build", "--output", str(output)])
+    process = _run([sys.executable, "-B", "-m", "factory", "release", "build", "--output", str(output)])
     if process.returncode:
         raise AssertionError(process.stdout.strip() or process.stderr.strip())
     return json.loads(process.stdout)

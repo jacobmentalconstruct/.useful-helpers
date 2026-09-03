@@ -15,7 +15,7 @@ class T8ReleaseStopTests(InstalledFixture):
     def build_release(self) -> tuple[Path, Path]:
         output = self.root / "release-output"
         process = subprocess.run(
-            [sys.executable, "-m", "factory", "release", "build", "--output", str(output)],
+            [sys.executable, "-B", "-m", "factory", "release", "build", "--output", str(output)],
             cwd=REPOSITORY_ROOT,
             capture_output=True,
             text=True,
@@ -39,7 +39,7 @@ class T8ReleaseStopTests(InstalledFixture):
 
     def release_factory(self, extracted: Path, *arguments: str) -> dict:
         process = subprocess.run(
-            [sys.executable, "-m", "factory", *arguments],
+            [sys.executable, "-B", "-m", "factory", *arguments],
             cwd=extracted,
             capture_output=True,
             text=True,
