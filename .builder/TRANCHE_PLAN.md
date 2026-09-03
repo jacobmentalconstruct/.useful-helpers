@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **T8 AWAITING_APPROVAL**
+Status: **T8 VERIFYING**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -18,7 +18,7 @@ Charter and are referenced here without redefinition.
 | T5 Governed Mutation Loop | PARKED | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 PARKED; declaration approved | P5 |
 | T6 Removable MCP Entrance | PARKED | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 PARKED; declaration approved | P6 |
 | T7 Domain Truth | PARKED | Software, mixed records/documents, and empty targets degrade truthfully. | T6 PARKED; declaration approved | P7 |
-| T8 Release and STOP | AWAITING_APPROVAL | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 PARKED; pre-T8 housekeeping recorded in entry `0052`; declaration `0053` approved by same-turn operator direction | P1-P8 |
+| T8 Release and STOP | VERIFYING | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 PARKED; pre-T8 housekeeping recorded in entry `0052`; declaration `0053` approved by same-turn operator direction; review return `0056` | P1-P8 |
 
 Tranche detail is declared immediately before work. Future rows state dependency and
 outcome only; they do not authorize implementation.
@@ -68,14 +68,19 @@ evidence of a failed parked premise.
   `journal/0054-t8-execution-start.md`
 - Implementation review submission:
   `journal/0055-t8-awaiting-approval.md`
+- Verification return:
+  `journal/0056-t8-verification-return.md`
 
 Entry `0053` declares the release and Product STOP outcome, including the carried C2/C3
 MCP parity/conformance and C4 release-provenance obligations. Entry `0054` records the
 operator's same-message approval to enter IMPLEMENTING after the Builder found no
 declaration contradiction or blocker. Entry `0055` submits the implemented release
 candidate with T8 gate run `20260903T073452Z-5680a19f` and cumulative T7/T6/T5/T4/T3/T2/T1/T0
-receipts. T8 is not parked, P8 is not credited, and Product STOP remains incomplete until
-operator approval after review.
+receipts. Reviewer evidence `evidence/reviews/T8/20260903T082012Z-external-review.md`
+returned T8 to VERIFYING for bounded witness repairs covering the Linux acceptance walk,
+sealed CLI breadth across target classes, and sealed MCP error behavior. T8 is not
+parked, P8 is not credited, and Product STOP remains incomplete until operator approval
+after review.
 
 ## T1 synopsis
 
