@@ -1,6 +1,6 @@
 # Tranche Plan
 
-Status: **T7 PARKED**
+Status: **T7 PARKED; T8 PROVISIONAL**
 
 This Plan owns tranche order, tranche status, deferred/provisional work, and project
 closure. Product acceptance conditions P1-P8 and Product STOP are owned by the Product
@@ -18,7 +18,7 @@ Charter and are referenced here without redefinition.
 | T5 Governed Mutation Loop | PARKED | Preview, approval, stale-state refusal, measured mutation, verification, refresh, and linked records form one reviewable work loop. | T4 PARKED; declaration approved | P5 |
 | T6 Removable MCP Entrance | PARKED | MCP and CLI expose one host and durable world while tools and CLI remain usable with MCP removed. | T5 PARKED; declaration approved | P6 |
 | T7 Domain Truth | PARKED | Software, mixed records/documents, and empty targets degrade truthfully. | T6 PARKED; declaration approved | P7 |
-| T8 Release and STOP | PROVISIONAL | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 PARKED; pre-T8 rulings resolved | P1-P8 |
+| T8 Release and STOP | PROVISIONAL | One sealed artifact passes lifecycle, blank-state, compatible update, removal, dependency-direction, boundary, and Windows/Linux acceptance. | T7 PARKED; pre-T8 housekeeping recorded in entry `0052` | P1-P8 |
 
 Tranche detail is declared immediately before work. Future rows state dependency and
 outcome only; they do not authorize implementation.
@@ -49,6 +49,16 @@ for the governed mutation loop. T6 grants P6 credit for the removable MCP entran
 T7 grants P7 credit for truthful domain breadth. P8 remains UNSCORED, and Product STOP
 remains incomplete. Each later declaration must name the P-conditions it advances and
 the exact gate assertions that do so.
+
+## Pre-T8 housekeeping
+
+Entry `0052-pre-t8-housekeeping.md` records the operator-approved pre-T8 line-ending and
+carried-finding rulings. H1 is resolved by `.gitattributes` and a passing Windows T7
+receipt; C1 is resolved by explicit gate-owned exemption constants rather than
+Plan-prose status sniffing; H2 and H3 are closed. C2 MCP governed mutation parity, C3 MCP
+client conformance, and C4 final release provenance consistency are carried into T8.
+C5 is recorded as a historical limitation and is not a reopen trigger absent concrete
+evidence of a failed parked premise.
 
 ## T1 synopsis
 
@@ -396,10 +406,9 @@ does not park T7, grant P7 credit, or begin T8.
 External Reviewer evidence at `evidence/reviews/T7/20260902T144605Z-external-review.md`
 recommends APPROVE CANDIDATE for the `0050` submission. Entry `0051` records operator
 approval, grants the terminal PARKED disposition, and parks P7 credit. P8 remains
-UNSCORED and Product STOP remains incomplete. Before T8 declaration, the operator still
-owes rulings on `.gitattributes`/renormalization with one Windows T7 receipt and on
-carried findings C1-C5 and H2-H3, including canonical byte form for receipt SHA-256
-values.
+UNSCORED and Product STOP remains incomplete. Entry `0052` resolves the pre-T8
+housekeeping requested by the T7 park entry and carries C2/C3/C4 into the T8 declaration
+surface.
 
 ## Project closure
 

@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "gate": "T3-epistemic-substrate",
+  "status": "FAIL",
+  "recorded_at": "2026-09-03T02:50:43.293971+00:00",
+  "run_id": "20260903T025043Z-82fbc767",
+  "head_commit": "649d91b6bda097feb013f7e3c9cb1bbb2872bb2e",
+  "working_tree": "?? .builder/evidence/T7/20260903T024631Z-2ef4ccfc/\n?? .builder/evidence/T7/20260903T024916Z-b8e05b2a/",
+  "source_digest": "dd3840a38aaa6e1a6a9c45d7ff4f96b2473c31d0c40d9020ce1e7871ad67626e",
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "t3_schema",
+      "status": "PASS",
+      "detail": "current schema includes distinct T3 resource, evidence, claim, and relation tables"
+    },
+    {
+      "name": "substrate_owner",
+      "status": "PASS",
+      "detail": "substrate owner exposes refresh, lookup, immutable evidence, claims, and trace"
+    },
+    {
+      "name": "cli_entrance",
+      "status": "PASS",
+      "detail": "CLI exposes minimal substrate refresh and inspection commands"
+    },
+    {
+      "name": "t1_dependency_boundary",
+      "status": "PASS",
+      "detail": "T1 mechanical dependency boundary remains intact"
+    },
+    {
+      "name": "focused_t3_product_evidence",
+      "status": "PASS",
+      "detail": "......                                                                   [100%]"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": "........................................................................ [100%]"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "31 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "no_t4_or_out_of_scope_surfaces",
+      "status": "PASS",
+      "detail": "T3 introduces no awareness, vector, MCP, GUI, or cartridge authority"
+    },
+    {
+      "name": "journal_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0051-t7-park.md"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 52 Python sources parsed"
+    },
+    {
+      "name": "discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: resource/version table collapse; epistemic evidence stored as operational artifact; claim without derived_from provenance; mutable resource versions; awareness table introduced in T3"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "FAIL",
+      "detail": "AssertionError: generated debris remains: ['tests/.runtime (non-empty)']"
+    }
+  ]
+}
