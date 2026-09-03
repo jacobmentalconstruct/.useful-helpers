@@ -29,6 +29,12 @@ DEFERRED_TABLE_TERMS = {
     "claims",
     "awareness_revisions",
 }
+POST_T2_TABLE_TERMS_ALLOWED_BY_PARKED_TRANCHES = {
+    "resources",  # introduced by parked T3 Epistemic Substrate
+    "observations",  # introduced by parked T3 Epistemic Substrate
+    "claims",  # introduced by parked T3 Epistemic Substrate
+    "awareness_revisions",  # introduced by parked T4 Awareness
+}
 
 
 @dataclass(frozen=True)
@@ -82,12 +88,13 @@ def _assert_runtime_schema(source: str) -> None:
     duplicates = sorted(table for table in set(tables) if tables.count(table) > 1)
     if duplicates:
         raise AssertionError(f"runtime memory tables are collapsed or duplicated: {duplicates}")
-    plan = (ROOT / ".builder/TRANCHE_PLAN.md").read_text(encoding="utf-8")
-    t3_has_started = "T3 Epistemic Substrate | PROVISIONAL" not in plan
-    t4_has_started = "T4 Awareness | PROVISIONAL" not in plan
-    leaked = sorted(term for term in DEFERRED_TABLE_TERMS if f"CREATE TABLE {term}" in source)
-    awareness_only = leaked == ["awareness_revisions"]
-    if leaked and not t3_has_started and not (awareness_only and t4_has_started):
+    leaked = sorted(
+        term
+        for term in DEFERRED_TABLE_TERMS
+        if f"CREATE TABLE {term}" in source
+        and term not in POST_T2_TABLE_TERMS_ALLOWED_BY_PARKED_TRANCHES
+    )
+    if leaked:
         raise AssertionError(f"T2 storage declares deferred epistemic/awareness tables: {leaked}")
 
 

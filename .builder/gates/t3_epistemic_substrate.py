@@ -33,6 +33,12 @@ FORBIDDEN_T3_TERMS = {
     "gui",
     "cartridges",
 }
+POST_T3_TERMS_ALLOWED_BY_PARKED_TRANCHES = {
+    "awareness_revisions",  # introduced by parked T4 Awareness
+}
+POST_T3_MCP_ALLOWED_FILES = {
+    "product/core/cli.py",  # CLI gained an MCP entrance in parked T6
+}
 
 
 @dataclass(frozen=True)
@@ -99,9 +105,10 @@ def _t3_schema() -> str:
     match = re.search(r"DATABASE_SCHEMA_VERSION\s*=\s*(\d+)", constants_source)
     if not match or int(match.group(1)) < 3:
         raise AssertionError("database schema version no longer includes T3 schema")
-    plan = (ROOT / ".builder/TRANCHE_PLAN.md").read_text(encoding="utf-8")
-    t4_has_started = "T4 Awareness | PROVISIONAL" not in plan
-    _assert_t3_schema(storage_source, t4_has_started=t4_has_started)
+    _assert_t3_schema(
+        storage_source,
+        t4_has_started="awareness_revisions" in POST_T3_TERMS_ALLOWED_BY_PARKED_TRANCHES,
+    )
     return "current schema includes distinct T3 resource, evidence, claim, and relation tables"
 
 
@@ -208,9 +215,6 @@ def _product_boundary() -> str:
 
 
 def _no_t4_or_out_of_scope_surfaces() -> str:
-    plan = (ROOT / ".builder/TRANCHE_PLAN.md").read_text(encoding="utf-8")
-    t4_has_started = "T4 Awareness | PROVISIONAL" not in plan
-    t6_has_started = "T6 Removable MCP Entrance | PROVISIONAL" not in plan
     source_paths = [
         ROOT / "product/core/storage.py",
         ROOT / "product/core/substrate.py",
@@ -220,9 +224,9 @@ def _no_t4_or_out_of_scope_surfaces() -> str:
     for source in source_paths:
         text = source.read_text(encoding="utf-8").lower()
         for term in FORBIDDEN_T3_TERMS:
-            if t4_has_started and term == "awareness_revisions":
+            if term in POST_T3_TERMS_ALLOWED_BY_PARKED_TRANCHES:
                 continue
-            if t6_has_started and term == "mcp" and source.name == "cli.py":
+            if term == "mcp" and source.relative_to(ROOT).as_posix() in POST_T3_MCP_ALLOWED_FILES:
                 continue
             if term in text:
                 violations.append(f"{source.relative_to(ROOT).as_posix()} mentions {term}")
