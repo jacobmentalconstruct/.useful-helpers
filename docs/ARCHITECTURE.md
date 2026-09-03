@@ -324,13 +324,14 @@ through `product/core/mutation.py` owner APIs, so the sealed artifact can demons
 governed mutation lifecycle through both CLI and MCP without MCP owning mutation
 persistence.
 
-T8 evidence is recorded in journal entries `0055` and repaired submission `0057`. The T8
-gate includes same-artifact Windows lifecycle fixtures, sealed CLI breadth across empty,
-software, and mixed/document targets, sealed MCP error/refusal behavior, and a WSL/Linux
-acceptance walk covering attach, status, substrate refresh, awareness refresh/current,
-drill, governed mutation, durable state checks, compatible update, and removal. Product
-STOP is still not credited by this architecture map; operator review and approval are
-required.
+T8 evidence is recorded in journal entries `0055`, repaired submission `0057`, and final
+preflight submission `0059`. The T8 gate includes same-artifact Windows lifecycle
+fixtures, sealed CLI breadth across empty, software, and mixed/document targets, sealed
+MCP error/refusal behavior, actual sealed update payload replacement, sealed CLI survival
+after MCP adapter removal, and a WSL/Linux acceptance walk covering attach, status,
+substrate refresh, awareness refresh/current, drill, governed mutation, durable state
+checks, compatible update, and removal. Product STOP is still not credited by this
+architecture map; operator review and approval are required.
 
 ## T1 review evidence
 
@@ -550,5 +551,5 @@ External Reviewer evidence at
 CANDIDATE for the `0050` submission. Entry `0051` records operator approval, parks T7,
 and credits P7.
 
-T8 is submitted for review by repaired entry `0057`. P8 and Product STOP remain
+T8 is submitted for review by repaired entry `0059`. P8 and Product STOP remain
 uncredited until operator approval.
