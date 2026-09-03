@@ -17,6 +17,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
 
+# The gate imports and executes product/factory code while also enforcing repository
+# hygiene, so it must not create bytecode in the source tree it measures.
+sys.dont_write_bytecode = True
+
 ROOT = Path(__file__).resolve().parents[2]
 RUNTIME_FIXTURE_ROOT = (ROOT / "tests/.runtime").resolve()
 
