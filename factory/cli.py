@@ -6,8 +6,8 @@ import sys
 
 sys.dont_write_bytecode = True
 
-from . import release
-from .installer import AttachError, attach, uninstall, update
+from . import release  # noqa: E402
+from .installer import AttachError, attach, uninstall, update  # noqa: E402
 
 
 def _parser() -> argparse.ArgumentParser:
