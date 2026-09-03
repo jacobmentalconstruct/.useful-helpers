@@ -37,7 +37,7 @@ class InstalledFixture(unittest.TestCase):
 
     def attach(self, target: Path) -> dict:
         process = subprocess.run(
-            [sys.executable, "-m", "factory", "attach", str(target)],
+            [sys.executable, "-B", "-m", "factory", "attach", str(target)],
             cwd=REPOSITORY_ROOT,
             capture_output=True,
             text=True,

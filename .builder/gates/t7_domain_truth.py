@@ -312,7 +312,7 @@ def _consumer_entrance_known_answer() -> str:
         target = Path(scratch) / "software"
         target.mkdir()
         _write_realistic_software_target(target)
-        attach = _run([sys.executable, "-m", "factory", "attach", str(target)])
+        attach = _run([sys.executable, "-B", "-m", "factory", "attach", str(target)])
         if attach.returncode:
             raise AssertionError(attach.stderr.strip() or attach.stdout.strip())
         front_door = target / ".sidecar" / "bin" / "sidecar.py"
