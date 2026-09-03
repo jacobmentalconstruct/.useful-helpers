@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "gate": "T8-release-stop",
+  "status": "FAIL",
+  "recorded_at": "2026-09-03T09:12:54.622102+00:00",
+  "run_id": "20260903T091254Z-71396b71",
+  "head_commit": "41eaf297cda8870bbe99e0755609a7dab05119d4",
+  "working_tree": "?? .builder/evidence/T0/20260903T090608Z-4057d01c/\n?? .builder/evidence/T1/20260903T090144Z-5f5a55c3/\n?? .builder/evidence/T2/20260903T090124Z-8f4e4e6b/\n?? .builder/evidence/T3/20260903T090002Z-c2e785d1/\n?? .builder/evidence/T4/20260903T085846Z-30234e32/\n?? .builder/evidence/T5/20260903T085713Z-7d1a047b/\n?? .builder/evidence/T6/20260903T085553Z-d7e5a3cc/\n?? .builder/evidence/T7/20260903T085253Z-290270ae/\n?? .builder/evidence/T7/20260903T085437Z-750576cc/\n?? .builder/evidence/T8/20260903T084958Z-64005182/\n?? .builder/evidence/T8/20260903T091254Z-71396b71/",
+  "source_digest": "fff7055ad853b0773a04da51d41c75a58f53ba1883dbff50a71342a1be4a81ac",
+  "release_artifact": {
+    "path": ".builder/evidence/T8/20260903T091254Z-71396b71/release/sidecar-workbench-0.1.0.zip",
+    "manifest": ".builder/evidence/T8/20260903T091254Z-71396b71/release/sidecar-workbench-0.1.0.zip.manifest.json",
+    "sha256": "bcbd49eaaee5807b99cb85c78b618b0c14ba5d54e2923f993f607fdd8ddbf60a",
+    "file_count": 44
+  },
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "working_tree_provenance",
+      "status": "PASS",
+      "detail": "measured source is fully contained in head_commit (untracked evidence receipts only)"
+    },
+    {
+      "name": "release_artifact_boundary",
+      "status": "FAIL",
+      "detail": "PermissionError: [WinError 5] Access is denied: 'C:\\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\sidecar-t8-release-mi0odfu2'"
+    },
+    {
+      "name": "focused_t8_product_evidence",
+      "status": "PASS",
+      "detail": "....                                                                     [100%]"
+    },
+    {
+      "name": "windows_release_lifecycle",
+      "status": "PASS",
+      "detail": "sealed artifact passed Windows lifecycle and CLI/MCP mutation walk"
+    },
+    {
+      "name": "linux_release_smoke",
+      "status": "FAIL",
+      "detail": "PermissionError: [WinError 5] Access is denied: 'C:\\\\Users\\\\jacob\\\\AppData\\\\Local\\\\Temp\\\\sidecar-t8-linux-release-niarx3b6'"
+    },
+    {
+      "name": "mcp_governed_mutation_parity",
+      "status": "PASS",
+      "detail": "MCP exposes preview/approve/apply through mutation owner APIs"
+    },
+    {
+      "name": "dependency_direction",
+      "status": "PASS",
+      "detail": "product boundary, mechanical lower layer, and App Journal dependency direction hold"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": "....                                                                     [100%]"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 55 Python sources parsed"
+    },
+    {
+      "name": "release_discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: artifact includes construction root; artifact lacks manifest; tests omit update preservation; tests omit removal witness; MCP lacks governed apply; tests omit sealed target breadth; tests omit sealed MCP error witness"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "FAIL",
+      "detail": "AssertionError: generated debris remains: ['factory/__pycache__', 'product/__pycache__', 'product/core/__pycache__']"
+    }
+  ]
+}

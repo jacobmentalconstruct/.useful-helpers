@@ -4,6 +4,8 @@ import argparse
 import json
 import sys
 
+sys.dont_write_bytecode = True
+
 from . import release
 from .installer import AttachError, attach, uninstall, update
 

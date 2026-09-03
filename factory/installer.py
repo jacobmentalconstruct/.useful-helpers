@@ -92,7 +92,8 @@ def update(target: str | Path) -> dict:
             if current.exists():
                 current.rename(backup)
                 backups.append((current, backup))
-            (staging_root / name).rename(current)
+            shutil.copytree(staging_root / name, current)
+            shutil.rmtree(staging_root / name, ignore_errors=True)
         for _, backup in backups:
             shutil.rmtree(backup, ignore_errors=True)
         shutil.rmtree(staging_root, ignore_errors=True)
