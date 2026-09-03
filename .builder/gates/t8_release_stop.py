@@ -173,7 +173,10 @@ try:
     release_root = root / "release"
     target = root / "target"
     target.mkdir()
-    (target / "note.txt").write_text("linux\n", encoding="utf-8")
+    (target / "pyproject.toml").write_text("[project]\nname='linux-smoke'\n", encoding="utf-8")
+    (target / "README.md").write_text("# linux smoke\n", encoding="utf-8")
+    (target / "src").mkdir()
+    (target / "src" / "app.py").write_text("def main():\n    return 1\n", encoding="utf-8")
     with zipfile.ZipFile(artifact) as bundle:
         bundle.extractall(release_root)
     attach = subprocess.run(
@@ -187,15 +190,50 @@ try:
     if attach.returncode:
         raise SystemExit(attach.stdout + attach.stderr)
     front = target / ".sidecar" / "bin" / "sidecar.py"
-    status = subprocess.run(
-        [sys.executable, str(front), "status"],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        check=False,
-    )
-    if status.returncode:
-        raise SystemExit(status.stdout + status.stderr)
+
+    def sidecar(*args):
+        process = subprocess.run(
+            [sys.executable, str(front), *args],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
+        if process.returncode:
+            raise SystemExit(process.stdout + process.stderr)
+        return json.loads(process.stdout)
+
+    status = sidecar("status")
+    sidecar("substrate", "refresh")
+    revision = sidecar("awareness", "refresh")["revision"]
+    current = sidecar("awareness", "current")["revision"]
+    if current["awareness_id"] != revision["awareness_id"] or current["freshness"] != "current":
+        raise SystemExit("linux awareness current did not match refreshed revision")
+    if revision["summary"]["domain_profile"] != "software":
+        raise SystemExit(f"linux sealed artifact reported {revision['summary']['domain_profile']!r}")
+    sidecar("awareness", "drill", revision["findings"][0]["item_id"])
+    preview = sidecar(
+        "mutation",
+        "preview-write",
+        "--path",
+        "src/app.py",
+        "--content",
+        "def main():\n    return 2\n",
+        "--overwrite",
+    )["preview"]
+    approval = sidecar("mutation", "approve", preview["preview_id"])["approval"]
+    applied = sidecar("mutation", "apply", approval["approval_id"])
+    if applied["mutation"]["measurement"]["changed_paths"] != ["src/app.py"]:
+        raise SystemExit("linux mutation changed-path measurement was not durable or exact")
+    receipts = sidecar("receipts", "list")["receipts"]
+    if not any(item["receipt_id"] == applied["mutation"]["receipt_id"] for item in receipts):
+        raise SystemExit("linux mutation receipt is not visible through durable receipt list")
+    history = sidecar("mutation", "history")["mutations"]
+    if not history:
+        raise SystemExit("linux mutation history is empty after apply")
+    after_mutation_awareness = sidecar("awareness", "current")["revision"]
+    if after_mutation_awareness["awareness_id"] != applied["mutation"]["post_awareness_id"]:
+        raise SystemExit("linux awareness was not refreshed after mutation")
     update = subprocess.run(
         [sys.executable, "-m", "factory", "update", str(target)],
         cwd=release_root,
@@ -216,8 +254,7 @@ try:
     )
     if remove.returncode:
         raise SystemExit(remove.stdout + remove.stderr)
-    document = json.loads(status.stdout)
-    print(json.dumps({"ok": True, "uuid": document["instance_uuid"], "removed": not (target / ".sidecar").exists()}))
+    print(json.dumps({"ok": True, "uuid": status["instance_uuid"], "removed": not (target / ".sidecar").exists()}))
 finally:
     shutil.rmtree(root, ignore_errors=True)
 """
@@ -227,7 +264,7 @@ finally:
         result = json.loads(process.stdout.strip().splitlines()[-1])
         if not result.get("ok") or not result.get("removed"):
             raise AssertionError(result)
-    return "same release artifact attached, updated, reported status, and uninstalled under WSL/Linux"
+    return "same release artifact completed Linux observe/orient/drill/mutation/state/update/removal walk"
 
 
 def _mcp_governed_mutation_parity() -> str:
@@ -317,6 +354,18 @@ def _release_discrimination_witness() -> str:
             "MCP lacks governed apply",
             lambda: _assert_mcp_parity_source(mcp_source.replace('"mutation.apply"', '"mutation.history"')),
         ),
+        (
+            "tests omit sealed target breadth",
+            lambda: _assert_t8_tests(
+                test_source.replace("test_sealed_cli_orients_empty_software_and_mixed_document_targets", "")
+            ),
+        ),
+        (
+            "tests omit sealed MCP error witness",
+            lambda: _assert_t8_tests(
+                test_source.replace('"content is required"', '"not checked"')
+            ),
+        ),
     )
     for label, function in mutations:
         try:
@@ -336,12 +385,17 @@ def _assert_release_boundary_source(source: str) -> None:
 
 def _assert_t8_tests(source: str) -> None:
     for term in (
+        "test_sealed_cli_orients_empty_software_and_mixed_document_targets",
+        "empty_or_nascent",
+        "software",
+        "mixed",
         '"update"',
         '"uninstall"',
         "mutation.preview_write",
         "stale_target",
         "changed_paths",
         "product/core/mcp.py",
+        "content is required",
     ):
         if term not in source:
             raise AssertionError(f"T8 tests missing {term}")

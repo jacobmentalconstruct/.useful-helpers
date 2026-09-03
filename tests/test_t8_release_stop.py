@@ -60,6 +60,25 @@ class T8ReleaseStopTests(InstalledFixture):
         self.assertTrue(document["ok"], document)
         return document
 
+    @staticmethod
+    def write_software_target(target: Path) -> None:
+        (target / "pyproject.toml").write_text("[project]\nname = 'sealed'\n", encoding="utf-8")
+        (target / "README.md").write_text("# sealed software\n", encoding="utf-8")
+        (target / "src").mkdir()
+        (target / "src" / "app.py").write_text("def main():\n    return 1\n", encoding="utf-8")
+        (target / "tests").mkdir()
+        (target / "tests" / "test_app.py").write_text("def test_app():\n    assert True\n", encoding="utf-8")
+
+    @staticmethod
+    def write_mixed_document_target(target: Path) -> None:
+        (target / "tools").mkdir()
+        (target / "tools" / "export.py").write_text("print('export')\n", encoding="utf-8")
+        (target / "records").mkdir()
+        (target / "records" / "clients.csv").write_text("id,name\n1,Ada\n", encoding="utf-8")
+        (target / "records" / "invoices.csv").write_text("id,total\n1,10\n", encoding="utf-8")
+        (target / "contracts").mkdir()
+        (target / "contracts" / "agreement.pdf").write_bytes(b"%PDF-1.4\n%%EOF\n")
+
     def test_sealed_artifact_positive_boundary_and_no_construction_history(self) -> None:
         artifact, manifest_path = self.build_release()
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -133,6 +152,35 @@ class T8ReleaseStopTests(InstalledFixture):
         self.release_factory(extracted, "uninstall", str(moved))
         self.assertFalse((moved / ".sidecar").exists())
         self.assertEqual((moved / "note.txt").read_text(encoding="utf-8"), "hello\n")
+
+    def test_sealed_cli_orients_empty_software_and_mixed_document_targets(self) -> None:
+        artifact, _ = self.build_release()
+        extracted = self.extract_release(artifact)
+        cases = {
+            "empty": ("empty_or_nascent", lambda target: None),
+            "software": ("software", self.write_software_target),
+            "mixed": ("mixed", self.write_mixed_document_target),
+        }
+        for name, (expected_profile, writer) in cases.items():
+            with self.subTest(name=name):
+                target = self.target(f"sealed-{name}")
+                writer(target)
+                self.release_factory(extracted, "attach", str(target))
+                self.release_sidecar(target, "substrate", "refresh")
+                refreshed = self.release_sidecar(target, "awareness", "refresh")["revision"]
+                current = self.release_sidecar(target, "awareness", "current")["revision"]
+                self.assertEqual(current["awareness_id"], refreshed["awareness_id"])
+                self.assertEqual(current["freshness"], "current")
+                self.assertEqual(current["summary"]["domain_profile"], expected_profile)
+                self.assertTrue(refreshed["findings"])
+                drill = self.release_sidecar(
+                    target,
+                    "awareness",
+                    "drill",
+                    refreshed["findings"][0]["item_id"],
+                )["drill"]
+                self.assertEqual(drill["item"]["awareness_id"], refreshed["awareness_id"])
+                self.assertTrue(drill["nodes"])
 
     def test_sealed_cli_and_mcp_complete_the_same_governed_mutation_walk(self) -> None:
         artifact, _ = self.build_release()
@@ -220,7 +268,15 @@ class T8ReleaseStopTests(InstalledFixture):
                 {"name": "mutation.history", "arguments": {"limit": 10}},
                 46,
             )
-            shutdown = session.request("shutdown", request_id=47)
+            invalid = session.request(
+                "tools/call",
+                {
+                    "name": "mutation.preview_write",
+                    "arguments": {"path": "notes/a.md"},
+                },
+                47,
+            )
+            shutdown = session.request("shutdown", request_id=48)
             closed = True
         finally:
             if closed:
@@ -243,6 +299,8 @@ class T8ReleaseStopTests(InstalledFixture):
         self.assertTrue(structured["mutation"]["post_awareness_id"].startswith("awareness:"))
         self.assertEqual((target / "notes" / "a.md").read_text(encoding="utf-8"), "# C\n")
         self.assertTrue(history["result"]["structuredContent"]["mutations"])
+        self.assertEqual(invalid["error"]["code"], -32602)
+        self.assertIn("content is required", invalid["error"]["message"])
         self.assertTrue(shutdown["result"]["shutdown"])
 
         receipts = self.release_sidecar(target, "receipts", "list", "--limit", "10")["receipts"]
