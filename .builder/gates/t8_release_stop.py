@@ -76,8 +76,7 @@ def _build_release(output: Path) -> dict:
 
 
 def _temporary_directory(prefix: str) -> tempfile.TemporaryDirectory:
-    RUNTIME_FIXTURE_ROOT.mkdir(parents=True, exist_ok=True)
-    return tempfile.TemporaryDirectory(prefix=prefix, dir=RUNTIME_FIXTURE_ROOT)
+    return tempfile.TemporaryDirectory(prefix=f"sidecar-{prefix}")
 
 
 def _release_artifact_boundary() -> str:
@@ -511,7 +510,6 @@ def _arguments() -> argparse.Namespace:
 
 
 def main() -> int:
-    RUNTIME_FIXTURE_ROOT.mkdir(parents=True, exist_ok=True)
     arguments = _arguments()
     checks = [
         _check("working_tree_provenance", _working_tree_provenance),

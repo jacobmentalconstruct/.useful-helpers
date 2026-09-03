@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "gate": "T8-release-stop",
+  "status": "FAIL",
+  "recorded_at": "2026-09-03T09:09:57.345114+00:00",
+  "run_id": "20260903T090957Z-d6f344da",
+  "head_commit": "6cf37c522e6469b8cf985f6711c40516629fba8b",
+  "working_tree": "?? .builder/evidence/T0/20260903T090608Z-4057d01c/\n?? .builder/evidence/T1/20260903T090144Z-5f5a55c3/\n?? .builder/evidence/T2/20260903T090124Z-8f4e4e6b/\n?? .builder/evidence/T3/20260903T090002Z-c2e785d1/\n?? .builder/evidence/T4/20260903T085846Z-30234e32/\n?? .builder/evidence/T5/20260903T085713Z-7d1a047b/\n?? .builder/evidence/T6/20260903T085553Z-d7e5a3cc/\n?? .builder/evidence/T7/20260903T085253Z-290270ae/\n?? .builder/evidence/T7/20260903T085437Z-750576cc/\n?? .builder/evidence/T8/20260903T084958Z-64005182/\n?? .builder/evidence/T8/20260903T090817Z-52c6adb4/\n?? .builder/evidence/T8/20260903T090957Z-d6f344da/",
+  "source_digest": "79fef71c477debab8bbca87ac55f834fb815a34ff0c901aa7732d6fa590d3090",
+  "release_artifact": {
+    "path": ".builder/evidence/T8/20260903T090957Z-d6f344da/release/sidecar-workbench-0.1.0.zip",
+    "manifest": ".builder/evidence/T8/20260903T090957Z-d6f344da/release/sidecar-workbench-0.1.0.zip.manifest.json",
+    "sha256": "252e41685346d20ce287b1dd3d4d940adcb59b2f04d29e30b514ab3169d974f5",
+    "file_count": 44
+  },
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "working_tree_provenance",
+      "status": "PASS",
+      "detail": "measured source is fully contained in head_commit (untracked evidence receipts only)"
+    },
+    {
+      "name": "release_artifact_boundary",
+      "status": "FAIL",
+      "detail": "PermissionError: [WinError 5] Access is denied: 'C:\\\\Jacob\\\\_AppDesign\\\\_SANDBOX\\\\.UsefulHELPERS\\\\tests\\\\.runtime\\\\t8-release-xn1si61d'"
+    },
+    {
+      "name": "focused_t8_product_evidence",
+      "status": "PASS",
+      "detail": "....                                                                     [100%]"
+    },
+    {
+      "name": "windows_release_lifecycle",
+      "status": "PASS",
+      "detail": "sealed artifact passed Windows lifecycle and CLI/MCP mutation walk"
+    },
+    {
+      "name": "linux_release_smoke",
+      "status": "FAIL",
+      "detail": "PermissionError: [WinError 5] Access is denied: 'C:\\\\Jacob\\\\_AppDesign\\\\_SANDBOX\\\\.UsefulHELPERS\\\\tests\\\\.runtime\\\\t8-linux-release-j4hhj552'"
+    },
+    {
+      "name": "mcp_governed_mutation_parity",
+      "status": "PASS",
+      "detail": "MCP exposes preview/approve/apply through mutation owner APIs"
+    },
+    {
+      "name": "dependency_direction",
+      "status": "PASS",
+      "detail": "product boundary, mechanical lower layer, and App Journal dependency direction hold"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": "....                                                                     [100%]"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 55 Python sources parsed"
+    },
+    {
+      "name": "release_discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: artifact includes construction root; artifact lacks manifest; tests omit update preservation; tests omit removal witness; MCP lacks governed apply; tests omit sealed target breadth; tests omit sealed MCP error witness"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "FAIL",
+      "detail": "AssertionError: generated debris remains: ['tests/.runtime (non-empty)']"
+    }
+  ]
+}
