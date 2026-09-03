@@ -71,8 +71,13 @@ def _build_release(output: Path) -> dict:
     return json.loads(process.stdout)
 
 
+def _temporary_directory(prefix: str) -> tempfile.TemporaryDirectory:
+    RUNTIME_FIXTURE_ROOT.mkdir(parents=True, exist_ok=True)
+    return tempfile.TemporaryDirectory(prefix=prefix, dir=RUNTIME_FIXTURE_ROOT)
+
+
 def _release_artifact_boundary() -> str:
-    with tempfile.TemporaryDirectory(prefix="t8-release-", dir=RUNTIME_FIXTURE_ROOT) as scratch:
+    with _temporary_directory(prefix="t8-release-") as scratch:
         built = _build_release(Path(scratch))
         artifact = Path(built["artifact"])
         manifest = json.loads(Path(built["manifest"]).read_text(encoding="utf-8"))
@@ -149,7 +154,7 @@ def _windows_release_lifecycle() -> str:
 
 
 def _linux_release_smoke() -> str:
-    with tempfile.TemporaryDirectory(prefix="t8-linux-release-", dir=RUNTIME_FIXTURE_ROOT) as scratch:
+    with _temporary_directory(prefix="t8-linux-release-") as scratch:
         built = _build_release(Path(scratch))
         artifact = Path(built["artifact"])
         artifact_wsl = _wsl_path(artifact)
