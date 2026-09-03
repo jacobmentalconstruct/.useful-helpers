@@ -34,6 +34,11 @@ class Check:
     detail: str
 
 
+def _temporary_directory(prefix: str) -> tempfile.TemporaryDirectory:
+    RUNTIME_FIXTURE_ROOT.mkdir(parents=True, exist_ok=True)
+    return tempfile.TemporaryDirectory(prefix=prefix, dir=RUNTIME_FIXTURE_ROOT)
+
+
 def _run(command: list[str]) -> subprocess.CompletedProcess[str]:
     environment = dict(os.environ)
     environment["PYTHONDONTWRITEBYTECODE"] = "1"
@@ -206,7 +211,7 @@ def _write_records_with_ordinary_folders_target(target: Path) -> None:
 def _known_answer_profiles(substrate) -> dict[str, str]:
     """Execute the substrate's own classification against known-answer targets."""
     results: dict[str, str] = {}
-    with tempfile.TemporaryDirectory(prefix="t7-gate-") as scratch:
+    with _temporary_directory(prefix="t7-gate-") as scratch:
         for name, writer, expected in (
             ("realistic_software", _write_realistic_software_target, "software"),
             ("true_mixed", _write_true_mixed_target, "mixed"),
@@ -277,7 +282,7 @@ def _known_answer_domain_profiles() -> str:
 
 def _consumer_entrance_known_answer() -> str:
     """Prove the same answers through the installed consumer entrance, not internal imports."""
-    with tempfile.TemporaryDirectory(prefix="t7-gate-entrance-") as scratch:
+    with _temporary_directory(prefix="t7-gate-entrance-") as scratch:
         target = Path(scratch) / "software"
         target.mkdir()
         _write_realistic_software_target(target)
