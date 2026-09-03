@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "gate": "T7-domain-truth",
+  "status": "PASS",
+  "recorded_at": "2026-09-03T07:36:55.599284+00:00",
+  "run_id": "20260903T073655Z-cad93a0b",
+  "head_commit": "bb6f58569be40aaa53c9febe224b2e811031fad4",
+  "working_tree": "?? .builder/evidence/T8/20260903T073452Z-5680a19f/",
+  "source_digest": "1e588bbb9e06d8ecf194b96c6afb3538b3bb97e1d2f0bb7f6fc4afda128596b8",
+  "python": "3.13.6 (tags/v3.13.6:4e66535, Aug  6 2025, 14:36:00) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "checks": [
+    {
+      "name": "t7_substrate_owner",
+      "status": "PASS",
+      "detail": "substrate owns deterministic domain signals, claims, evidence, and relations"
+    },
+    {
+      "name": "weak_material_metadata_only_boundary",
+      "status": "PASS",
+      "detail": "weak metadata-only material is classified before optional content hashing"
+    },
+    {
+      "name": "t7_awareness_projection",
+      "status": "PASS",
+      "detail": "awareness projects domain truth through substrate APIs and owns no T3 tables"
+    },
+    {
+      "name": "known_answer_domain_profiles",
+      "status": "PASS",
+      "detail": "notes_heavy -> mixed; realistic_software -> software; records_ordinary_folders -> records_documents; true_mixed -> mixed"
+    },
+    {
+      "name": "consumer_entrance_known_answer",
+      "status": "PASS",
+      "detail": "installed sidecar reports software on a realistic target, stable evidence/versions across unchanged refresh (26 evidence rows), and disclosed projection"
+    },
+    {
+      "name": "working_tree_provenance",
+      "status": "PASS",
+      "detail": "measured source is fully contained in head_commit (untracked evidence receipts only)"
+    },
+    {
+      "name": "focused_t7_product_evidence",
+      "status": "PASS",
+      "detail": "................                                                         [100%]"
+    },
+    {
+      "name": "canonical_product_regression",
+      "status": "PASS",
+      "detail": "...                                                                      [100%]"
+    },
+    {
+      "name": "dependency_direction",
+      "status": "PASS",
+      "detail": "mechanical tools do not depend upward on domain truth, awareness, MCP, mutation, receipts, or journal"
+    },
+    {
+      "name": "positive_product_boundary",
+      "status": "PASS",
+      "detail": "31 product modules remain independent of factory, tests, and construction"
+    },
+    {
+      "name": "no_out_of_scope_surfaces",
+      "status": "PASS",
+      "detail": "T7 introduces no AI/vector, cartridge, parser graph, rollback, or workflow-engine surface"
+    },
+    {
+      "name": "journal_continuity",
+      "status": "PASS",
+      "detail": "journal is contiguous through 0054-t8-execution-start.md"
+    },
+    {
+      "name": "static_discovery",
+      "status": "PASS",
+      "detail": "Ruff passed and 55 Python sources parsed"
+    },
+    {
+      "name": "discrimination_witness",
+      "status": "PASS",
+      "detail": "rejected: missing software claim; missing records/documents claim; missing weak-material claim; hash computed before weak-material basis; awareness direct T3 table query; awareness skips substrate basis; missing weak-material fixture; missing overclaim guard; missing MCP/CLI shared-world witness; executed: generated subtrees traversed; executed: vendor subtrees traversed; executed: config JSON counted as records; executed: README/notes counted as records/documents evidence; executed: text documents always ancillary; executed: vendor/build/dist untraversed on every target; executed: profile detects instead of discriminates"
+    },
+    {
+      "name": "repository_hygiene",
+      "status": "PASS",
+      "detail": "no generated cache, bytecode, build, release, or fixture debris remains"
+    }
+  ]
+}

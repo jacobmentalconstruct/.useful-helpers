@@ -1,6 +1,6 @@
 # Architecture
 
-Status: **T7 PARKED IMPLEMENTATION MAP**
+Status: **T8 AWAITING_APPROVAL IMPLEMENTATION MAP**
 
 ## Charter relationship
 
@@ -11,8 +11,8 @@ those facts. It maps the implementation currently present in the repository to t
 Charter responsibilities it is intended to realize. T1, T2, T3, and T4 are parked by
 operator approval. T5 Governed Mutation Loop is parked by operator approval and P5 is
 credited. T6 Removable MCP Entrance is parked by operator approval and P6 is credited.
-T7 Domain Truth is parked by operator approval and P7 is credited. Product STOP remains
-incomplete because P8 is unscored.
+T7 Domain Truth is parked by operator approval and P7 is credited. T8 Release and STOP is
+submitted for review; P8 and Product STOP remain uncredited until operator approval.
 
 ## Current installed-instance realization
 
@@ -303,6 +303,32 @@ applicability, path, and invocation contracts. Their mechanics depend only on th
 standard library plus `core.tool_runtime`; no tool imports identity, CLI, control,
 registry, storage, awareness, MCP, GUI, factory, tests, or tranche machinery.
 
+## Current release implementation
+
+T8 adds a packaging-neutral sealed zip artifact produced by `factory/release.py`.
+Release assembly positively selects `product/`, `factory/`, `README.md`, and
+`pyproject.toml`, writes an embedded `RELEASE_MANIFEST.json`, and emits an outer manifest
+with artifact digest and source provenance. The artifact excludes `.builder`, tests,
+gates, evidence, `.git`, release output, `_projectmapper`, `_exports`, caches, bytecode,
+runtime fixtures, and opaque historical archive files.
+
+`factory/cli.py` exposes `release build`, `release inspect`, `attach`, `update`, and
+`uninstall` from an extracted release artifact. `factory/installer.py` still creates one
+`.sidecar` footprint on attach; its update path replaces only installed runtime payload
+directories (`bin`, `core`, `tools`) while preserving `instance.json`, `state/`, `logs/`,
+the structural UUID binding, and runtime engagement state. Its uninstall path deletes
+`.sidecar` and leaves approved target work products intact.
+
+MCP now exposes `mutation.preview_write`, `mutation.approve`, and `mutation.apply`
+through `product/core/mutation.py` owner APIs, so the sealed artifact can demonstrate the
+governed mutation lifecycle through both CLI and MCP without MCP owning mutation
+persistence.
+
+T8 evidence is recorded in journal entry `0055`. The T8 gate includes same-artifact
+Windows lifecycle fixtures and a WSL/Linux smoke for attach, status, compatible update,
+and removal. Product STOP is still not credited by this architecture map; operator review
+and approval are required.
+
 ## T1 review evidence
 
 The fixtures report that a normal or empty target can be attached, re-entered
@@ -521,4 +547,5 @@ External Reviewer evidence at
 CANDIDATE for the `0050` submission. Entry `0051` records operator approval, parks T7,
 and credits P7.
 
-T8 has not begun. Product STOP remains incomplete because P8 is unscored.
+T8 is submitted for review by entry `0055`. P8 and Product STOP remain uncredited until
+operator approval.

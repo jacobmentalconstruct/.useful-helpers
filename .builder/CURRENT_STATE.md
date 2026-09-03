@@ -3,13 +3,13 @@
 This file is a resumability projection, not authority.
 
 - Current tranche: **T8 Release and STOP**
-- Current state: **IMPLEMENTING**
-- Operator direction: T7 is PARKED and P7 is credited. T8 is declared in entry `0053`
-  and same-message operator approval to proceed is recorded in entry `0054`; implement
-  only that T8 scope and stop at AWAITING_APPROVAL.
+- Current state: **AWAITING_APPROVAL**
+- Operator direction: T7 is PARKED and P7 is credited. T8 is submitted for review in
+  entry `0055`; do not park T8, credit P8, claim Product STOP, or close the project
+  without explicit operator approval.
 - Git branch: `codex/t1-mechanical-host`
 - Pre-bootstrap baseline: `60174bc93ef4a187a0cc7ff848a03b3d8772b804`
-- Latest journal position: `0054-t8-execution-start.md`
+- Latest journal position: `0055-t8-awaiting-approval.md`
 - Approved T0 receipt: `T0/20260826T054142Z-b5ec742a/bootstrap-gate.json`
 - Parked tranches: T0 Bootstrap, including the subsequent vision alignment; T1 Mechanical Hands + Governed Host; T2 Runtime Receipts + Work Memory; T3 Epistemic Substrate; T4 Awareness; T5 Governed Mutation Loop; T6 Removable MCP Entrance; T7 Domain Truth
 - Product STOP: PARTIAL - P1/P2 credited by parked T1; P3 credited by parked T2/T3; P4 credited by parked T4; P5 credited by parked T5; P6 credited by parked T6; P7 credited by parked T7; P8 UNSCORED
@@ -215,11 +215,11 @@ Product STOP remains incomplete because P8 is UNSCORED.
 
 ## Next entering-builder action
 
-Continue implementing T8 Release and STOP under entries `0053` and `0054`. Entry
-`0052-pre-t8-housekeeping.md` resolves pre-T8 H1/H2/H3 and C1/C5 disposition, and carries
-C2 MCP governed mutation parity, C3 MCP client conformance, and C4 final release
-provenance consistency into T8. Do not reopen T0-T7 absent new evidence of a failed
-premise. Stop at AWAITING_APPROVAL; do not park T8, credit P8, or claim Product STOP
+Review T8 Release and STOP under entries `0053`, `0054`, and `0055`. Entry
+`0052-pre-t8-housekeeping.md` resolves pre-T8 H1/H2/H3 and C1/C5 disposition. Entry
+`0055` submits the carried C2 MCP governed mutation parity, C3 MCP conformance, and C4
+release provenance consistency evidence. Do not reopen T0-T7 absent new evidence of a
+failed premise. Do not park T8, credit P8, claim Product STOP, or close the project
 without explicit operator approval.
 
 ## T7 declaration position
@@ -291,8 +291,9 @@ targets with executed mutations. T7 gate `20260902T140854Z-09771121` passed 15/1
 
 Reviewer evidence at `.builder/evidence/reviews/T7/20260902T144605Z-external-review.md`
 recommends APPROVE CANDIDATE for the `0050` submission. Entry `0051` records operator
-approval, grants the terminal PARKED disposition, and parks P7 credit. T8 has not begun,
-P8 remains UNSCORED, and Product STOP remains incomplete.
+approval, grants the terminal PARKED disposition, and parks P7 credit. T8 is now
+submitted for review by entry `0055`; P8 remains UNSCORED, and Product STOP remains
+incomplete.
 
 ## T6 declaration position
 

@@ -57,11 +57,16 @@ classification/generated-subtree repair with operator rulings D1-D3 resubmitted 
 `.builder/journal/0049-t7-classification-repair-awaiting-approval.md`, and the bounded
 text-document ratio and gate self-consistency repair resubmitted in
 `.builder/journal/0050-t7-text-document-ratio-repair-awaiting-approval.md`. Entry
-`.builder/journal/0051-t7-park.md` records operator approval and parks P7 credit. T8
-remains PROVISIONAL and unstarted. Pre-T8 housekeeping is recorded in
+`.builder/journal/0051-t7-park.md` records operator approval and parks P7 credit. Pre-T8
+housekeeping is recorded in
 `.builder/journal/0052-pre-t8-housekeeping.md`: line-ending policy and gate-exemption
 ownership are resolved, while MCP parity/conformance and final release provenance are
 carried into the T8 declaration surface.
+
+T8 Release and STOP is **AWAITING_APPROVAL** in
+`.builder/journal/0055-t8-awaiting-approval.md`, supported by T8 gate run
+`20260903T073452Z-5680a19f`. P8 and Product STOP remain uncredited until explicit
+operator approval.
 
 Read construction authority in this order:
 
